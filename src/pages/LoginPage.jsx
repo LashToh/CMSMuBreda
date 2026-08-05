@@ -1,16 +1,34 @@
-import { useState } from 'react';
-import { Link, Navigate, useNavigate } from 'react-router-dom';
+import { useMemo, useState } from 'react';
+import { Link, Navigate, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useTranslation } from '../context/LanguageContext';
 import { ApiError } from '../services/api';
 
+/** Only allow same-origin relative paths (open-redirect safe). */
+function safeRedirect(value) {
+  if (!value || typeof value !== 'string') return null;
+  const trimmed = value.trim();
+  if (!trimmed.startsWith('/') || trimmed.startsWith('//')) return null;
+  return trimmed;
+}
+
 export default function LoginPage() {
+  const { t } = useTranslation();
   const { login, isAuthenticated, loading } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [form, setForm] = useState({ username: '', password: '' });
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
-  if (!loading && isAuthenticated) return <Navigate to="/account" replace />;
+  const redirectTo = useMemo(
+    () => safeRedirect(searchParams.get('redirect') || searchParams.get('next')) || '/account',
+    [searchParams],
+  );
+
+  if (!loading && isAuthenticated) {
+    return <Navigate to={redirectTo} replace />;
+  }
 
   const onSubmit = async (e) => {
     e.preventDefault();
@@ -18,9 +36,9 @@ export default function LoginPage() {
     setSubmitting(true);
     try {
       await login(form);
-      navigate('/account');
+      navigate(redirectTo, { replace: true });
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : 'Login failed.');
+      setError(err instanceof ApiError ? err.message : t('login.failed'));
     } finally {
       setSubmitting(false);
     }
@@ -28,15 +46,15 @@ export default function LoginPage() {
 
   return (
     <section className="cms-page">
-      <p className="cms-page__label">Account</p>
-      <h1 className="cms-page__title">Login</h1>
-      <p className="cms-page__subtitle">Enter the realm of Season 21. Demo: demo / demo1234 (mock mode).</p>
+      <p className="cms-page__label">{t('login.label')}</p>
+      <h1 className="cms-page__title">{t('login.title')}</h1>
+      <p className="cms-page__subtitle">{t('login.subtitle')}</p>
 
       <div className="cms-panel">
         {error && <div className="cms-alert cms-alert--error">{error}</div>}
         <form className="cms-form" onSubmit={onSubmit}>
           <label>
-            Username
+            {t('login.username')}
             <input
               value={form.username}
               onChange={(e) => setForm((f) => ({ ...f, username: e.target.value }))}
@@ -45,7 +63,7 @@ export default function LoginPage() {
             />
           </label>
           <label>
-            Password
+            {t('login.password')}
             <input
               type="password"
               value={form.password}
@@ -55,11 +73,11 @@ export default function LoginPage() {
             />
           </label>
           <button type="submit" className="btn btn--primary" disabled={submitting}>
-            {submitting ? 'Signing in…' : 'Login'}
+            {submitting ? t('login.submitting') : t('login.submit')}
           </button>
         </form>
         <p style={{ marginTop: '1.25rem', opacity: 0.75 }}>
-          No account? <Link to="/register">Register</Link>
+          {t('login.noAccount')} <Link to="/register">{t('login.register')}</Link>
         </p>
       </div>
     </section>

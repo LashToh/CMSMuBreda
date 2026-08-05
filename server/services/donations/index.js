@@ -16,38 +16,46 @@ export function mockModeEnabled() {
   return Boolean(config.donations.mockMode) || config.isMock;
 }
 
-export function listPublicPackages() {
-  const store = getDonationStore();
-  return listPackages(store.donationPackages).map((p) => ({
-    id: p.id,
-    title: p.title,
-    description: p.description,
-    fiatCurrency: p.fiatCurrency,
-    price: p.price,
-    creditCurrency: p.creditCurrency,
-    creditAmount: p.creditAmount,
-    providers: (p.providers || []).filter((prov) => providerAvailable(prov)),
-    order: p.order,
-  }));
+const REAL_PROVIDERS = ['mercadopago', 'stripe', 'paypal'];
+
+function providerReason(id, { featureEnabled, configured }) {
+  if (id === 'mock') {
+    return mockModeEnabled() ? null : 'mock_disabled';
+  }
+  if (!featureEnabled) return 'disabled';
+  if (!configured) return 'not_configured';
+  return null;
 }
 
 export function listProvidersStatus() {
+  const mpConfigured = mercadopago.isConfigured();
+  const stripeConfigured = stripe.isConfigured();
+  const paypalConfigured = paypal.isConfigured();
+  const mpFeature = Boolean(config.donations.mercadopago.enabled);
+  const stripeFeature = Boolean(config.donations.stripe.enabled);
+  const paypalFeature = Boolean(config.donations.paypal.enabled);
+  const mockOn = mockModeEnabled();
+
   return {
     mercadopago: {
-      enabled: config.donations.mercadopago.enabled && mercadopago.isConfigured(),
-      configured: mercadopago.isConfigured(),
+      enabled: mpFeature && mpConfigured,
+      configured: mpConfigured,
+      reason: providerReason('mercadopago', { featureEnabled: mpFeature, configured: mpConfigured }),
     },
     stripe: {
-      enabled: config.donations.stripe.enabled && stripe.isConfigured(),
-      configured: stripe.isConfigured(),
+      enabled: stripeFeature && stripeConfigured,
+      configured: stripeConfigured,
+      reason: providerReason('stripe', { featureEnabled: stripeFeature, configured: stripeConfigured }),
     },
     paypal: {
-      enabled: config.donations.paypal.enabled && paypal.isConfigured(),
-      configured: paypal.isConfigured(),
+      enabled: paypalFeature && paypalConfigured,
+      configured: paypalConfigured,
+      reason: providerReason('paypal', { featureEnabled: paypalFeature, configured: paypalConfigured }),
     },
     mock: {
-      enabled: mockModeEnabled(),
+      enabled: mockOn,
       configured: true,
+      reason: providerReason('mock', { featureEnabled: mockOn, configured: true }),
     },
   };
 }
@@ -56,6 +64,45 @@ function providerAvailable(provider) {
   const status = listProvidersStatus();
   if (provider === 'mock') return status.mock.enabled;
   return Boolean(status[provider]?.enabled);
+}
+
+/**
+ * Public package list: always expose MP / Stripe / PayPal (+ mock in mock mode)
+ * with per-provider enabled flag so the CMS can show disabled buttons + reasons.
+ */
+export function listPublicPackages() {
+  const store = getDonationStore();
+  const status = listProvidersStatus();
+  const visibleIds = [...REAL_PROVIDERS, ...(mockModeEnabled() ? ['mock'] : [])];
+
+  return listPackages(store.donationPackages).map((p) => {
+    const packSet = new Set((p.providers || []).map((x) => String(x).toLowerCase()));
+
+    return {
+      id: p.id,
+      title: p.title,
+      description: p.description,
+      fiatCurrency: p.fiatCurrency,
+      price: p.price,
+      creditCurrency: p.creditCurrency,
+      creditAmount: p.creditAmount,
+      order: p.order,
+      providers: visibleIds.map((id) => {
+        const supported = packSet.size === 0 || packSet.has(id);
+        const base = status[id] || { enabled: false, configured: false, reason: 'disabled' };
+        const enabled = supported && Boolean(base.enabled);
+        let reason = null;
+        if (!supported) reason = 'not_supported';
+        else if (!base.enabled) reason = base.reason || 'not_configured';
+        return {
+          id,
+          enabled,
+          configured: Boolean(base.configured),
+          reason,
+        };
+      }),
+    };
+  });
 }
 
 function publicBaseUrl() {

@@ -5,11 +5,11 @@ import LanguageSwitcher from '../LanguageSwitcher';
 import './CmsShell.scss';
 
 const LINKS = [
-  { to: '/', label: 'Home', end: true },
-  { to: '/news', label: 'News' },
-  { to: '/rankings', label: 'Rankings' },
-  { to: '/donate', label: 'Donate' },
-  { to: '/downloads', label: 'Downloads' },
+  { to: '/', key: 'home', end: true },
+  { to: '/news', key: 'news' },
+  { to: '/rankings', key: 'rankings' },
+  { to: '/donate', key: 'donate' },
+  { to: '/downloads', key: 'downloads' },
 ];
 
 export default function CmsShell() {
@@ -33,12 +33,12 @@ export default function CmsShell() {
                 end={link.end}
                 className={({ isActive }) => (isActive ? 'is-active' : '')}
               >
-                {link.label}
+                {t(`nav.${link.key}`)}
               </NavLink>
             ))}
             {isAuthenticated && (
               <NavLink to="/account" className={({ isActive }) => (isActive ? 'is-active' : '')}>
-                Account
+                {t('nav.account')}
               </NavLink>
             )}
             {isAdmin && (
@@ -54,16 +54,16 @@ export default function CmsShell() {
               <>
                 <span className="cms-shell__user">{user.username}</span>
                 <button type="button" className="btn btn--secondary" onClick={() => logout()}>
-                  Logout
+                  {t('nav.logout')}
                 </button>
               </>
             ) : (
               <>
                 <Link to="/login" className="btn btn--secondary">
-                  Login
+                  {t('nav.login')}
                 </Link>
                 <Link to="/register" className="btn btn--primary">
-                  Register
+                  {t('nav.register')}
                 </Link>
               </>
             )}

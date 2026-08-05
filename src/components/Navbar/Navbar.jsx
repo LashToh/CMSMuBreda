@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, NavLink } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { HiMenuAlt3, HiX } from 'react-icons/hi';
 import { useRegister } from '../../context/RegisterContext';
@@ -9,7 +9,7 @@ import LanguageSwitcher from '../LanguageSwitcher';
 import './Navbar.scss';
 
 const CMS_LINKS = [
-  { key: 'home', to: '/' },
+  { key: 'home', to: '/', end: true },
   { key: 'news', to: '/news' },
   { key: 'rankings', to: '/rankings' },
   { key: 'donate', to: '/donate' },
@@ -71,12 +71,23 @@ export default function Navbar() {
         <ul className="navbar__links">
           {CMS_LINKS.map((link) => (
             <li key={link.to}>
-              <Link to={link.to}>{t(`nav.${link.key}`)}</Link>
+              <NavLink
+                to={link.to}
+                end={link.end}
+                className={({ isActive }) => (isActive ? 'is-active' : undefined)}
+              >
+                {t(`nav.${link.key}`)}
+              </NavLink>
             </li>
           ))}
           {isAuthenticated && (
             <li>
-              <Link to="/account">{t('nav.account')}</Link>
+              <NavLink
+                to="/account"
+                className={({ isActive }) => (isActive ? 'is-active' : undefined)}
+              >
+                {t('nav.account')}
+              </NavLink>
             </li>
           )}
         </ul>
@@ -131,9 +142,14 @@ export default function Navbar() {
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: i * 0.06 }}
                 >
-                  <Link to={link.to} onClick={closeMenu}>
+                  <NavLink
+                    to={link.to}
+                    end={link.end}
+                    className={({ isActive }) => (isActive ? 'is-active' : undefined)}
+                    onClick={closeMenu}
+                  >
                     {t(`nav.${link.key}`)}
-                  </Link>
+                  </NavLink>
                 </motion.li>
               ))}
               {isAuthenticated && (
@@ -142,9 +158,13 @@ export default function Navbar() {
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: CMS_LINKS.length * 0.06 }}
                 >
-                  <Link to="/account" onClick={closeMenu}>
+                  <NavLink
+                    to="/account"
+                    className={({ isActive }) => (isActive ? 'is-active' : undefined)}
+                    onClick={closeMenu}
+                  >
                     {t('nav.account')}
-                  </Link>
+                  </NavLink>
                 </motion.li>
               )}
             </ul>

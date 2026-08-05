@@ -17,7 +17,8 @@ export default function AccountPage() {
   const [pwd, setPwd] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' });
   const [giftCode, setGiftCode] = useState('');
   const [msg, setMsg] = useState('');
-  const [busyChar, setBusyChar] = useState('');
+  const [selectedChar, setSelectedChar] = useState('');
+  const [busyUnstuck, setBusyUnstuck] = useState(false);
 
   const load = async () => {
     setLoading(true);
@@ -25,6 +26,11 @@ export default function AccountPage() {
     try {
       const res = await fetchAccount();
       setData(res.data);
+      const chars = res.data?.characters || [];
+      if (chars.length && !selectedChar) {
+        const offline = chars.find((c) => !c.online) || chars[0];
+        setSelectedChar(offline.name);
+      }
     } catch (err) {
       setError(err instanceof ApiError ? err.message : 'Unable to retrieve account information.');
     } finally {
@@ -63,19 +69,23 @@ export default function AccountPage() {
     }
   };
 
-  const onUnstuck = async (characterName) => {
+  const onUnstuck = async (e) => {
+    e.preventDefault();
+    if (!selectedChar) return;
     setMsg('');
-    setBusyChar(characterName);
+    setBusyUnstuck(true);
     try {
-      const res = await unstuckCharacter(characterName);
-      setMsg(res.message || `${characterName} moved to safe zone.`);
+      const res = await unstuckCharacter(selectedChar);
+      setMsg(res.message || `${selectedChar} moved to safe zone.`);
       await load();
     } catch (err) {
       setMsg(err instanceof ApiError ? err.message : 'Unstuck failed.');
     } finally {
-      setBusyChar('');
+      setBusyUnstuck(false);
     }
   };
+
+  const selected = data?.characters?.find((c) => c.name === selectedChar);
 
   return (
     <section className="cms-page">
@@ -127,7 +137,6 @@ export default function AccountPage() {
                       <th>PK</th>
                       <th>Guild</th>
                       <th>Status</th>
-                      {data.features?.unstuck !== false && <th>Tools</th>}
                     </tr>
                   </thead>
                   <tbody>
@@ -144,23 +153,6 @@ export default function AccountPage() {
                         <td>{c.pkCount ?? 0}</td>
                         <td>{c.guild || '—'}</td>
                         <td>{c.online ? 'Online' : 'Offline'}</td>
-                        {data.features?.unstuck !== false && (
-                          <td>
-                            <button
-                              type="button"
-                              className="btn btn--secondary"
-                              disabled={Boolean(c.online) || busyChar === c.name}
-                              title={
-                                c.online
-                                  ? 'Character must be offline'
-                                  : 'Move character to safe zone'
-                              }
-                              onClick={() => onUnstuck(c.name)}
-                            >
-                              {busyChar === c.name ? '…' : 'Unstuck'}
-                            </button>
-                          </td>
-                        )}
                       </tr>
                     ))}
                   </tbody>
@@ -169,18 +161,12 @@ export default function AccountPage() {
             ) : (
               <div className="cms-empty">No characters found on this account.</div>
             )}
-            {data.features?.unstuck !== false && (
-              <p style={{ marginTop: '1rem', opacity: 0.7 }}>
-                Unstuck moves the character to the safe map configured in AdminCP (default
-                Lorencia). The character must be offline.
-              </p>
-            )}
           </div>
 
           <div className="cms-grid cms-grid--2">
             <div className="cms-panel">
               <h2 style={{ fontFamily: 'Cinzel, serif', color: '#f0d08a', marginBottom: '1rem' }}>
-                Security
+                Change Password
               </h2>
               <form className="cms-form" onSubmit={onChangePassword}>
                 <label>
@@ -216,11 +202,78 @@ export default function AccountPage() {
               </form>
             </div>
 
+            {data.features?.unstuck !== false ? (
+              <div className="cms-panel">
+                <h2 style={{ fontFamily: 'Cinzel, serif', color: '#f0d08a', marginBottom: '1rem' }}>
+                  Unstuck
+                </h2>
+                <p style={{ opacity: 0.75, marginBottom: '1rem' }}>
+                  Move a stuck character to the safe zone. Character must be offline.
+                </p>
+                {data.characters?.length ? (
+                  <form className="cms-form" onSubmit={onUnstuck}>
+                    <label>
+                      Character
+                      <select
+                        value={selectedChar}
+                        onChange={(e) => setSelectedChar(e.target.value)}
+                        required
+                      >
+                        {data.characters.map((c) => (
+                          <option key={c.name} value={c.name}>
+                            {c.name}
+                            {c.online ? ' (online)' : ''}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                    <button
+                      type="submit"
+                      className="btn btn--secondary"
+                      disabled={busyUnstuck || Boolean(selected?.online)}
+                    >
+                      {busyUnstuck ? 'Moving…' : 'Unstuck character'}
+                    </button>
+                    {selected?.online && (
+                      <p style={{ opacity: 0.7, margin: 0 }}>Log out of the game first.</p>
+                    )}
+                  </form>
+                ) : (
+                  <div className="cms-empty">No characters to unstuck.</div>
+                )}
+              </div>
+            ) : (
+              <div className="cms-panel">
+                <h2 style={{ fontFamily: 'Cinzel, serif', color: '#f0d08a', marginBottom: '1rem' }}>
+                  Gift Code
+                </h2>
+                <form className="cms-form" onSubmit={onRedeem}>
+                  <label>
+                    Code
+                    <input
+                      value={giftCode}
+                      onChange={(e) => setGiftCode(e.target.value)}
+                      placeholder="WELCOME21"
+                      required
+                    />
+                  </label>
+                  <button type="submit" className="btn btn--secondary">
+                    Redeem
+                  </button>
+                </form>
+                <p style={{ marginTop: '1rem' }}>
+                  <Link to="/donate">Visit Donate →</Link>
+                </p>
+              </div>
+            )}
+          </div>
+
+          {data.features?.unstuck !== false && (
             <div className="cms-panel">
               <h2 style={{ fontFamily: 'Cinzel, serif', color: '#f0d08a', marginBottom: '1rem' }}>
                 Gift Code
               </h2>
-              <form className="cms-form" onSubmit={onRedeem}>
+              <form className="cms-form" onSubmit={onRedeem} style={{ maxWidth: 420 }}>
                 <label>
                   Code
                   <input
@@ -238,7 +291,7 @@ export default function AccountPage() {
                 <Link to="/donate">Visit Donate →</Link>
               </p>
             </div>
-          </div>
+          )}
         </>
       )}
     </section>

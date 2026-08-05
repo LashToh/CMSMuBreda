@@ -14,3 +14,6 @@ server/data/*.db
 server/data/cms-local.json
 uploads/*
 !uploads/.gitkeep
+
+.ref/
+

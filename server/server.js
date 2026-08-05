@@ -8,6 +8,7 @@ import { config } from './config/index.js';
 import { closePools } from './db/pool.js';
 import apiRoutes from './routes/index.js';
 import { notFoundHandler, errorHandler } from './middleware/errorHandler.js';
+import * as donationsController from './controllers/donationsController.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const distPath = path.resolve(__dirname, '../dist');
@@ -33,6 +34,23 @@ app.use(
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   }),
+);
+
+// Donation webhooks need raw / urlencoded bodies before JSON parser
+app.post(
+  '/api/donations/webhooks/stripe',
+  express.raw({ type: 'application/json' }),
+  donationsController.webhookStripe,
+);
+app.post(
+  '/api/donations/webhooks/mercadopago',
+  express.raw({ type: '*/*' }),
+  donationsController.webhookMercadoPago,
+);
+app.post(
+  '/api/donations/webhooks/paypal',
+  express.urlencoded({ extended: false }),
+  donationsController.webhookPaypal,
 );
 
 app.use(express.json({ limit: '32kb' }));

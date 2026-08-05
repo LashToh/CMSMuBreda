@@ -6,6 +6,7 @@ import { validateBody } from '../middleware/validate.js';
 import { registerSchema } from '../validators/auth.js';
 import authRoutes from './auth.js';
 import accountRoutes from './account.js';
+import donationsRoutes from './donations.js';
 import * as publicController from '../controllers/publicController.js';
 import * as adminController from '../controllers/adminController.js';
 import * as authController from '../controllers/authController.js';
@@ -50,6 +51,8 @@ router.get('/shop/history', requireAuth, publicController.shopHistory);
 router.post('/giftcodes/redeem', requireAuth, publicController.redeemGift);
 router.get('/vote/sites', publicController.voteSites);
 router.post('/vote/start', requireAuth, publicController.voteStart);
+
+router.use('/donations', donationsRoutes);
 
 router.use('/auth', authRoutes);
 router.use('/account', accountRoutes);

@@ -94,6 +94,8 @@ const defaultStore = {
     },
   ],
   shopPurchases: [],
+  donationPackages: [],
+  donationTransactions: [],
   voteSites: [],
   voteHistory: [],
   vipTiers: [

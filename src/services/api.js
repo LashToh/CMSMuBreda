@@ -112,6 +112,30 @@ export async function purchaseShopItem(itemId) {
   return request('/api/shop/purchase', { method: 'POST', body: { itemId }, auth: true });
 }
 
+export async function fetchDonationPackages() {
+  return request('/api/donations/packages');
+}
+
+export async function startDonationCheckout({ packageId, provider }) {
+  return request('/api/donations/checkout', {
+    method: 'POST',
+    body: { packageId, provider },
+    auth: true,
+  });
+}
+
+export async function completeMockDonation(transactionId) {
+  return request('/api/donations/mock/complete', {
+    method: 'POST',
+    body: { transactionId },
+    auth: true,
+  });
+}
+
+export async function fetchDonationHistory() {
+  return request('/api/donations/history', { auth: true });
+}
+
 export async function redeemGiftCode(code) {
   return request('/api/giftcodes/redeem', { method: 'POST', body: { code }, auth: true });
 }

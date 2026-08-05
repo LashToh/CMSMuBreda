@@ -94,6 +94,36 @@ export const config = {
   features: featureFlags,
   mu: muSchema,
   server: serverInfo,
+
+  donations: {
+    mockMode: envBool('DONATIONS_MOCK', requestedMode !== 'production'),
+    publicBaseUrl: env('DONATIONS_PUBLIC_BASE_URL', env('PUBLIC_BASE_URL', 'http://localhost:5173')),
+    successUrl: env('DONATIONS_SUCCESS_URL', ''),
+    cancelUrl: env('DONATIONS_CANCEL_URL', ''),
+    mercadopago: {
+      enabled: envBool('MP_ENABLED', true),
+      accessToken: env('MP_ACCESS_TOKEN', ''),
+      webhookSecret: env('MP_WEBHOOK_SECRET', ''),
+      description: env('MP_DESCRIPTION', 'MU Breda donation'),
+    },
+    stripe: {
+      enabled: envBool('STRIPE_ENABLED', true),
+      secretKey: env('STRIPE_SECRET_KEY', ''),
+      publishableKey: env('STRIPE_PUBLISHABLE_KEY', ''),
+      webhookSecret: env('STRIPE_WEBHOOK_SECRET', ''),
+      currency: env('STRIPE_CURRENCY', 'usd'),
+    },
+    paypal: {
+      enabled: envBool('PAYPAL_ENABLED', true),
+      sandbox: envBool('PAYPAL_SANDBOX', true),
+      email: env('PAYPAL_EMAIL', ''),
+      title: env('PAYPAL_TITLE', 'Donation for WCoinC'),
+      currency: env('PAYPAL_CURRENCY', 'USD'),
+      returnUrl: env('PAYPAL_RETURN_URL', 'http://localhost:5173/donate?status=paypal'),
+      notifyUrl: env('PAYPAL_NOTIFY_URL', 'http://localhost:3001/api/donations/webhooks/paypal'),
+      conversionRate: envInt('PAYPAL_CONVERSION_RATE', 100),
+    },
+  },
 };
 
 if (config.isProduction && config.auth.jwtSecret === 'dev-only-change-me') {

@@ -21,4 +21,5 @@ export const featureFlags = {
   news: flag('ENABLE_NEWS', true),
   downloads: flag('ENABLE_DOWNLOADS', true),
   rankings: flag('ENABLE_RANKINGS', true),
+  donations: flag('ENABLE_DONATIONS', true),
 };

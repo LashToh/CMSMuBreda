@@ -20,6 +20,7 @@ export const mu = {
     create: (...a) => pick().accounts.create(...a),
     validatePassword: (...a) => pick().accounts.validatePassword(...a),
     changePassword: (...a) => pick().accounts.changePassword(...a),
+    changeEmail: (...a) => pick().accounts.changeEmail(...a),
     isOnline: (...a) => pick().accounts.isOnline(...a),
     count: (...a) => pick().accounts.count(...a),
   },

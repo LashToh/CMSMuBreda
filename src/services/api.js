@@ -79,6 +79,10 @@ export async function changePassword(payload) {
   return request('/api/auth/change-password', { method: 'POST', body: payload, auth: true });
 }
 
+export async function changeEmail(payload) {
+  return request('/api/auth/change-email', { method: 'POST', body: payload, auth: true });
+}
+
 export async function fetchAccount() {
   return request('/api/account', { auth: true });
 }

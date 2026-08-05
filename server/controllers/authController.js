@@ -47,6 +47,15 @@ export async function changePassword(req, res, next) {
   }
 }
 
+export async function changeEmail(req, res, next) {
+  try {
+    const result = await authService.changeEmail(req.user.username, req.validated);
+    return ok(res, result, result.message);
+  } catch (err) {
+    return next(err);
+  }
+}
+
 export async function forgotPassword(req, res, next) {
   try {
     const result = await passwordResetService.requestReset(req.validated.email);

@@ -7,6 +7,7 @@ import {
   registerSchema,
   loginSchema,
   changePasswordSchema,
+  changeEmailSchema,
   forgotPasswordSchema,
   resetPasswordSchema,
 } from '../validators/auth.js';
@@ -48,6 +49,13 @@ router.post(
   authLimiter,
   validateBody(changePasswordSchema),
   authController.changePassword,
+);
+router.post(
+  '/change-email',
+  requireAuth,
+  authLimiter,
+  validateBody(changeEmailSchema),
+  authController.changeEmail,
 );
 router.post(
   '/forgot-password',

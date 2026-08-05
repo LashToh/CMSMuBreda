@@ -178,6 +178,30 @@ export const accounts = {
     });
   },
 
+  async changeEmail(username, newEmail) {
+    const email = String(newEmail || '')
+      .trim()
+      .toLowerCase();
+    updateStore((s) => {
+      const key = username.toLowerCase();
+      if (!s.mockAccounts[key]) {
+        throw new AppError('Account not found.', { status: 404, code: 'NOT_FOUND' });
+      }
+      const taken = Object.values(s.mockAccounts).some(
+        (a) =>
+          a.username.toLowerCase() !== key && String(a.email).toLowerCase() === email,
+      );
+      if (taken && !config.registration.allowDuplicateEmails) {
+        throw new AppError('Email address is already registered.', {
+          status: 409,
+          code: 'EMAIL_TAKEN',
+        });
+      }
+      s.mockAccounts[key].email = email;
+      return s;
+    });
+  },
+
   async isOnline(username) {
     return MOCK_CHARS.some((c) => c.account.toLowerCase() === username.toLowerCase() && c.online);
   },

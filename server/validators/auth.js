@@ -31,6 +31,17 @@ export const changePasswordSchema = z
     path: ['confirmPassword'],
   });
 
+export const changeEmailSchema = z
+  .object({
+    currentPassword: z.string().min(1, 'Current password is required.'),
+    newEmail: z.string().trim().email('Invalid email address.').max(50),
+    confirmEmail: z.string().trim().email('Invalid email address.').max(50),
+  })
+  .refine((d) => d.newEmail.toLowerCase() === d.confirmEmail.toLowerCase(), {
+    message: 'Emails do not match.',
+    path: ['confirmEmail'],
+  });
+
 export const paginationSchema = z.object({
   page: z.coerce.number().int().min(1).default(1),
   pageSize: z.coerce.number().int().min(1).max(100).default(20),

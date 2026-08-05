@@ -3,6 +3,7 @@ import { Link, Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import {
   ApiError,
+  changeEmail,
   changePassword,
   fetchAccount,
   redeemGiftCode,
@@ -10,11 +11,12 @@ import {
 } from '../services/api';
 
 export default function AccountPage() {
-  const { isAuthenticated, loading: authLoading } = useAuth();
+  const { isAuthenticated, loading: authLoading, refresh } = useAuth();
   const [data, setData] = useState(null);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
   const [pwd, setPwd] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' });
+  const [mail, setMail] = useState({ currentPassword: '', newEmail: '', confirmEmail: '' });
   const [giftCode, setGiftCode] = useState('');
   const [msg, setMsg] = useState('');
   const [selectedChar, setSelectedChar] = useState('');
@@ -53,6 +55,24 @@ export default function AccountPage() {
       setPwd({ currentPassword: '', newPassword: '', confirmPassword: '' });
     } catch (err) {
       setMsg(err instanceof ApiError ? err.message : 'Failed to change password.');
+    }
+  };
+
+  const onChangeEmail = async (e) => {
+    e.preventDefault();
+    setMsg('');
+    try {
+      const res = await changeEmail(mail);
+      setMsg(res.message || 'Email changed.');
+      setMail({ currentPassword: '', newEmail: '', confirmEmail: '' });
+      await load();
+      try {
+        await refresh();
+      } catch {
+        /* ignore */
+      }
+    } catch (err) {
+      setMsg(err instanceof ApiError ? err.message : 'Failed to change email.');
     }
   };
 
@@ -198,6 +218,51 @@ export default function AccountPage() {
                 </label>
                 <button type="submit" className="btn btn--primary">
                   Change Password
+                </button>
+              </form>
+
+              <h2
+                style={{
+                  fontFamily: 'Cinzel, serif',
+                  color: '#f0d08a',
+                  margin: '2rem 0 1rem',
+                }}
+              >
+                Change Email
+              </h2>
+              <p style={{ opacity: 0.7, marginBottom: '1rem' }}>
+                Current: {data.email || '—'}
+              </p>
+              <form className="cms-form" onSubmit={onChangeEmail}>
+                <label>
+                  Current Password
+                  <input
+                    type="password"
+                    value={mail.currentPassword}
+                    onChange={(e) => setMail((m) => ({ ...m, currentPassword: e.target.value }))}
+                    required
+                  />
+                </label>
+                <label>
+                  New Email
+                  <input
+                    type="email"
+                    value={mail.newEmail}
+                    onChange={(e) => setMail((m) => ({ ...m, newEmail: e.target.value }))}
+                    required
+                  />
+                </label>
+                <label>
+                  Confirm Email
+                  <input
+                    type="email"
+                    value={mail.confirmEmail}
+                    onChange={(e) => setMail((m) => ({ ...m, confirmEmail: e.target.value }))}
+                    required
+                  />
+                </label>
+                <button type="submit" className="btn btn--secondary">
+                  Change Email
                 </button>
               </form>
             </div>

@@ -104,3 +104,34 @@ export async function changePassword(username, input) {
   appendAudit({ action: 'account.change_password', username });
   return { message: 'Password changed successfully.' };
 }
+
+export async function changeEmail(username, input) {
+  const valid = await mu.accounts.validatePassword(username, input.currentPassword);
+  if (!valid) {
+    throw new AppError('Current password is incorrect.', {
+      status: 400,
+      code: 'INVALID_PASSWORD',
+    });
+  }
+
+  const account = await mu.accounts.findByUsername(username);
+  if (!account) {
+    throw new AppError('Account not found.', { status: 404, code: 'NOT_FOUND' });
+  }
+
+  const next = String(input.newEmail).trim().toLowerCase();
+  if (String(account.email || '').toLowerCase() === next) {
+    throw new AppError('That is already your email address.', {
+      status: 400,
+      code: 'EMAIL_UNCHANGED',
+    });
+  }
+
+  await mu.accounts.changeEmail(username, next);
+  appendAudit({
+    action: 'account.change_email',
+    username,
+    meta: { email: next },
+  });
+  return { message: 'Email changed successfully.', email: next };
+}

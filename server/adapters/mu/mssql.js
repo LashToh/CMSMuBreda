@@ -415,6 +415,37 @@ export const accounts = {
     }
   },
 
+  async changeEmail(username, newEmail) {
+    const email = String(newEmail || '')
+      .trim()
+      .slice(0, 50);
+    if (!config.registration.allowDuplicateEmails) {
+      const taken = await accounts.findByEmail(email);
+      if (taken && String(taken.username).toLowerCase() !== String(username).toLowerCase()) {
+        throw new AppError('Email address is already registered.', {
+          status: 409,
+          code: 'EMAIL_TAKEN',
+        });
+      }
+    }
+
+    const a = schemaAccounts();
+    const pool = await getAccountsPool();
+    const result = await pool
+      .request()
+      .input('username', sql.VarChar(10), username)
+      .input('email', sql.VarChar(50), email)
+      .query(
+        `UPDATE ${qIdent(a.table)}
+         SET ${qIdent(a.email)} = @email
+         WHERE ${qIdent(a.username)} = @username`,
+      );
+
+    if (!result.rowsAffected[0]) {
+      throw new AppError('Account not found.', { status: 404, code: 'NOT_FOUND' });
+    }
+  },
+
   async isOnline(username) {
     const ms = schemaMembStat();
     const pool = await getAccountsPool();

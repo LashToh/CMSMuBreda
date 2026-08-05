@@ -195,6 +195,14 @@ export async function saveAdminDonationPackage(payload) {
   return request('/api/admin/donations/packages', { method: 'POST', body: payload, auth: true });
 }
 
+export async function fetchAdminSecrets() {
+  return request('/api/admin/secrets', { auth: true });
+}
+
+export async function saveAdminSecrets(payload) {
+  return request('/api/admin/secrets', { method: 'PUT', body: payload, auth: true });
+}
+
 export async function fetchAdminLogs(limit = 100) {
   return request(`/api/admin/logs?limit=${limit}`, { auth: true });
 }

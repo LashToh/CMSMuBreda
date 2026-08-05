@@ -13,6 +13,7 @@ coverage
 server/data/*.db
 server/data/cms-local.json
 server/data/.installed
+server/data/admin-secrets.json
 .ref/
 uploads/*
 !uploads/.gitkeep

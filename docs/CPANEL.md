@@ -75,7 +75,7 @@ Apuntá las URLs públicas a:
 - `https://tudominio.com/api/donations/webhooks/stripe`
 - `https://tudominio.com/api/donations/webhooks/paypal`
 
-Y cargá las keys en `.env` / Environment variables del panel.
+Y cargá las keys en **AdminCP → Integrations** (recomendado) o en `.env` / Environment variables del panel.
 
 ## Reabrir el instalador
 

@@ -4,13 +4,16 @@ import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
-import { config } from './config/index.js';
+import { config } from '../config/index.js';
 import { closePools } from './db/pool.js';
 import apiRoutes from './routes/index.js';
 import { notFoundHandler, errorHandler } from './middleware/errorHandler.js';
 import * as donationsController from './controllers/donationsController.js';
 import installRoutes, { serveInstallPage } from './install/routes.js';
 import { isInstalled } from './install/state.js';
+import { loadRuntimeSecretsOnBoot } from './services/runtimeSecrets.js';
+
+loadRuntimeSecretsOnBoot();
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const distPath = path.resolve(__dirname, '../dist');

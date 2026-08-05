@@ -15,7 +15,9 @@ import {
   fetchAdminNews,
   saveAdminDonationPackage,
   saveAdminDownload,
+  saveAdminSecrets,
   saveAdminSettings,
+  fetchAdminSecrets,
 } from '../services/api';
 import './AdminPage.scss';
 
@@ -25,6 +27,7 @@ const TABS = [
   { id: 'news', label: 'News' },
   { id: 'downloads', label: 'Downloads' },
   { id: 'donate', label: 'Donate' },
+  { id: 'integrations', label: 'Integrations' },
   { id: 'gifts', label: 'Gift Codes' },
   { id: 'settings', label: 'CMS Settings' },
   { id: 'logs', label: 'Audit Log' },
@@ -65,6 +68,22 @@ export default function AdminPage() {
     creditCurrency: 'wcoinc',
   });
   const [logs, setLogs] = useState([]);
+  const [secrets, setSecrets] = useState(null);
+  const [secretForm, setSecretForm] = useState({
+    publicBaseUrl: '',
+    mockMode: false,
+    mpToken: '',
+    mpWebhook: '',
+    stripeSecret: '',
+    stripeWebhook: '',
+    stripePub: '',
+    paypalEmail: '',
+    paypalNotify: '',
+    paypalReturn: '',
+    wcoincTable: '',
+    wcoincColumn: 'WCoinC',
+    wcoincUser: 'AccountID',
+  });
 
   const flash = (text) => {
     setMsg(text);
@@ -107,6 +126,25 @@ export default function AdminPage() {
         if (tab === 'donate') {
           const res = await fetchAdminDonationPackages();
           setPacks(res.data?.items || []);
+        }
+        if (tab === 'integrations') {
+          const res = await fetchAdminSecrets();
+          setSecrets(res.data);
+          setSecretForm({
+            publicBaseUrl: res.data?.donations?.publicBaseUrl || '',
+            mockMode: Boolean(res.data?.donations?.mockMode),
+            mpToken: '',
+            mpWebhook: '',
+            stripeSecret: '',
+            stripeWebhook: '',
+            stripePub: '',
+            paypalEmail: res.data?.donations?.paypal?.email || '',
+            paypalNotify: res.data?.donations?.paypal?.notifyUrl || '',
+            paypalReturn: res.data?.donations?.paypal?.returnUrl || '',
+            wcoincTable: res.data?.currency?.wcoinc?.table || '',
+            wcoincColumn: res.data?.currency?.wcoinc?.column || 'WCoinC',
+            wcoincUser: res.data?.currency?.wcoinc?.userColumn || 'AccountID',
+          });
         }
         if (tab === 'logs') {
           const res = await fetchAdminLogs();
@@ -214,6 +252,59 @@ export default function AdminPage() {
       });
       const res = await fetchAdminDonationPackages();
       setPacks(res.data?.items || []);
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : 'Failed.');
+    }
+  };
+
+  const onSaveSecrets = async (e) => {
+    e.preventDefault();
+    try {
+      const res = await saveAdminSecrets({
+        donations: {
+          publicBaseUrl: secretForm.publicBaseUrl,
+          mockMode: secretForm.mockMode,
+          mercadopago: {
+            accessToken: secretForm.mpToken,
+            webhookSecret: secretForm.mpWebhook,
+          },
+          stripe: {
+            secretKey: secretForm.stripeSecret,
+            webhookSecret: secretForm.stripeWebhook,
+            publishableKey: secretForm.stripePub,
+          },
+          paypal: {
+            email: secretForm.paypalEmail,
+            notifyUrl: secretForm.paypalNotify,
+            returnUrl: secretForm.paypalReturn,
+          },
+        },
+        currency: {
+          wcoinc: {
+            table: secretForm.wcoincTable,
+            column: secretForm.wcoincColumn,
+            userColumn: secretForm.wcoincUser,
+          },
+        },
+      });
+      setSecrets(res.data);
+      setSecretForm((f) => ({
+        ...f,
+        mpToken: '',
+        mpWebhook: '',
+        stripeSecret: '',
+        stripeWebhook: '',
+        stripePub: '',
+        publicBaseUrl: res.data?.donations?.publicBaseUrl || f.publicBaseUrl,
+        mockMode: Boolean(res.data?.donations?.mockMode),
+        paypalEmail: res.data?.donations?.paypal?.email || '',
+        paypalNotify: res.data?.donations?.paypal?.notifyUrl || '',
+        paypalReturn: res.data?.donations?.paypal?.returnUrl || '',
+        wcoincTable: res.data?.currency?.wcoinc?.table || '',
+        wcoincColumn: res.data?.currency?.wcoinc?.column || 'WCoinC',
+        wcoincUser: res.data?.currency?.wcoinc?.userColumn || 'AccountID',
+      }));
+      flash('Integraciones guardadas (solo admin). Los botones Donate se actualizan al toque.');
     } catch (err) {
       setError(err instanceof ApiError ? err.message : 'Failed.');
     }
@@ -501,7 +592,8 @@ export default function AdminPage() {
               </button>
             </form>
             <p className="admincp__note">
-              Gateway keys (MP / Stripe / PayPal) go in server .env — not in this panel (secrets).
+              Las keys de MP / Stripe / PayPal se configuran en la pestaña{' '}
+              <strong>Integrations</strong> (solo admin).
             </p>
           </div>
           <div className="cms-panel">
@@ -528,6 +620,142 @@ export default function AdminPage() {
             </table>
           </div>
         </div>
+      )}
+
+      {tab === 'integrations' && secrets && (
+        <form className="cms-panel" onSubmit={onSaveSecrets}>
+          <h2 className="admincp__h2">Integrations (Admin only)</h2>
+          <p className="admincp__note">
+            {secrets.note} Estado: MP{' '}
+            {secrets.donations?.mercadopago?.accessToken?.set
+              ? secrets.donations.mercadopago.accessToken.hint
+              : 'sin configurar'}{' '}
+            · Stripe{' '}
+            {secrets.donations?.stripe?.secretKey?.set
+              ? secrets.donations.stripe.secretKey.hint
+              : 'sin configurar'}{' '}
+            · PayPal {secrets.donations?.paypal?.email || 'sin email'}
+          </p>
+          <div className="cms-form" style={{ maxWidth: '100%' }}>
+            <div className="cms-grid cms-grid--2">
+              <label>
+                Public site URL
+                <input
+                  value={secretForm.publicBaseUrl}
+                  onChange={(e) => setSecretForm((f) => ({ ...f, publicBaseUrl: e.target.value }))}
+                  placeholder="https://tudominio.com"
+                />
+              </label>
+              <label>
+                Mock donations
+                <select
+                  value={secretForm.mockMode ? 'true' : 'false'}
+                  onChange={(e) =>
+                    setSecretForm((f) => ({ ...f, mockMode: e.target.value === 'true' }))
+                  }
+                >
+                  <option value="false">Off (live gateways)</option>
+                  <option value="true">On (demo button)</option>
+                </select>
+              </label>
+              <label>
+                Mercado Pago Access Token
+                <input
+                  type="password"
+                  autoComplete="off"
+                  value={secretForm.mpToken}
+                  onChange={(e) => setSecretForm((f) => ({ ...f, mpToken: e.target.value }))}
+                  placeholder="dejar vacío = no cambiar"
+                />
+              </label>
+              <label>
+                Mercado Pago Webhook Secret
+                <input
+                  type="password"
+                  autoComplete="off"
+                  value={secretForm.mpWebhook}
+                  onChange={(e) => setSecretForm((f) => ({ ...f, mpWebhook: e.target.value }))}
+                  placeholder="dejar vacío = no cambiar"
+                />
+              </label>
+              <label>
+                Stripe Secret Key
+                <input
+                  type="password"
+                  autoComplete="off"
+                  value={secretForm.stripeSecret}
+                  onChange={(e) => setSecretForm((f) => ({ ...f, stripeSecret: e.target.value }))}
+                  placeholder="sk_..."
+                />
+              </label>
+              <label>
+                Stripe Webhook Secret
+                <input
+                  type="password"
+                  autoComplete="off"
+                  value={secretForm.stripeWebhook}
+                  onChange={(e) => setSecretForm((f) => ({ ...f, stripeWebhook: e.target.value }))}
+                  placeholder="whsec_..."
+                />
+              </label>
+              <label>
+                Stripe Publishable Key
+                <input
+                  value={secretForm.stripePub}
+                  onChange={(e) => setSecretForm((f) => ({ ...f, stripePub: e.target.value }))}
+                  placeholder="pk_..."
+                />
+              </label>
+              <label>
+                PayPal Email
+                <input
+                  value={secretForm.paypalEmail}
+                  onChange={(e) => setSecretForm((f) => ({ ...f, paypalEmail: e.target.value }))}
+                />
+              </label>
+              <label>
+                PayPal Notify URL
+                <input
+                  value={secretForm.paypalNotify}
+                  onChange={(e) => setSecretForm((f) => ({ ...f, paypalNotify: e.target.value }))}
+                  placeholder="https://tudominio.com/api/donations/webhooks/paypal"
+                />
+              </label>
+              <label>
+                PayPal Return URL
+                <input
+                  value={secretForm.paypalReturn}
+                  onChange={(e) => setSecretForm((f) => ({ ...f, paypalReturn: e.target.value }))}
+                />
+              </label>
+              <label>
+                WCoinC table
+                <input
+                  value={secretForm.wcoincTable}
+                  onChange={(e) => setSecretForm((f) => ({ ...f, wcoincTable: e.target.value }))}
+                  placeholder="CashShopData / T_InGameShop_Point"
+                />
+              </label>
+              <label>
+                WCoinC column
+                <input
+                  value={secretForm.wcoincColumn}
+                  onChange={(e) => setSecretForm((f) => ({ ...f, wcoincColumn: e.target.value }))}
+                />
+              </label>
+              <label>
+                WCoinC user column
+                <input
+                  value={secretForm.wcoincUser}
+                  onChange={(e) => setSecretForm((f) => ({ ...f, wcoincUser: e.target.value }))}
+                />
+              </label>
+            </div>
+            <button type="submit" className="btn btn--primary" style={{ marginTop: '1rem' }}>
+              Guardar integraciones
+            </button>
+          </div>
+        </form>
       )}
 
       {tab === 'gifts' && (

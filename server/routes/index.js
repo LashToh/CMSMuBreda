@@ -82,6 +82,8 @@ admin.put('/settings', adminController.saveSettings);
 admin.get('/accounts/search', adminController.searchAccounts);
 admin.get('/donations/packages', adminController.listDonationPackages);
 admin.post('/donations/packages', adminController.saveDonationPackage);
+admin.get('/secrets', adminController.getSecrets);
+admin.put('/secrets', adminController.saveSecrets);
 admin.get('/discovery/tables', adminController.discoverTables);
 admin.get('/discovery/tables/:table/columns', adminController.discoverColumns);
 router.use('/admin', admin);

@@ -6,6 +6,10 @@ import * as newsService from '../services/newsService.js';
 import * as downloadsService from '../services/downloadsService.js';
 import * as giftCodeService from '../services/giftCodeService.js';
 import * as adminCp from '../services/adminCpService.js';
+import {
+  getSecretsPublicView,
+  saveRuntimeSecretsAndEnv,
+} from '../services/runtimeSecrets.js';
 
 export async function dashboard(req, res, next) {
   try {
@@ -174,6 +178,23 @@ export async function saveDonationPackage(req, res, next) {
   try {
     const item = adminCp.saveDonationPackage(req.body, req.user.username);
     return ok(res, { item }, 'Donation package saved.');
+  } catch (err) {
+    return next(err);
+  }
+}
+
+export async function getSecrets(_req, res, next) {
+  try {
+    return ok(res, getSecretsPublicView());
+  } catch (err) {
+    return next(err);
+  }
+}
+
+export async function saveSecrets(req, res, next) {
+  try {
+    const view = saveRuntimeSecretsAndEnv(req.body, req.user.username);
+    return ok(res, view, 'Integrations saved. Providers update immediately; .env mirrored for restarts.');
   } catch (err) {
     return next(err);
   }

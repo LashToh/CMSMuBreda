@@ -11,9 +11,9 @@ import { notFoundHandler, errorHandler } from './middleware/errorHandler.js';
 import * as donationsController from './controllers/donationsController.js';
 import installRoutes, { serveInstallPage } from './install/routes.js';
 import { isInstalled } from './install/state.js';
-import { loadRuntimeSecretsOnBoot } from './services/runtimeSecrets.js';
+import { loadAdminConfigOnBoot } from './services/adminConfigService.js';
 
-loadRuntimeSecretsOnBoot();
+loadAdminConfigOnBoot();
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const distPath = path.resolve(__dirname, '../dist');

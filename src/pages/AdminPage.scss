@@ -63,5 +63,38 @@
     opacity: 0.7;
     margin: 1rem 0;
     font-family: $font-body;
+
+    &--warn {
+      opacity: 1;
+      color: #e8a090;
+    }
+  }
+
+  &__subtabs {
+    margin: 0 0 1.25rem;
+    flex-wrap: wrap;
+  }
+
+  &__h3 {
+    font-family: $font-display;
+    color: rgba(240, 208, 138, 0.95);
+    margin: 0 0 0.85rem;
+    font-size: 1.05rem;
+    letter-spacing: 0.04em;
+  }
+
+  &__h4 {
+    font-family: $font-body;
+    color: rgba(245, 230, 200, 0.75);
+    margin: 1.1rem 0 0.65rem;
+    font-size: 0.95rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  &__currency-block {
+    margin-bottom: 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid rgba(240, 208, 138, 0.08);
   }
 }

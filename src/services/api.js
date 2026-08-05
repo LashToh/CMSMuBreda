@@ -179,8 +179,16 @@ export async function fetchAdminConfig() {
   return request('/api/admin/config', { auth: true });
 }
 
+export async function fetchAdminConfigFull() {
+  return request('/api/admin/config-full', { auth: true });
+}
+
 export async function saveAdminSettings(payload) {
   return request('/api/admin/settings', { method: 'PUT', body: payload, auth: true });
+}
+
+export async function saveAdminConfigFull(payload) {
+  return request('/api/admin/config-full', { method: 'PUT', body: payload, auth: true });
 }
 
 export async function fetchAdminAccounts(q) {

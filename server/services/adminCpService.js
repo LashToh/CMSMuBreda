@@ -52,6 +52,8 @@ export function getCmsSettings() {
       resetLevel: overrides.server?.resetLevel ?? config.server.resetLevel,
       discordUrl: overrides.server?.discordUrl ?? config.server.discordUrl,
       downloadUrl: overrides.server?.downloadUrl ?? config.server.downloadUrl,
+      instagramUrl: overrides.server?.instagramUrl ?? config.server.instagramUrl,
+      facebookUrl: overrides.server?.facebookUrl ?? config.server.facebookUrl,
     },
     features: {
       ...config.features,

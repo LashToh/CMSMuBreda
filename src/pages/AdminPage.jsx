@@ -7,7 +7,7 @@ import {
   createNewsAdmin,
   deleteNewsAdmin,
   fetchAdminAccounts,
-  fetchAdminConfig,
+  fetchAdminConfigFull,
   fetchAdminDashboard,
   fetchAdminDonationPackages,
   fetchAdminDownloads,
@@ -16,7 +16,7 @@ import {
   saveAdminDonationPackage,
   saveAdminDownload,
   saveAdminSecrets,
-  saveAdminSettings,
+  saveAdminConfigFull,
   fetchAdminSecrets,
 } from '../services/api';
 import './AdminPage.scss';
@@ -32,6 +32,97 @@ const TABS = [
   { id: 'settings', label: 'CMS Settings' },
   { id: 'logs', label: 'Audit Log' },
 ];
+
+const SETTINGS_SECTIONS = [
+  { id: 'general', label: 'General' },
+  { id: 'features', label: 'Features' },
+  { id: 'auth', label: 'Auth / Registration' },
+  { id: 'currencies', label: 'Currencies' },
+  { id: 'tools', label: 'Character tools' },
+  { id: 'security', label: 'Security' },
+  { id: 'schema', label: 'MU Schema' },
+  { id: 'db', label: 'Database' },
+];
+
+const emptyCurrency = () => ({ table: '', column: '', userColumn: '' });
+
+function buildSettingsForm(full) {
+  return {
+    general: {
+      server: {
+        name: full?.general?.server?.name || '',
+        season: full?.general?.server?.season || '',
+        exp: full?.general?.server?.exp || '',
+        masterExp: full?.general?.server?.masterExp || '',
+        drop: full?.general?.server?.drop || '',
+        maxLevel: full?.general?.server?.maxLevel ?? 1750,
+        maxMasterLevel: full?.general?.server?.maxMasterLevel ?? 400,
+        resetLevel: full?.general?.server?.resetLevel ?? 400,
+        discordUrl: full?.general?.server?.discordUrl || '',
+        downloadUrl: full?.general?.server?.downloadUrl || '',
+        instagramUrl: full?.general?.server?.instagramUrl || '',
+        facebookUrl: full?.general?.server?.facebookUrl || '',
+      },
+      corsOrigin: full?.general?.corsOrigin || '',
+      trustProxy: full?.general?.trustProxy ?? 1,
+    },
+    features: { ...(full?.features || {}) },
+    auth: {
+      hashMethod: full?.auth?.hashMethod || 'md5',
+      sha256Salt: '',
+      adminUsernames: full?.auth?.adminUsernames || '',
+      jwtExpiresIn: full?.auth?.jwtExpiresIn || '7d',
+      jwtSecret: '',
+      cookieName: full?.auth?.cookieName || 'mubreda_session',
+      cookieSecure: Boolean(full?.auth?.cookieSecure),
+      cookieSameSite: full?.auth?.cookieSameSite || 'lax',
+      registration: {
+        defaultSnoNumb: full?.auth?.registration?.defaultSnoNumb || '1111111111111',
+        insertViCurrInfo: Boolean(full?.auth?.registration?.insertViCurrInfo),
+        allowDuplicateEmails: Boolean(full?.auth?.registration?.allowDuplicateEmails),
+      },
+    },
+    tools: {
+      unstuckMap: full?.tools?.unstuckMap ?? 0,
+      unstuckX: full?.tools?.unstuckX ?? 125,
+      unstuckY: full?.tools?.unstuckY ?? 125,
+      clearPkLevel: full?.tools?.clearPkLevel ?? 3,
+    },
+    currencies: {
+      credits: { ...emptyCurrency(), ...(full?.currencies?.credits || {}) },
+      wcoinc: { ...emptyCurrency(), column: 'WCoinC', userColumn: 'AccountID', ...(full?.currencies?.wcoinc || {}) },
+      wcoinp: { ...emptyCurrency(), column: 'WCoinP', userColumn: 'AccountID', ...(full?.currencies?.wcoinp || {}) },
+      goblin: {
+        ...emptyCurrency(),
+        column: 'GoblinPoint',
+        userColumn: 'AccountID',
+        ...(full?.currencies?.goblin || {}),
+      },
+    },
+    rateLimit: {
+      windowMs: full?.rateLimit?.windowMs ?? 900000,
+      max: full?.rateLimit?.max ?? 100,
+      authMax: full?.rateLimit?.authMax ?? 10,
+      registerMax: full?.rateLimit?.registerMax ?? 5,
+    },
+    muSchema: {
+      accounts: { ...(full?.muSchema?.accounts || {}) },
+      characters: { ...(full?.muSchema?.characters || {}) },
+      membStat: { ...(full?.muSchema?.membStat || {}) },
+      vip: { ...(full?.muSchema?.vip || {}) },
+    },
+    db: {
+      host: full?.db?.host || '',
+      port: full?.db?.port ?? 1433,
+      user: full?.db?.user || '',
+      password: '',
+      database: full?.db?.database || '',
+      database2: full?.db?.database2 || '',
+      encrypt: Boolean(full?.db?.encrypt),
+      trustServerCertificate: Boolean(full?.db?.trustServerCertificate),
+    },
+  };
+}
 
 export default function AdminPage() {
   const { isAuthenticated, isAdmin, loading: authLoading } = useAuth();
@@ -59,6 +150,8 @@ export default function AdminPage() {
   const [accountQ, setAccountQ] = useState('');
   const [accountResult, setAccountResult] = useState(null);
   const [settings, setSettings] = useState(null);
+  const [settingsMeta, setSettingsMeta] = useState(null);
+  const [settingsSection, setSettingsSection] = useState('general');
   const [packs, setPacks] = useState([]);
   const [packForm, setPackForm] = useState({
     title: '',
@@ -80,9 +173,6 @@ export default function AdminPage() {
     paypalEmail: '',
     paypalNotify: '',
     paypalReturn: '',
-    wcoincTable: '',
-    wcoincColumn: 'WCoinC',
-    wcoincUser: 'AccountID',
   });
 
   const flash = (text) => {
@@ -120,8 +210,9 @@ export default function AdminPage() {
           setDownloads(res.data?.items || []);
         }
         if (tab === 'settings') {
-          const res = await fetchAdminConfig();
-          setSettings(res.data);
+          const res = await fetchAdminConfigFull();
+          setSettingsMeta(res.data);
+          setSettings(buildSettingsForm(res.data));
         }
         if (tab === 'donate') {
           const res = await fetchAdminDonationPackages();
@@ -141,9 +232,6 @@ export default function AdminPage() {
             paypalEmail: res.data?.donations?.paypal?.email || '',
             paypalNotify: res.data?.donations?.paypal?.notifyUrl || '',
             paypalReturn: res.data?.donations?.paypal?.returnUrl || '',
-            wcoincTable: res.data?.currency?.wcoinc?.table || '',
-            wcoincColumn: res.data?.currency?.wcoinc?.column || 'WCoinC',
-            wcoincUser: res.data?.currency?.wcoinc?.userColumn || 'AccountID',
           });
         }
         if (tab === 'logs') {
@@ -227,12 +315,19 @@ export default function AdminPage() {
   const onSaveSettings = async (e) => {
     e.preventDefault();
     try {
-      const res = await saveAdminSettings({
-        server: settings.server,
+      const res = await saveAdminConfigFull({
+        general: settings.general,
         features: settings.features,
+        auth: settings.auth,
+        tools: settings.tools,
+        currencies: settings.currencies,
+        rateLimit: settings.rateLimit,
+        muSchema: settings.muSchema,
+        db: settings.db,
       });
-      setSettings(res.data);
-      flash('CMS settings saved.');
+      setSettingsMeta(res.data);
+      setSettings(buildSettingsForm(res.data));
+      flash('CMS settings saved (live + .env). Reiniciá Node si cambiaste CORS / rate limits / DB.');
     } catch (err) {
       setError(err instanceof ApiError ? err.message : 'Failed.');
     }
@@ -279,13 +374,6 @@ export default function AdminPage() {
             returnUrl: secretForm.paypalReturn,
           },
         },
-        currency: {
-          wcoinc: {
-            table: secretForm.wcoincTable,
-            column: secretForm.wcoincColumn,
-            userColumn: secretForm.wcoincUser,
-          },
-        },
       });
       setSecrets(res.data);
       setSecretForm((f) => ({
@@ -300,9 +388,6 @@ export default function AdminPage() {
         paypalEmail: res.data?.donations?.paypal?.email || '',
         paypalNotify: res.data?.donations?.paypal?.notifyUrl || '',
         paypalReturn: res.data?.donations?.paypal?.returnUrl || '',
-        wcoincTable: res.data?.currency?.wcoinc?.table || '',
-        wcoincColumn: res.data?.currency?.wcoinc?.column || 'WCoinC',
-        wcoincUser: res.data?.currency?.wcoinc?.userColumn || 'AccountID',
       }));
       flash('Integraciones guardadas (solo admin). Los botones Donate se actualizan al toque.');
     } catch (err) {
@@ -728,29 +813,11 @@ export default function AdminPage() {
                   onChange={(e) => setSecretForm((f) => ({ ...f, paypalReturn: e.target.value }))}
                 />
               </label>
-              <label>
-                WCoinC table
-                <input
-                  value={secretForm.wcoincTable}
-                  onChange={(e) => setSecretForm((f) => ({ ...f, wcoincTable: e.target.value }))}
-                  placeholder="CashShopData / T_InGameShop_Point"
-                />
-              </label>
-              <label>
-                WCoinC column
-                <input
-                  value={secretForm.wcoincColumn}
-                  onChange={(e) => setSecretForm((f) => ({ ...f, wcoincColumn: e.target.value }))}
-                />
-              </label>
-              <label>
-                WCoinC user column
-                <input
-                  value={secretForm.wcoincUser}
-                  onChange={(e) => setSecretForm((f) => ({ ...f, wcoincUser: e.target.value }))}
-                />
-              </label>
             </div>
+            <p className="admincp__note">
+              Mapeos de monedas (credits / WCoinC / WCoinP / Goblin) → pestaña{' '}
+              <strong>CMS Settings → Currencies</strong>.
+            </p>
             <button type="submit" className="btn btn--primary" style={{ marginTop: '1rem' }}>
               Guardar integraciones
             </button>
@@ -806,50 +873,602 @@ export default function AdminPage() {
 
       {tab === 'settings' && settings && (
         <form className="cms-panel" onSubmit={onSaveSettings}>
-          <h2 className="admincp__h2">Server info</h2>
+          <h2 className="admincp__h2">CMS Settings</h2>
+          <p className="admincp__note">
+            Hosting: <strong>{settingsMeta?.hosting?.nodeEnv}</strong> · port{' '}
+            <strong>{settingsMeta?.hosting?.port}</strong> · MU mode{' '}
+            <strong>{settingsMeta?.hosting?.muDatabaseMode}</strong> (read-only). Storage:{' '}
+            {settingsMeta?.storage || '—'}. Secretos vacíos = conservar.
+          </p>
+          <div className="cms-tabs admincp__subtabs">
+            {SETTINGS_SECTIONS.map((s) => (
+              <button
+                key={s.id}
+                type="button"
+                className={settingsSection === s.id ? 'is-active' : ''}
+                onClick={() => setSettingsSection(s.id)}
+              >
+                {s.label}
+              </button>
+            ))}
+          </div>
+
           <div className="cms-form" style={{ maxWidth: '100%' }}>
-            <div className="cms-grid cms-grid--2">
-              {['name', 'season', 'exp', 'masterExp', 'drop', 'discordUrl', 'downloadUrl'].map(
-                (key) => (
-                  <label key={key}>
-                    {key}
+            {settingsSection === 'general' && (
+              <>
+                <h3 className="admincp__h3">Server public info</h3>
+                <div className="cms-grid cms-grid--2">
+                  {[
+                    'name',
+                    'season',
+                    'exp',
+                    'masterExp',
+                    'drop',
+                    'discordUrl',
+                    'downloadUrl',
+                    'instagramUrl',
+                    'facebookUrl',
+                  ].map((key) => (
+                    <label key={key}>
+                      {key}
+                      <input
+                        value={settings.general.server?.[key] ?? ''}
+                        onChange={(e) =>
+                          setSettings((s) => ({
+                            ...s,
+                            general: {
+                              ...s.general,
+                              server: { ...s.general.server, [key]: e.target.value },
+                            },
+                          }))
+                        }
+                      />
+                    </label>
+                  ))}
+                  {['maxLevel', 'maxMasterLevel', 'resetLevel'].map((key) => (
+                    <label key={key}>
+                      {key}
+                      <input
+                        type="number"
+                        value={settings.general.server?.[key] ?? ''}
+                        onChange={(e) =>
+                          setSettings((s) => ({
+                            ...s,
+                            general: {
+                              ...s.general,
+                              server: { ...s.general.server, [key]: e.target.value },
+                            },
+                          }))
+                        }
+                      />
+                    </label>
+                  ))}
+                  <label>
+                    CORS_ORIGIN (comma-separated)
                     <input
-                      value={settings.server?.[key] ?? ''}
+                      value={settings.general.corsOrigin}
                       onChange={(e) =>
                         setSettings((s) => ({
                           ...s,
-                          server: { ...s.server, [key]: e.target.value },
+                          general: { ...s.general, corsOrigin: e.target.value },
                         }))
                       }
                     />
                   </label>
-                ),
-              )}
-            </div>
-            <h2 className="admincp__h2">Feature flags</h2>
-            <div className="admincp__flags">
-              {Object.entries(settings.features || {}).map(([key, value]) => (
-                <label key={key} className="admincp__flag">
-                  <input
-                    type="checkbox"
-                    checked={Boolean(value)}
-                    onChange={(e) =>
-                      setSettings((s) => ({
-                        ...s,
-                        features: { ...s.features, [key]: e.target.checked },
-                      }))
-                    }
-                  />
-                  {key}
-                </label>
-              ))}
-            </div>
-            <p className="admincp__note">
-              Hash method: <strong>{settings.hashMethod}</strong> (change via .env / reinstall). MU
-              mode: <strong>{settings.muDatabaseMode}</strong>
-            </p>
-            <button type="submit" className="btn btn--primary">
-              Save settings
+                  <label>
+                    TRUST_PROXY
+                    <input
+                      type="number"
+                      value={settings.general.trustProxy}
+                      onChange={(e) =>
+                        setSettings((s) => ({
+                          ...s,
+                          general: { ...s.general, trustProxy: e.target.value },
+                        }))
+                      }
+                    />
+                  </label>
+                </div>
+                <p className="admincp__note">CORS requiere reinicio de Node para aplicar el middleware.</p>
+              </>
+            )}
+
+            {settingsSection === 'features' && (
+              <>
+                <h3 className="admincp__h3">Feature flags</h3>
+                <div className="admincp__flags">
+                  {Object.entries(settings.features || {}).map(([key, value]) => (
+                    <label key={key} className="admincp__flag">
+                      <input
+                        type="checkbox"
+                        checked={Boolean(value)}
+                        onChange={(e) =>
+                          setSettings((s) => ({
+                            ...s,
+                            features: { ...s.features, [key]: e.target.checked },
+                          }))
+                        }
+                      />
+                      {key}
+                    </label>
+                  ))}
+                </div>
+              </>
+            )}
+
+            {settingsSection === 'auth' && (
+              <>
+                <h3 className="admincp__h3">Hash &amp; admins</h3>
+                <div className="cms-grid cms-grid--2">
+                  <label>
+                    HASH_METHOD
+                    <select
+                      value={settings.auth.hashMethod}
+                      onChange={(e) =>
+                        setSettings((s) => ({
+                          ...s,
+                          auth: { ...s.auth, hashMethod: e.target.value },
+                        }))
+                      }
+                    >
+                      <option value="plain">plain</option>
+                      <option value="md5">md5</option>
+                      <option value="wz_md5">wz_md5</option>
+                      <option value="sha256">sha256</option>
+                    </select>
+                  </label>
+                  <label>
+                    SHA256_SALT{' '}
+                    {settingsMeta?.auth?.sha256Salt?.set
+                      ? `(${settingsMeta.auth.sha256Salt.hint})`
+                      : '(vacío)'}
+                    <input
+                      type="password"
+                      autoComplete="off"
+                      value={settings.auth.sha256Salt}
+                      onChange={(e) =>
+                        setSettings((s) => ({
+                          ...s,
+                          auth: { ...s.auth, sha256Salt: e.target.value },
+                        }))
+                      }
+                      placeholder="dejar vacío = no cambiar"
+                    />
+                  </label>
+                  <label>
+                    ADMIN_USERNAMES (comma-separated)
+                    <input
+                      value={settings.auth.adminUsernames}
+                      onChange={(e) =>
+                        setSettings((s) => ({
+                          ...s,
+                          auth: { ...s.auth, adminUsernames: e.target.value },
+                        }))
+                      }
+                    />
+                  </label>
+                  <label>
+                    DEFAULT_SNO_NUMB
+                    <input
+                      value={settings.auth.registration.defaultSnoNumb}
+                      onChange={(e) =>
+                        setSettings((s) => ({
+                          ...s,
+                          auth: {
+                            ...s.auth,
+                            registration: {
+                              ...s.auth.registration,
+                              defaultSnoNumb: e.target.value,
+                            },
+                          },
+                        }))
+                      }
+                    />
+                  </label>
+                  <label>
+                    INSERT_VI_CURR_INFO
+                    <select
+                      value={settings.auth.registration.insertViCurrInfo ? 'true' : 'false'}
+                      onChange={(e) =>
+                        setSettings((s) => ({
+                          ...s,
+                          auth: {
+                            ...s.auth,
+                            registration: {
+                              ...s.auth.registration,
+                              insertViCurrInfo: e.target.value === 'true',
+                            },
+                          },
+                        }))
+                      }
+                    >
+                      <option value="false">false</option>
+                      <option value="true">true</option>
+                    </select>
+                  </label>
+                  <label>
+                    ALLOW_DUPLICATE_EMAILS
+                    <select
+                      value={settings.auth.registration.allowDuplicateEmails ? 'true' : 'false'}
+                      onChange={(e) =>
+                        setSettings((s) => ({
+                          ...s,
+                          auth: {
+                            ...s.auth,
+                            registration: {
+                              ...s.auth.registration,
+                              allowDuplicateEmails: e.target.value === 'true',
+                            },
+                          },
+                        }))
+                      }
+                    >
+                      <option value="false">false</option>
+                      <option value="true">true</option>
+                    </select>
+                  </label>
+                  <label>
+                    JWT_EXPIRES_IN
+                    <input
+                      value={settings.auth.jwtExpiresIn}
+                      onChange={(e) =>
+                        setSettings((s) => ({
+                          ...s,
+                          auth: { ...s.auth, jwtExpiresIn: e.target.value },
+                        }))
+                      }
+                    />
+                  </label>
+                  <label>
+                    JWT_SECRET (rotar){' '}
+                    {settingsMeta?.auth?.jwtSecret?.set
+                      ? settingsMeta.auth.jwtSecret.hint
+                      : ''}
+                    <input
+                      type="password"
+                      autoComplete="off"
+                      value={settings.auth.jwtSecret}
+                      onChange={(e) =>
+                        setSettings((s) => ({
+                          ...s,
+                          auth: { ...s.auth, jwtSecret: e.target.value },
+                        }))
+                      }
+                      placeholder="vacío = no cambiar — invalida sesiones"
+                    />
+                  </label>
+                  <label>
+                    COOKIE_NAME
+                    <input
+                      value={settings.auth.cookieName}
+                      onChange={(e) =>
+                        setSettings((s) => ({
+                          ...s,
+                          auth: { ...s.auth, cookieName: e.target.value },
+                        }))
+                      }
+                    />
+                  </label>
+                  <label>
+                    COOKIE_SECURE
+                    <select
+                      value={settings.auth.cookieSecure ? 'true' : 'false'}
+                      onChange={(e) =>
+                        setSettings((s) => ({
+                          ...s,
+                          auth: { ...s.auth, cookieSecure: e.target.value === 'true' },
+                        }))
+                      }
+                    >
+                      <option value="false">false</option>
+                      <option value="true">true</option>
+                    </select>
+                  </label>
+                  <label>
+                    COOKIE_SAME_SITE
+                    <select
+                      value={settings.auth.cookieSameSite}
+                      onChange={(e) =>
+                        setSettings((s) => ({
+                          ...s,
+                          auth: { ...s.auth, cookieSameSite: e.target.value },
+                        }))
+                      }
+                    >
+                      <option value="lax">lax</option>
+                      <option value="strict">strict</option>
+                      <option value="none">none</option>
+                    </select>
+                  </label>
+                </div>
+              </>
+            )}
+
+            {settingsSection === 'currencies' && (
+              <>
+                <h3 className="admincp__h3">Currency table mappings</h3>
+                <p className="admincp__note">Tabla vacía = moneda deshabilitada / mock defaults.</p>
+                {['credits', 'wcoinc', 'wcoinp', 'goblin'].map((cur) => (
+                  <div key={cur} className="admincp__currency-block">
+                    <h4 className="admincp__h4">{cur}</h4>
+                    <div className="cms-grid cms-grid--3">
+                      {['table', 'column', 'userColumn'].map((field) => (
+                        <label key={field}>
+                          {field}
+                          <input
+                            value={settings.currencies[cur]?.[field] ?? ''}
+                            onChange={(e) =>
+                              setSettings((s) => ({
+                                ...s,
+                                currencies: {
+                                  ...s.currencies,
+                                  [cur]: { ...s.currencies[cur], [field]: e.target.value },
+                                },
+                              }))
+                            }
+                          />
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </>
+            )}
+
+            {settingsSection === 'tools' && (
+              <>
+                <h3 className="admincp__h3">Character tools defaults</h3>
+                <div className="cms-grid cms-grid--2">
+                  {[
+                    ['unstuckMap', 'UNSTUCK_MAP'],
+                    ['unstuckX', 'UNSTUCK_X'],
+                    ['unstuckY', 'UNSTUCK_Y'],
+                    ['clearPkLevel', 'CLEAR_PK_LEVEL'],
+                  ].map(([key, label]) => (
+                    <label key={key}>
+                      {label}
+                      <input
+                        type="number"
+                        value={settings.tools[key]}
+                        onChange={(e) =>
+                          setSettings((s) => ({
+                            ...s,
+                            tools: { ...s.tools, [key]: e.target.value },
+                          }))
+                        }
+                      />
+                    </label>
+                  ))}
+                </div>
+              </>
+            )}
+
+            {settingsSection === 'security' && (
+              <>
+                <h3 className="admincp__h3">Rate limits</h3>
+                <p className="admincp__note">
+                  Se escriben a .env; el middleware de Express usa los valores al arrancar — reiniciá
+                  Node para aplicar.
+                </p>
+                <div className="cms-grid cms-grid--2">
+                  {[
+                    ['windowMs', 'RATE_LIMIT_WINDOW_MS'],
+                    ['max', 'RATE_LIMIT_MAX'],
+                    ['authMax', 'AUTH_RATE_LIMIT_MAX'],
+                    ['registerMax', 'REGISTER_RATE_LIMIT_MAX'],
+                  ].map(([key, label]) => (
+                    <label key={key}>
+                      {label}
+                      <input
+                        type="number"
+                        value={settings.rateLimit[key]}
+                        onChange={(e) =>
+                          setSettings((s) => ({
+                            ...s,
+                            rateLimit: { ...s.rateLimit, [key]: e.target.value },
+                          }))
+                        }
+                      />
+                    </label>
+                  ))}
+                </div>
+              </>
+            )}
+
+            {settingsSection === 'schema' && (
+              <>
+                <h3 className="admincp__h3">MU Schema (advanced)</h3>
+                <p className="admincp__note">
+                  Solo si tu Season/DB usa nombres distintos. Valores incorrectos rompen login /
+                  rankings.
+                </p>
+                <h4 className="admincp__h4">Accounts (MEMB_INFO)</h4>
+                <div className="cms-grid cms-grid--2">
+                  {Object.keys(settings.muSchema.accounts || {}).map((key) => (
+                    <label key={key}>
+                      {key}
+                      <input
+                        value={settings.muSchema.accounts[key] ?? ''}
+                        onChange={(e) =>
+                          setSettings((s) => ({
+                            ...s,
+                            muSchema: {
+                              ...s.muSchema,
+                              accounts: { ...s.muSchema.accounts, [key]: e.target.value },
+                            },
+                          }))
+                        }
+                      />
+                    </label>
+                  ))}
+                </div>
+                <h4 className="admincp__h4">Characters</h4>
+                <div className="cms-grid cms-grid--2">
+                  {Object.keys(settings.muSchema.characters || {}).map((key) => (
+                    <label key={key}>
+                      {key}
+                      <input
+                        value={settings.muSchema.characters[key] ?? ''}
+                        onChange={(e) =>
+                          setSettings((s) => ({
+                            ...s,
+                            muSchema: {
+                              ...s.muSchema,
+                              characters: { ...s.muSchema.characters, [key]: e.target.value },
+                            },
+                          }))
+                        }
+                      />
+                    </label>
+                  ))}
+                </div>
+                <h4 className="admincp__h4">VIP</h4>
+                <div className="cms-grid cms-grid--2">
+                  {Object.keys(settings.muSchema.vip || {}).map((key) => (
+                    <label key={key}>
+                      {key}
+                      <input
+                        value={settings.muSchema.vip[key] ?? ''}
+                        onChange={(e) =>
+                          setSettings((s) => ({
+                            ...s,
+                            muSchema: {
+                              ...s.muSchema,
+                              vip: { ...s.muSchema.vip, [key]: e.target.value },
+                            },
+                          }))
+                        }
+                      />
+                    </label>
+                  ))}
+                </div>
+              </>
+            )}
+
+            {settingsSection === 'db' && (
+              <>
+                <h3 className="admincp__h3">Database (advanced)</h3>
+                <p className="admincp__note admincp__note--warn">
+                  {settingsMeta?.db?.warning ||
+                    'Cambiar DB_* puede romper la app. Reiniciá Node después.'}
+                </p>
+                <div className="cms-grid cms-grid--2">
+                  <label>
+                    DB_HOST
+                    <input
+                      value={settings.db.host}
+                      onChange={(e) =>
+                        setSettings((s) => ({
+                          ...s,
+                          db: { ...s.db, host: e.target.value },
+                        }))
+                      }
+                    />
+                  </label>
+                  <label>
+                    DB_PORT
+                    <input
+                      type="number"
+                      value={settings.db.port}
+                      onChange={(e) =>
+                        setSettings((s) => ({
+                          ...s,
+                          db: { ...s.db, port: e.target.value },
+                        }))
+                      }
+                    />
+                  </label>
+                  <label>
+                    DB_USER
+                    <input
+                      value={settings.db.user}
+                      onChange={(e) =>
+                        setSettings((s) => ({
+                          ...s,
+                          db: { ...s.db, user: e.target.value },
+                        }))
+                      }
+                    />
+                  </label>
+                  <label>
+                    DB_PASSWORD{' '}
+                    {settingsMeta?.db?.password?.set ? settingsMeta.db.password.hint : '(vacío)'}
+                    <input
+                      type="password"
+                      autoComplete="off"
+                      value={settings.db.password}
+                      onChange={(e) =>
+                        setSettings((s) => ({
+                          ...s,
+                          db: { ...s.db, password: e.target.value },
+                        }))
+                      }
+                      placeholder="dejar vacío = no cambiar"
+                    />
+                  </label>
+                  <label>
+                    DB_DATABASE
+                    <input
+                      value={settings.db.database}
+                      onChange={(e) =>
+                        setSettings((s) => ({
+                          ...s,
+                          db: { ...s.db, database: e.target.value },
+                        }))
+                      }
+                    />
+                  </label>
+                  <label>
+                    DB_DATABASE_2
+                    <input
+                      value={settings.db.database2}
+                      onChange={(e) =>
+                        setSettings((s) => ({
+                          ...s,
+                          db: { ...s.db, database2: e.target.value },
+                        }))
+                      }
+                    />
+                  </label>
+                  <label>
+                    DB_ENCRYPT
+                    <select
+                      value={settings.db.encrypt ? 'true' : 'false'}
+                      onChange={(e) =>
+                        setSettings((s) => ({
+                          ...s,
+                          db: { ...s.db, encrypt: e.target.value === 'true' },
+                        }))
+                      }
+                    >
+                      <option value="false">false</option>
+                      <option value="true">true</option>
+                    </select>
+                  </label>
+                  <label>
+                    DB_TRUST_CERT
+                    <select
+                      value={settings.db.trustServerCertificate ? 'true' : 'false'}
+                      onChange={(e) =>
+                        setSettings((s) => ({
+                          ...s,
+                          db: {
+                            ...s.db,
+                            trustServerCertificate: e.target.value === 'true',
+                          },
+                        }))
+                      }
+                    >
+                      <option value="false">false</option>
+                      <option value="true">true</option>
+                    </select>
+                  </label>
+                </div>
+              </>
+            )}
+
+            <button type="submit" className="btn btn--primary" style={{ marginTop: '1.25rem' }}>
+              Save all settings
             </button>
           </div>
         </form>

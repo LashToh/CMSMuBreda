@@ -9,7 +9,9 @@ import * as adminCp from '../services/adminCpService.js';
 import {
   getSecretsPublicView,
   saveRuntimeSecretsAndEnv,
-} from '../services/runtimeSecrets.js';
+  getFullConfigView,
+  saveFullConfig,
+} from '../services/adminConfigService.js';
 
 export async function dashboard(req, res, next) {
   try {
@@ -150,8 +152,53 @@ export async function configView(_req, res, next) {
 
 export async function saveSettings(req, res, next) {
   try {
-    const settings = adminCp.saveCmsSettings(req.body, req.user.username);
-    return ok(res, settings, 'Settings saved. Restart Node app if env-only values do not apply.');
+    // Prefer full config service (live + .env + admin-secrets.json)
+    const view = saveFullConfig(
+      {
+        server: req.body.server,
+        features: req.body.features,
+        general: req.body.general,
+        auth: req.body.auth,
+        tools: req.body.tools,
+        currencies: req.body.currencies || req.body.currency,
+        rateLimit: req.body.rateLimit,
+        muSchema: req.body.muSchema,
+        db: req.body.db,
+        adminUsernames: req.body.adminUsernames,
+        registration: req.body.registration,
+        hash: req.body.hash,
+      },
+      req.user.username,
+    );
+    return ok(
+      res,
+      {
+        ...adminCp.getCmsSettings(),
+        full: view,
+      },
+      'Settings saved (live + .env). CORS / rate limits / DB pool may need Node restart.',
+    );
+  } catch (err) {
+    return next(err);
+  }
+}
+
+export async function getConfigFull(_req, res, next) {
+  try {
+    return ok(res, getFullConfigView());
+  } catch (err) {
+    return next(err);
+  }
+}
+
+export async function saveConfigFull(req, res, next) {
+  try {
+    const view = saveFullConfig(req.body, req.user.username);
+    return ok(
+      res,
+      view,
+      'Config saved. Most values apply live; CORS / rate limits / DB may need restart.',
+    );
   } catch (err) {
     return next(err);
   }

@@ -78,6 +78,8 @@ admin.get('/giftcodes', adminController.listGiftCodes);
 admin.post('/giftcodes', adminController.createGiftCode);
 admin.get('/logs', adminController.auditLogs);
 admin.get('/config', adminController.configView);
+admin.get('/config-full', adminController.getConfigFull);
+admin.put('/config-full', adminController.saveConfigFull);
 admin.put('/settings', adminController.saveSettings);
 admin.get('/accounts/search', adminController.searchAccounts);
 admin.get('/donations/packages', adminController.listDonationPackages);

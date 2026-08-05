@@ -51,11 +51,22 @@ npm run build
    - News
    - Downloads
    - Donate (paquetes WCoin)
+   - Integrations (Mercado Pago / Stripe / PayPal — secretos enmascarados)
    - Gift Codes
-   - CMS Settings (server info + feature flags)
+   - **CMS Settings** (todo lo configurable post-install):
+     - **General** — info del server, redes, download URL, `CORS_ORIGIN`
+     - **Features** — flags (`ENABLE_*`)
+     - **Auth / Registration** — `HASH_METHOD`, `SHA256_SALT`, `ADMIN_USERNAMES`, registro, JWT, cookies
+     - **Currencies** — mapeos credits / WCoinC / WCoinP / Goblin
+     - **Character tools** — unstuck / clear PK
+     - **Security** — rate limits
+     - **MU Schema** (avanzado) — tablas/columnas
+     - **Database** (avanzado) — `DB_*` con password enmascarado
    - Audit Log
 
-Las keys de Mercado Pago / Stripe / PayPal van en `.env` (secretos), no en el panel.
+La mayoría de variables de `.env` se editan desde AdminCP: se aplican en vivo (cuando aplica), se guardan en `server/data/admin-secrets.json` y se espejan a `.env`. **No editables:** `NODE_ENV`, `PORT` (hosting). CORS / rate limits / pool DB pueden requerir **Restart** de la app Node.
+
+Las keys de pago también van en **AdminCP → Integrations** (recomendado).
 
 ## Frontend + API en el mismo dominio
 

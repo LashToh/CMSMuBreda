@@ -10,8 +10,8 @@ import './Navbar.scss';
 
 const CMS_LINKS = [
   { key: 'home', to: '/' },
-  { key: 'rankings', to: '/rankings' },
   { key: 'news', to: '/news' },
+  { key: 'rankings', to: '/rankings' },
   { key: 'donate', to: '/donate' },
   { key: 'downloads', to: '/downloads' },
 ];

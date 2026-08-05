@@ -1,5 +1,6 @@
 export default {
   nav: {
+    home: 'Home',
     rankings: 'Rankings',
     news: 'News',
     donate: 'Donate',

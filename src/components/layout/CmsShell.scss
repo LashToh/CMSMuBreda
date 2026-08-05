@@ -38,11 +38,32 @@
   text-transform: uppercase;
   color: $color-gold;
   text-decoration: none;
+  transition: color $transition-fast, transform $transition-base, filter $transition-base;
 
   img {
     width: 48px;
     height: 48px;
     object-fit: contain;
+    transition: transform $transition-base, filter $transition-base;
+    filter: drop-shadow(0 1px 4px rgba(0, 0, 0, 0.35));
+  }
+
+  &:hover {
+    color: #fff;
+    transform: scale(1.03);
+
+    img {
+      transform: scale(1.06);
+      filter:
+        drop-shadow(0 1px 4px rgba(0, 0, 0, 0.35))
+        drop-shadow(0 0 12px rgba(240, 208, 138, 0.4))
+        drop-shadow(0 0 18px rgba(198, 23, 23, 0.25))
+        brightness(1.1);
+    }
+  }
+
+  &:active {
+    transform: scale(1.01);
   }
 }
 

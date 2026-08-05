@@ -9,6 +9,7 @@ import LanguageSwitcher from '../LanguageSwitcher';
 import './Navbar.scss';
 
 const CMS_LINKS = [
+  { key: 'home', to: '/' },
   { key: 'rankings', to: '/rankings' },
   { key: 'news', to: '/news' },
   { key: 'donate', to: '/donate' },
@@ -44,7 +45,15 @@ export default function Navbar() {
     <header className={`navbar ${scrolled ? 'navbar--scrolled' : ''}`}>
       <nav className="navbar__inner">
         <div className="navbar__brand">
-          <a href="#hero" className="navbar__logo" onClick={(e) => { e.preventDefault(); handleNav('#hero'); }}>
+          <Link
+            to="/"
+            className="navbar__logo"
+            onClick={() => {
+              setMenuOpen(false);
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }}
+            aria-label={t('nav.home')}
+          >
             <picture>
               <source srcSet="/assets/logo-mubreda.webp" type="image/webp" />
               <img
@@ -56,7 +65,7 @@ export default function Navbar() {
                 decoding="async"
               />
             </picture>
-          </a>
+          </Link>
         </div>
 
         <ul className="navbar__links">

@@ -57,6 +57,24 @@
     display: flex;
     align-items: center;
     flex-shrink: 0;
+    border-radius: 0.25rem;
+    transition: transform $transition-base, filter $transition-base;
+
+    &:hover {
+      transform: scale(1.04);
+
+      .navbar__logo-img {
+        filter:
+          drop-shadow(0 2px 8px rgba(0, 0, 0, 0.35))
+          drop-shadow(0 0 18px rgba(240, 208, 138, 0.35))
+          drop-shadow(0 0 28px rgba(198, 23, 23, 0.22))
+          brightness(1.08);
+      }
+    }
+
+    &:active {
+      transform: scale(1.01);
+    }
   }
 
   &__logo-img {
@@ -66,7 +84,7 @@
     object-fit: contain;
     background: transparent;
     filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.35));
-    transition: height $transition-base;
+    transition: height $transition-base, filter $transition-base;
 
     @media (max-width: $breakpoint-tablet) {
       height: 8.75rem;

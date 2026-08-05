@@ -5,6 +5,7 @@ import LanguageSwitcher from '../LanguageSwitcher';
 import './CmsShell.scss';
 
 const LINKS = [
+  { to: '/', label: 'Home', end: true },
   { to: '/rankings', label: 'Rankings' },
   { to: '/news', label: 'News' },
   { to: '/donate', label: 'Donate' },
@@ -19,14 +20,19 @@ export default function CmsShell() {
     <div className="cms-shell">
       <header className="cms-shell__header">
         <div className="cms-shell__inner">
-          <Link to="/" className="cms-shell__brand">
+          <Link to="/" className="cms-shell__brand" aria-label={t('nav.home')}>
             <img src="/assets/logo-mubreda.webp" alt={t('common.logoAlt')} width={48} height={48} />
             <span>MU Breda</span>
           </Link>
 
           <nav className="cms-shell__nav">
             {LINKS.map((link) => (
-              <NavLink key={link.to} to={link.to} className={({ isActive }) => (isActive ? 'is-active' : '')}>
+              <NavLink
+                key={link.to}
+                to={link.to}
+                end={link.end}
+                className={({ isActive }) => (isActive ? 'is-active' : '')}
+              >
                 {link.label}
               </NavLink>
             ))}

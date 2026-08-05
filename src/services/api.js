@@ -1,4 +1,11 @@
-const API_URL = (import.meta.env.VITE_API_URL || 'http://localhost:3001').replace(/\/$/, '');
+// Empty VITE_API_URL in production = same-origin `/api` (recommended for cPanel).
+const API_URL = (
+  import.meta.env.VITE_API_URL !== undefined && import.meta.env.VITE_API_URL !== ''
+    ? import.meta.env.VITE_API_URL
+    : import.meta.env.PROD
+      ? ''
+      : 'http://localhost:3001'
+).replace(/\/$/, '');
 
 export class ApiError extends Error {
   constructor(message, code, status = 500) {

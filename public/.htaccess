@@ -1,9 +1,20 @@
 # Apache (cPanel) — copied to dist/ on `npm run build`
+# Prefer Node "Setup Node.js App" (app.js) so /api is handled by Express.
+# This file helps when static files are also served by Apache.
 
 <IfModule mod_rewrite.c>
   RewriteEngine On
+
+  # Force HTTPS
   RewriteCond %{HTTPS} !=on
   RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+  # SPA fallback — do not rewrite real files or /api (Node/Passenger)
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteCond %{REQUEST_URI} !^/api/
+  RewriteCond %{REQUEST_URI} !^/install
+  RewriteRule ^ index.html [L]
 </IfModule>
 
 <IfModule mod_headers.c>

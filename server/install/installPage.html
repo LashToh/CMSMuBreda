@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MU Breda CMS — Install</title>
+    <style>
+      :root {
+        --bg: #090909;
+        --panel: rgba(18, 18, 18, 0.9);
+        --gold: #f0d08a;
+        --red: #c61717;
+        --text: #f5e6c8;
+        --muted: rgba(245, 230, 200, 0.65);
+        --border: rgba(240, 208, 138, 0.18);
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: Georgia, 'Times New Roman', serif;
+        color: var(--text);
+        background:
+          radial-gradient(ellipse at top, rgba(109, 0, 0, 0.35), transparent 55%),
+          linear-gradient(180deg, #090909 0%, #1b0000 50%, #090909 100%);
+      }
+      .wrap { max-width: 720px; margin: 0 auto; padding: 2.5rem 1.25rem 4rem; }
+      h1 {
+        font-family: Cinzel, Georgia, serif;
+        color: var(--gold);
+        letter-spacing: 0.06em;
+        margin: 0 0 0.5rem;
+      }
+      .sub { color: var(--muted); margin-bottom: 1.75rem; line-height: 1.5; }
+      .panel {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 1.5rem;
+        backdrop-filter: blur(16px);
+      }
+      label {
+        display: grid;
+        gap: 0.35rem;
+        margin-bottom: 0.9rem;
+        font-size: 0.85rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+      input, select {
+        width: 100%;
+        padding: 0.8rem 0.9rem;
+        border-radius: 6px;
+        border: 1px solid var(--border);
+        background: rgba(9, 9, 9, 0.7);
+        color: var(--text);
+        font-size: 1rem;
+      }
+      .row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.9rem; }
+      @media (max-width: 640px) { .row { grid-template-columns: 1fr; } }
+      button {
+        margin-top: 0.5rem;
+        width: 100%;
+        border: 0;
+        border-radius: 6px;
+        padding: 0.95rem 1rem;
+        background: var(--red);
+        color: #fff;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        cursor: pointer;
+      }
+      button:disabled { opacity: 0.55; cursor: wait; }
+      .msg {
+        margin-top: 1rem;
+        padding: 0.85rem 1rem;
+        border-radius: 6px;
+        display: none;
+      }
+      .msg.show { display: block; }
+      .msg.ok { background: rgba(240, 208, 138, 0.12); border: 1px solid rgba(240, 208, 138, 0.35); color: var(--gold); }
+      .msg.err { background: rgba(198, 23, 23, 0.15); border: 1px solid rgba(198, 23, 23, 0.45); color: #ffb4b4; }
+      .hint { font-size: 0.9rem; color: var(--muted); margin-top: 1rem; line-height: 1.45; }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <h1>MU Breda CMS Install</h1>
+      <p class="sub">
+        Asistente de instalación para cPanel / Node.js. Configura SQL Server, seguridad y admin.
+        Tras instalar, reinicia la aplicación Node en cPanel.
+      </p>
+      <form class="panel" id="form">
+        <div class="row">
+          <label>DB Host<input name="dbHost" required placeholder="IP o hostname SQL" /></label>
+          <label>DB Port<input name="dbPort" value="1433" required /></label>
+        </div>
+        <div class="row">
+          <label>DB Name<input name="dbDatabase" value="MuOnline" required /></label>
+          <label>DB User<input name="dbUser" required /></label>
+        </div>
+        <label>DB Password<input name="dbPassword" type="password" required /></label>
+        <div class="row">
+          <label>
+            Hash method
+            <select name="hashMethod">
+              <option value="md5">md5</option>
+              <option value="plain">plain</option>
+              <option value="wz_md5">wz_md5</option>
+              <option value="sha256">sha256</option>
+            </select>
+          </label>
+          <label>Admin username<input name="adminUsername" value="admin" required /></label>
+        </div>
+        <label>JWT Secret<input name="jwtSecret" required minlength="16" placeholder="mínimo 16 caracteres aleatorios" /></label>
+        <label>Site URL (CORS)<input name="siteUrl" required placeholder="https://tudominio.com" /></label>
+        <label>
+          <span>Probar conexión SQL</span>
+          <select name="testConnection">
+            <option value="true">Sí — probar antes de guardar</option>
+            <option value="false">No — solo guardar .env</option>
+          </select>
+        </label>
+        <button type="submit" id="btn">Instalar</button>
+        <div class="msg" id="msg"></div>
+        <p class="hint">
+          Esto escribe el archivo <code>.env</code> y crea el candado <code>server/data/.installed</code>.
+          No subas secretos a git. Si ya está instalado, este asistente se bloquea.
+        </p>
+      </form>
+    </div>
+    <script>
+      const form = document.getElementById('form');
+      const msg = document.getElementById('msg');
+      const btn = document.getElementById('btn');
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        msg.className = 'msg';
+        msg.textContent = '';
+        btn.disabled = true;
+        const data = Object.fromEntries(new FormData(form).entries());
+        data.testConnection = data.testConnection === 'true';
+        try {
+          const res = await fetch('/api/install', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data),
+          });
+          const json = await res.json().catch(() => ({}));
+          if (!res.ok || !json.success) {
+            throw new Error(json.message || 'Install failed');
+          }
+          msg.className = 'msg show ok';
+          msg.textContent = json.message || 'Installed. Restart the Node app in cPanel, then open the site.';
+          setTimeout(() => { window.location.href = '/'; }, 2500);
+        } catch (err) {
+          msg.className = 'msg show err';
+          msg.textContent = err.message || 'Install failed';
+        } finally {
+          btn.disabled = false;
+        }
+      });
+    </script>
+  </body>
+</html>

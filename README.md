@@ -42,8 +42,24 @@ npm install
 npm run dev:all
 ```
 
-- Frontend: http://localhost:5173  
+- Frontend (CMS): http://localhost:5174  
 - API: http://localhost:3001  
+
+## cPanel install
+
+Yes — there is a WebEngine-style installer at **`/install`**.
+
+Full guide: [docs/CPANEL.md](docs/CPANEL.md)
+
+Short version:
+
+1. Upload project → cPanel **Setup Node.js App** → startup file `app.js`
+2. `npm install && npm run build` → Start app
+3. Open `https://yourdomain.com/install` → SQL + JWT + admin
+4. Restart Node app
+
+Production serves the Vite `dist/` and `/api` from the **same** Node process (best for cPanel).
+
 
 Mock login: **demo** / **demo1234** (also admin when `ADMIN_USERNAMES=demo`)  
 Gift code: **WELCOME21**

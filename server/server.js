@@ -9,6 +9,8 @@ import { closePools } from './db/pool.js';
 import apiRoutes from './routes/index.js';
 import { notFoundHandler, errorHandler } from './middleware/errorHandler.js';
 import * as donationsController from './controllers/donationsController.js';
+import installRoutes, { serveInstallPage } from './install/routes.js';
+import { isInstalled } from './install/state.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const distPath = path.resolve(__dirname, '../dist');
@@ -56,15 +58,26 @@ app.post(
 app.use(express.json({ limit: '32kb' }));
 app.use(cookieParser());
 
+// cPanel / first-time setup (WebEngine-style installer)
+app.get('/install', serveInstallPage);
+app.use('/api/install', installRoutes);
+
 app.use('/api', apiRoutes);
 
-// Production: serve Vite build + SPA fallback (API routes already mounted)
-if (config.isProduction) {
+// Production / cPanel: serve Vite build + SPA fallback (same Node process as API)
+const serveSpa = config.isProduction || process.env.SERVE_SPA === 'true';
+if (serveSpa) {
   app.use(express.static(distPath));
   app.get('*', (req, res, next) => {
-    if (req.path.startsWith('/api')) return next();
-    return res.sendFile(path.join(distPath, 'index.html'));
+    if (req.path.startsWith('/api') || req.path.startsWith('/install')) return next();
+    return res.sendFile(path.join(distPath, 'index.html'), (err) => {
+      if (err) next();
+    });
   });
+}
+
+if (!isInstalled() && config.isProduction) {
+  console.warn('[CMSMuBreda] Not installed yet — open /install to configure SQL + secrets.');
 }
 
 app.use(notFoundHandler);

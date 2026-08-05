@@ -12,6 +12,8 @@ dist-ssr
 coverage
 server/data/*.db
 server/data/cms-local.json
+server/data/.installed
+.ref/
 uploads/*
 !uploads/.gitkeep
 

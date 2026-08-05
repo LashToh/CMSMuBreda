@@ -9,9 +9,10 @@
     "build": "vite build",
     "preview": "vite preview",
     "server": "node server/server.js",
-    "start": "node server/server.js",
+    "start": "node app.js",
     "dev:all": "concurrently \"npm run dev\" \"npm run server\"",
-    "check:server": "node --check server/server.js"
+    "check:server": "node --check server/server.js",
+    "postbuild": "node -e \"console.log('Build OK — on cPanel run Start, then open /install if needed.')\""
   },
   "dependencies": {
     "cookie-parser": "^1.4.7",

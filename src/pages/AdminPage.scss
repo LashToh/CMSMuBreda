@@ -1,0 +1,67 @@
+@use '../styles/variables' as *;
+
+.admincp {
+  &__tabs {
+    margin-bottom: 1.5rem;
+  }
+
+  &__h2 {
+    font-family: $font-display;
+    color: $color-gold;
+    margin: 0 0 1rem;
+    font-size: 1.15rem;
+    letter-spacing: 0.06em;
+  }
+
+  &__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0.75rem;
+
+    li {
+      display: flex;
+      justify-content: space-between;
+      gap: 1rem;
+      align-items: center;
+      padding: 0.75rem 0;
+      border-bottom: 1px solid rgba(240, 208, 138, 0.1);
+
+      span {
+        display: block;
+        opacity: 0.65;
+        font-size: 0.95rem;
+      }
+    }
+  }
+
+  &__flags {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 0.75rem;
+    margin-bottom: 1.25rem;
+  }
+
+  &__flag {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center;
+    gap: 0.55rem;
+    text-transform: none !important;
+    letter-spacing: 0 !important;
+    font-family: $font-body;
+    font-size: 1rem !important;
+    color: rgba(245, 230, 200, 0.85) !important;
+
+    input {
+      width: auto !important;
+    }
+  }
+
+  &__note {
+    opacity: 0.7;
+    margin: 1rem 0;
+    font-family: $font-body;
+  }
+}

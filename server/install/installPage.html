@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>MU Breda CMS — Install</title>
+    <title>MU Breda CMS — Install / AdminCP</title>
     <style>
       :root {
         --bg: #090909;
@@ -24,12 +24,20 @@
           radial-gradient(ellipse at top, rgba(109, 0, 0, 0.35), transparent 55%),
           linear-gradient(180deg, #090909 0%, #1b0000 50%, #090909 100%);
       }
-      .wrap { max-width: 720px; margin: 0 auto; padding: 2.5rem 1.25rem 4rem; }
+      .wrap { max-width: 760px; margin: 0 auto; padding: 2.5rem 1.25rem 4rem; }
       h1 {
         font-family: Cinzel, Georgia, serif;
         color: var(--gold);
         letter-spacing: 0.06em;
         margin: 0 0 0.5rem;
+      }
+      h2 {
+        font-family: Cinzel, Georgia, serif;
+        color: var(--gold);
+        font-size: 1.1rem;
+        margin: 1.5rem 0 0.75rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
       }
       .sub { color: var(--muted); margin-bottom: 1.75rem; line-height: 1.5; }
       .panel {
@@ -89,10 +97,11 @@
     <div class="wrap">
       <h1>MU Breda CMS Install</h1>
       <p class="sub">
-        Asistente de instalación para cPanel / Node.js. Configura SQL Server, seguridad y admin.
-        Tras instalar, reinicia la aplicación Node en cPanel.
+        Crea la cuenta <strong>administrador</strong> (MEMB_INFO) y el acceso al <strong>AdminCP</strong> (/admin),
+        como el panel de WebEngine. Luego reinicia Node en cPanel.
       </p>
       <form class="panel" id="form">
+        <h2>1. SQL Server</h2>
         <div class="row">
           <label>DB Host<input name="dbHost" required placeholder="IP o hostname SQL" /></label>
           <label>DB Port<input name="dbPort" value="1433" required /></label>
@@ -112,22 +121,34 @@
               <option value="sha256">sha256</option>
             </select>
           </label>
-          <label>Admin username<input name="adminUsername" value="admin" required /></label>
+          <label>
+            Probar SQL
+            <select name="testConnection">
+              <option value="true">Sí</option>
+              <option value="false">No</option>
+            </select>
+          </label>
         </div>
+
+        <h2>2. Cuenta AdminCP</h2>
+        <div class="row">
+          <label>Admin username<input name="adminUsername" value="admin" required maxlength="10" /></label>
+          <label>Admin email<input name="adminEmail" type="email" required placeholder="admin@tudominio.com" /></label>
+        </div>
+        <div class="row">
+          <label>Admin password<input name="adminPassword" type="password" required minlength="4" maxlength="20" /></label>
+          <label>Confirm password<input name="adminPasswordConfirm" type="password" required minlength="4" maxlength="20" /></label>
+        </div>
+
+        <h2>3. Seguridad / sitio</h2>
         <label>JWT Secret<input name="jwtSecret" required minlength="16" placeholder="mínimo 16 caracteres aleatorios" /></label>
         <label>Site URL (CORS)<input name="siteUrl" required placeholder="https://tudominio.com" /></label>
-        <label>
-          <span>Probar conexión SQL</span>
-          <select name="testConnection">
-            <option value="true">Sí — probar antes de guardar</option>
-            <option value="false">No — solo guardar .env</option>
-          </select>
-        </label>
-        <button type="submit" id="btn">Instalar</button>
+
+        <button type="submit" id="btn">Instalar y crear Admin</button>
         <div class="msg" id="msg"></div>
         <p class="hint">
-          Esto escribe el archivo <code>.env</code> y crea el candado <code>server/data/.installed</code>.
-          No subas secretos a git. Si ya está instalado, este asistente se bloquea.
+          Se inserta la cuenta en <code>MEMB_INFO</code>, se escribe <code>.env</code> con
+          <code>ADMIN_USERNAMES</code> y se crea el candado. Después: login → <code>/admin</code> = AdminCP.
         </p>
       </form>
     </div>
@@ -154,8 +175,8 @@
             throw new Error(json.message || 'Install failed');
           }
           msg.className = 'msg show ok';
-          msg.textContent = json.message || 'Installed. Restart the Node app in cPanel, then open the site.';
-          setTimeout(() => { window.location.href = '/'; }, 2500);
+          msg.textContent = json.message || 'Installed. Restart Node, then open /login → /admin.';
+          setTimeout(() => { window.location.href = '/login'; }, 2800);
         } catch (err) {
           msg.className = 'msg show err';
           msg.textContent = err.message || 'Install failed';

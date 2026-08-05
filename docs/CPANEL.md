@@ -38,12 +38,24 @@ npm run build
 5. **Start** la aplicación Node.
 
 6. Abrí **`https://tudominio.com/install`**
-   - Completá SQL Server, hash (`md5` típico MuDevs), admin, JWT secret, URL del sitio
+   - Completá SQL Server + hash (`md5` típico MuDevs)
+   - Creá la **cuenta administrador** (usuario, email, password) → se inserta en `MEMB_INFO` y queda en `ADMIN_USERNAMES`
+   - JWT secret + URL del sitio
    - El instalador prueba la DB, escribe `.env` y crea `server/data/.installed`
 
 7. En cPanel → **Restart** la app Node.
 
-8. Entrá al sitio. Login admin = el username que pusiste (debe existir en `MEMB_INFO` o créalo antes).
+8. Entrá a **`/login`** con esa cuenta admin → **`/admin`** = **AdminCP** (estilo WebEngine):
+   - Dashboard
+   - Accounts (búsqueda)
+   - News
+   - Downloads
+   - Donate (paquetes WCoin)
+   - Gift Codes
+   - CMS Settings (server info + feature flags)
+   - Audit Log
+
+Las keys de Mercado Pago / Stripe / PayPal van en `.env` (secretos), no en el panel.
 
 ## Frontend + API en el mismo dominio
 

@@ -105,6 +105,7 @@ const defaultStore = {
   ],
   auditLogs: [],
   passwordResets: [],
+  cmsSettings: { server: {}, features: {} },
   mockAccounts: {},
 };
 

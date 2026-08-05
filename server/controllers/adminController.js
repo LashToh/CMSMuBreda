@@ -5,6 +5,7 @@ import { readStore } from '../data/cmsStore.js';
 import * as newsService from '../services/newsService.js';
 import * as downloadsService from '../services/downloadsService.js';
 import * as giftCodeService from '../services/giftCodeService.js';
+import * as adminCp from '../services/adminCpService.js';
 
 export async function dashboard(req, res, next) {
   try {
@@ -30,10 +31,11 @@ export async function dashboard(req, res, next) {
     return ok(res, {
       stats,
       webshopPurchases: store.shopPurchases.length,
+      donationTransactions: (store.donationTransactions || []).length,
       giftRedemptions: store.giftRedemptions.length,
       newsCount: store.news.length,
       recentAudit: store.auditLogs.slice(0, 20),
-      features: config.features,
+      features: adminCp.getCmsSettings().features,
       mode: config.muDatabaseMode,
     });
   } catch (err) {
@@ -123,12 +125,9 @@ export async function auditLogs(req, res, next) {
 
 export async function configView(_req, res, next) {
   try {
+    const settings = adminCp.getCmsSettings();
     return ok(res, {
-      server: config.server,
-      features: config.features,
-      muDatabaseMode: config.muDatabaseMode,
-      hashMethod: config.hashMethod,
-      // Never expose secrets / DB passwords
+      ...settings,
       schema: {
         accountsTable: config.mu.accounts.table,
         charactersTable: config.mu.characters.table,
@@ -140,6 +139,41 @@ export async function configView(_req, res, next) {
         ),
       },
     });
+  } catch (err) {
+    return next(err);
+  }
+}
+
+export async function saveSettings(req, res, next) {
+  try {
+    const settings = adminCp.saveCmsSettings(req.body, req.user.username);
+    return ok(res, settings, 'Settings saved. Restart Node app if env-only values do not apply.');
+  } catch (err) {
+    return next(err);
+  }
+}
+
+export async function searchAccounts(req, res, next) {
+  try {
+    const result = await adminCp.searchAccounts(req.query.q);
+    return ok(res, result);
+  } catch (err) {
+    return next(err);
+  }
+}
+
+export async function listDonationPackages(req, res, next) {
+  try {
+    return ok(res, { items: adminCp.listDonationPackagesAdmin() });
+  } catch (err) {
+    return next(err);
+  }
+}
+
+export async function saveDonationPackage(req, res, next) {
+  try {
+    const item = adminCp.saveDonationPackage(req.body, req.user.username);
+    return ok(res, { item }, 'Donation package saved.');
   } catch (err) {
     return next(err);
   }

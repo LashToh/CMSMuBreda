@@ -151,12 +151,52 @@ export async function fetchAdminDashboard() {
   return request('/api/admin/dashboard', { auth: true });
 }
 
-export async function createGiftCodeAdmin(payload) {
-  return request('/api/admin/giftcodes', { method: 'POST', body: payload, auth: true });
+export async function fetchAdminNews() {
+  return request('/api/admin/news', { auth: true });
 }
 
 export async function createNewsAdmin(payload) {
   return request('/api/admin/news', { method: 'POST', body: payload, auth: true });
+}
+
+export async function deleteNewsAdmin(id) {
+  return request(`/api/admin/news/${id}`, { method: 'DELETE', auth: true });
+}
+
+export async function fetchAdminDownloads() {
+  return request('/api/admin/downloads', { auth: true });
+}
+
+export async function saveAdminDownload(payload) {
+  return request('/api/admin/downloads', { method: 'POST', body: payload, auth: true });
+}
+
+export async function createGiftCodeAdmin(payload) {
+  return request('/api/admin/giftcodes', { method: 'POST', body: payload, auth: true });
+}
+
+export async function fetchAdminConfig() {
+  return request('/api/admin/config', { auth: true });
+}
+
+export async function saveAdminSettings(payload) {
+  return request('/api/admin/settings', { method: 'PUT', body: payload, auth: true });
+}
+
+export async function fetchAdminAccounts(q) {
+  return request(`/api/admin/accounts/search?q=${encodeURIComponent(q)}`, { auth: true });
+}
+
+export async function fetchAdminDonationPackages() {
+  return request('/api/admin/donations/packages', { auth: true });
+}
+
+export async function saveAdminDonationPackage(payload) {
+  return request('/api/admin/donations/packages', { method: 'POST', body: payload, auth: true });
+}
+
+export async function fetchAdminLogs(limit = 100) {
+  return request(`/api/admin/logs?limit=${limit}`, { auth: true });
 }
 
 export async function checkApiHealth() {

@@ -16,7 +16,12 @@ export default function AccountPage() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
   const [pwd, setPwd] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' });
-  const [mail, setMail] = useState({ currentPassword: '', newEmail: '', confirmEmail: '' });
+  const [mail, setMail] = useState({
+    currentEmail: '',
+    currentPassword: '',
+    newEmail: '',
+    confirmEmail: '',
+  });
   const [giftCode, setGiftCode] = useState('');
   const [msg, setMsg] = useState('');
   const [selectedChar, setSelectedChar] = useState('');
@@ -64,7 +69,12 @@ export default function AccountPage() {
     try {
       const res = await changeEmail(mail);
       setMsg(res.message || 'Email changed.');
-      setMail({ currentPassword: '', newEmail: '', confirmEmail: '' });
+      setMail({
+        currentEmail: '',
+        currentPassword: '',
+        newEmail: '',
+        confirmEmail: '',
+      });
       await load();
       try {
         await refresh();
@@ -230,10 +240,17 @@ export default function AccountPage() {
               >
                 Change Email
               </h2>
-              <p style={{ opacity: 0.7, marginBottom: '1rem' }}>
-                Current: {data.email || '—'}
-              </p>
               <form className="cms-form" onSubmit={onChangeEmail}>
+                <label>
+                  Current Email
+                  <input
+                    type="email"
+                    value={mail.currentEmail}
+                    onChange={(e) => setMail((m) => ({ ...m, currentEmail: e.target.value }))}
+                    autoComplete="email"
+                    required
+                  />
+                </label>
                 <label>
                   Current Password
                   <input
@@ -253,7 +270,7 @@ export default function AccountPage() {
                   />
                 </label>
                 <label>
-                  Confirm Email
+                  Confirm New Email
                   <input
                     type="email"
                     value={mail.confirmEmail}

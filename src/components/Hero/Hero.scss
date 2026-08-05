@@ -166,6 +166,58 @@
     }
   }
 
+  &__server-status {
+    display: inline-flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.55rem 0.85rem;
+    margin: 0 0 $spacing-md;
+    padding: 0.55rem 1rem;
+    border-radius: $radius-sm;
+    border: 1px solid rgba(240, 208, 138, 0.2);
+    background: rgba(9, 9, 9, 0.55);
+    backdrop-filter: blur(12px);
+    font-family: $font-display;
+    font-size: 0.78rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: rgba(245, 230, 200, 0.85);
+
+    @media (max-width: $breakpoint-tablet) {
+      margin-left: auto;
+      margin-right: auto;
+    }
+  }
+
+  &__server-status-dot {
+    width: 0.55rem;
+    height: 0.55rem;
+    border-radius: 50%;
+    background: rgba(245, 230, 200, 0.45);
+    flex-shrink: 0;
+  }
+
+  &__server-status--online &__server-status-dot {
+    background: #3dcc7a;
+    box-shadow: 0 0 10px rgba(61, 204, 122, 0.65);
+  }
+
+  &__server-status--offline &__server-status-dot {
+    background: $color-red-bright;
+    box-shadow: 0 0 10px rgba(198, 23, 23, 0.55);
+  }
+
+  &__server-status--loading &__server-status-dot {
+    background: $color-gold;
+    animation: hero-status-pulse 1.2s ease-in-out infinite;
+  }
+
+  &__server-status-players {
+    color: $color-gold;
+    padding-left: 0.75rem;
+    border-left: 1px solid rgba(240, 208, 138, 0.25);
+  }
+
   &__title {
     display: flex;
     flex-direction: column;
@@ -257,4 +309,9 @@
 @keyframes fadeScroll {
   0%, 100% { opacity: 0.3; }
   50% { opacity: 0.7; }
+}
+
+@keyframes hero-status-pulse {
+  0%, 100% { opacity: 0.45; }
+  50% { opacity: 1; }
 }

@@ -119,8 +119,16 @@ export async function changeEmail(username, input) {
     throw new AppError('Account not found.', { status: 404, code: 'NOT_FOUND' });
   }
 
+  const current = String(input.currentEmail).trim().toLowerCase();
+  if (String(account.email || '').toLowerCase() !== current) {
+    throw new AppError('Current email is incorrect.', {
+      status: 400,
+      code: 'INVALID_EMAIL',
+    });
+  }
+
   const next = String(input.newEmail).trim().toLowerCase();
-  if (String(account.email || '').toLowerCase() === next) {
+  if (current === next) {
     throw new AppError('That is already your email address.', {
       status: 400,
       code: 'EMAIL_UNCHANGED',
@@ -133,5 +141,5 @@ export async function changeEmail(username, input) {
     username,
     meta: { email: next },
   });
-  return { message: 'Email changed successfully.', email: next };
+  return { message: 'Email changed successfully.' };
 }

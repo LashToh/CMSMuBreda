@@ -33,6 +33,7 @@ export const changePasswordSchema = z
 
 export const changeEmailSchema = z
   .object({
+    currentEmail: z.string().trim().email('Invalid email address.').max(50),
     currentPassword: z.string().min(1, 'Current password is required.'),
     newEmail: z.string().trim().email('Invalid email address.').max(50),
     confirmEmail: z.string().trim().email('Invalid email address.').max(50),

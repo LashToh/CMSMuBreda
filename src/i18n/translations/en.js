@@ -22,6 +22,10 @@ export default {
       'Enter MU Breda Season 21. Create your account, download the client, and join the continent.',
     download: 'Download',
     scroll: 'Scroll',
+    serverChecking: 'Checking server…',
+    serverOnline: 'Server Online',
+    serverOffline: 'Server Offline',
+    playersOnline: '{count} players online',
   },
   download: {
     sectionLabel: 'Join the Battle',

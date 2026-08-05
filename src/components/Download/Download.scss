@@ -1,0 +1,121 @@
+@use '../../styles/variables' as *;
+
+.download {
+  @include section-padding;
+  position: relative;
+  overflow: hidden;
+  text-align: center;
+
+  &__bg {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, $color-bg-deep 0%, $color-bg-crimson 50%, $color-bg-deep 100%);
+  }
+
+  &__bg-glow {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 80%;
+    height: 60%;
+    background: radial-gradient(circle, rgba(198, 23, 23, 0.2) 0%, transparent 70%);
+    filter: blur(60px);
+  }
+
+  &__inner {
+    @include container;
+    position: relative;
+    z-index: 3;
+    max-width: 800px;
+  }
+
+  &__title {
+    font-family: $font-display;
+    font-size: clamp(2.5rem, 6vw, 4rem);
+    font-weight: 900;
+    line-height: 1.1;
+    @include gold-text-gradient;
+    margin-bottom: $spacing-md;
+  }
+
+  &__subtitle {
+    font-size: clamp(1.05rem, 2vw, 1.2rem);
+    color: rgba(255, 255, 255, 0.6);
+    line-height: 1.8;
+    margin-bottom: $spacing-lg;
+    max-width: 560px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  &__actions {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.25rem;
+    margin-bottom: $spacing-lg;
+  }
+
+  &__btn-main {
+    font-size: 1rem !important;
+    padding: 1.35rem 3rem !important;
+  }
+
+  &__secondary {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  &__requirements {
+    text-align: left;
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 2rem !important;
+
+    h3 {
+      font-family: $font-display;
+      font-size: 1rem;
+      font-weight: 700;
+      color: $color-gold;
+      margin-bottom: 1.25rem;
+      text-align: center;
+    }
+
+    h4 {
+      font-family: $font-display;
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: $color-red-bright;
+      margin-bottom: 0.75rem;
+    }
+
+    ul {
+      li {
+        font-size: 0.9rem;
+        color: rgba(255, 255, 255, 0.5);
+        padding: 0.25rem 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+
+        &:last-child {
+          border-bottom: none;
+        }
+      }
+    }
+  }
+
+  &__req-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+
+    @media (max-width: $breakpoint-mobile) {
+      grid-template-columns: 1fr;
+      gap: 1.5rem;
+    }
+  }
+}

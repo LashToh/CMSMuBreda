@@ -1,0 +1,214 @@
+@use '../../styles/variables' as *;
+
+.navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: $z-navbar;
+  padding: 1.25rem 0;
+  overflow: visible;
+  transition: all $transition-base;
+
+  &--scrolled {
+    padding: 0.75rem 0;
+    background: rgba(9, 9, 9, 0.85);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(198, 23, 23, 0.15);
+
+    .navbar__logo-img {
+      height: 9rem;
+
+      @media (max-width: $breakpoint-tablet) {
+        height: 6.5rem;
+      }
+
+      @media (max-width: $breakpoint-mobile) {
+        height: 5.5rem;
+      }
+    }
+  }
+
+  &__inner {
+    @include container;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: $spacing-md;
+    min-height: 14rem;
+
+    @media (max-width: $breakpoint-tablet) {
+      min-height: 8.75rem;
+    }
+
+    @media (max-width: $breakpoint-mobile) {
+      min-height: 8.75rem;
+    }
+  }
+
+  &__brand {
+    display: flex;
+    align-items: center;
+    z-index: 10;
+    flex-shrink: 0;
+  }
+
+  &__logo {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+  }
+
+  &__logo-img {
+    display: block;
+    height: 14rem;
+    width: auto;
+    object-fit: contain;
+    background: transparent;
+    filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.35));
+    transition: height $transition-base;
+
+    @media (max-width: $breakpoint-tablet) {
+      height: 8.75rem;
+    }
+
+    @media (max-width: $breakpoint-mobile) {
+      height: 8.75rem;
+    }
+  }
+
+  &__links {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+
+    @media (max-width: $breakpoint-tablet) {
+      display: none;
+    }
+
+    a {
+      font-family: $font-display;
+      font-size: 0.6875rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.7);
+      transition: color $transition-fast;
+      position: relative;
+
+      &::after {
+        content: '';
+        position: absolute;
+        bottom: -4px;
+        left: 0;
+        width: 0;
+        height: 1px;
+        background: $color-red-bright;
+        transition: width $transition-base;
+      }
+
+      &:hover {
+        color: $color-gold;
+
+        &::after {
+          width: 100%;
+        }
+      }
+    }
+  }
+
+  &__cms-link {
+    font-family: $font-display;
+    font-size: 0.75rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: rgba(240, 208, 138, 0.75);
+    text-decoration: none;
+    transition: color $transition-fast;
+
+    &:hover {
+      color: $color-gold;
+    }
+
+    @media (max-width: $breakpoint-tablet) {
+      display: none;
+    }
+  }
+
+  &__actions {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+
+    @media (max-width: $breakpoint-tablet) {
+      display: none;
+    }
+  }
+
+  &__mobile-lang {
+    margin-bottom: 0.5rem;
+  }
+
+  &__register {
+    padding: 0.65rem 1rem;
+    font-size: 0.6875rem;
+  }
+
+  &__cta {
+    white-space: nowrap;
+    flex-shrink: 0;
+
+    @media (max-width: $breakpoint-tablet) {
+      display: none;
+    }
+  }
+
+  &__toggle {
+    display: none;
+    font-size: 1.75rem;
+    color: $color-gold;
+    z-index: 10;
+
+    @media (max-width: $breakpoint-tablet) {
+      display: flex;
+    }
+  }
+
+  &__mobile {
+    position: fixed;
+    inset: 0;
+    background: rgba(9, 9, 9, 0.97);
+    backdrop-filter: blur(30px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: $spacing-lg;
+    z-index: 5;
+
+    .btn--primary {
+      white-space: nowrap;
+    }
+  }
+
+  &__mobile-links {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+
+    a {
+      font-family: $font-display;
+      font-size: 1.5rem;
+      font-weight: 600;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.85);
+      transition: color $transition-fast;
+
+      &:hover {
+        color: $color-gold;
+      }
+    }
+  }
+}

@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 400" fill="none">
+  <defs>
+    <linearGradient id="hMetal" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#E0E0E0"/>
+      <stop offset="50%" stop-color="#B0B0B0"/>
+      <stop offset="100%" stop-color="#808080"/>
+    </linearGradient>
+    <linearGradient id="hGold" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F0D08A"/>
+      <stop offset="100%" stop-color="#C9A84C"/>
+    </linearGradient>
+    <filter id="hGlow">
+      <feGaussianBlur stdDeviation="6" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <radialGradient id="hHoly" cx="50%" cy="30%" r="50%">
+      <stop offset="0%" stop-color="#C61717" stop-opacity="0.3"/>
+      <stop offset="100%" stop-color="#C61717" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <ellipse cx="150" cy="100" rx="100" ry="80" fill="url(#hHoly)"/>
+  <!-- Handle -->
+  <rect x="140" y="130" width="20" height="220" rx="6" fill="#4A3020"/>
+  <rect x="135" y="130" width="30" height="40" rx="4" fill="url(#hGold)"/>
+  <rect x="138" y="320" width="24" height="20" rx="3" fill="url(#hGold)"/>
+  <!-- Wrap detail -->
+  <line x1="145" y1="180" x2="155" y2="180" stroke="url(#hGold)" stroke-width="2"/>
+  <line x1="145" y1="200" x2="155" y2="200" stroke="url(#hGold)" stroke-width="2"/>
+  <line x1="145" y1="220" x2="155" y2="220" stroke="url(#hGold)" stroke-width="2"/>
+  <!-- Hammer head -->
+  <rect x="30" y="60" width="240" height="80" rx="10" fill="url(#hMetal)" stroke="url(#hGold)" stroke-width="3" filter="url(#hGlow)"/>
+  <rect x="40" y="70" width="220" height="60" rx="6" fill="#999" opacity="0.3"/>
+  <!-- Spikes -->
+  <polygon points="30,100 10,70 10,130" fill="url(#hGold)"/>
+  <polygon points="270,100 290,70 290,130" fill="url(#hGold)"/>
+  <!-- Rune engravings -->
+  <rect x="80" y="85" width="8" height="30" rx="1" fill="url(#hGold)" opacity="0.6"/>
+  <rect x="146" y="85" width="8" height="30" rx="1" fill="url(#hGold)" opacity="0.6"/>
+  <rect x="212" y="85" width="8" height="30" rx="1" fill="url(#hGold)" opacity="0.6"/>
+  <!-- Holy aura -->
+  <circle cx="150" cy="100" r="60" fill="none" stroke="#C61717" stroke-width="1" opacity="0.3"/>
+  <circle cx="150" cy="100" r="80" fill="none" stroke="#C61717" stroke-width="0.5" opacity="0.15"/>
+</svg>

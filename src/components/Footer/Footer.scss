@@ -1,0 +1,163 @@
+@use '../../styles/variables' as *;
+
+.footer {
+  background: $color-bg-deep;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  padding: $spacing-lg 0 $spacing-md;
+
+  &__inner {
+    @include container;
+  }
+
+  &__top {
+    display: grid;
+    grid-template-columns: 1.2fr 2fr;
+    gap: $spacing-lg;
+    padding-bottom: $spacing-lg;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+
+    @media (max-width: $breakpoint-tablet) {
+      grid-template-columns: 1fr;
+      gap: $spacing-md;
+    }
+  }
+
+  &__logo-row {
+    display: flex;
+    align-items: center;
+    gap: 1.125rem;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+  }
+
+  &__logo {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+  }
+
+  &__brand-name {
+    font-family: $font-display;
+    font-size: clamp(0.85rem, 2vw, 1rem);
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    @include gold-text-gradient;
+    margin: 0;
+  }
+
+  &__logo-img {
+    display: block;
+    height: 15rem;
+    width: auto;
+    object-fit: contain;
+    background: transparent;
+    filter: drop-shadow(0 2px 10px rgba(0, 0, 0, 0.4));
+
+    @media (max-width: $breakpoint-tablet) {
+      height: 10.5rem;
+    }
+
+    @media (max-width: $breakpoint-mobile) {
+      height: 9rem;
+    }
+  }
+
+  &__tagline {
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.4);
+    line-height: 1.7;
+    max-width: 320px;
+    margin-bottom: 1.25rem;
+  }
+
+  &__social {
+    display: flex;
+    gap: 0.75rem;
+  }
+
+  &__social-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: $radius-sm;
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 1rem;
+    transition: all $transition-fast;
+
+    &:hover {
+      border-color: $color-red-bright;
+      color: $color-gold;
+      box-shadow: $glow-red;
+    }
+  }
+
+  &__links {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: $spacing-md;
+
+    @media (max-width: $breakpoint-mobile) {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  &__link-group {
+    h4 {
+      font-family: $font-display;
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: $color-gold;
+      margin-bottom: 1rem;
+    }
+
+    ul li {
+      margin-bottom: 0.5rem;
+
+      a {
+        font-size: 0.9rem;
+        color: rgba(255, 255, 255, 0.45);
+        transition: color $transition-fast;
+
+        &:hover {
+          color: $color-gold;
+        }
+      }
+    }
+  }
+
+  &__bottom {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding-top: $spacing-md;
+
+    p {
+      font-size: 0.8rem;
+      color: rgba(255, 255, 255, 0.3);
+    }
+  }
+
+  &__bottom-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    width: 100%;
+  }
+
+  &__lang {
+    flex-shrink: 0;
+  }
+
+  &__disclaimer {
+    font-size: 0.75rem !important;
+    font-style: italic;
+  }
+}

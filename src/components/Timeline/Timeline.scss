@@ -1,0 +1,141 @@
+@use '../../styles/variables' as *;
+
+.timeline {
+  @include section-padding;
+  position: relative;
+  overflow: hidden;
+
+  &__bg {
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse at 30% 50%, rgba(109, 0, 0, 0.15) 0%, transparent 60%),
+      $color-bg-dark;
+  }
+
+  &__inner {
+    @include container;
+    position: relative;
+    z-index: 2;
+  }
+
+  &__track {
+    position: relative;
+    max-width: 700px;
+    margin: 0 auto;
+    padding-left: 3rem;
+
+    @media (max-width: $breakpoint-mobile) {
+      padding-left: 2rem;
+    }
+  }
+
+  &__line {
+    position: absolute;
+    left: 0.65rem;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: linear-gradient(to bottom, transparent, $color-red-dark, $color-red-bright, $color-red-dark, transparent);
+  }
+
+  &__event {
+    position: relative;
+    margin-bottom: 2.5rem;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+
+    &--active {
+      .timeline__dot {
+        background: $color-red-bright;
+        box-shadow: $glow-red;
+        border-color: $color-red-bright;
+      }
+
+      .timeline__card {
+        border-color: rgba(198, 23, 23, 0.4);
+      }
+    }
+  }
+
+  &__dot {
+    position: absolute;
+    left: -2.35rem;
+    top: 1.5rem;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: $color-bg-dark;
+    border: 2px solid $color-red-dark;
+    z-index: 2;
+    transition: all $transition-base;
+
+    @media (max-width: $breakpoint-mobile) {
+      left: -1.35rem;
+    }
+  }
+
+  &__dot-pulse {
+    position: absolute;
+    inset: -6px;
+    border-radius: 50%;
+    border: 2px solid $color-red-bright;
+    animation: dotPulse 2s ease-in-out infinite;
+  }
+
+  &__card {
+    position: relative;
+    padding: 1.75rem !important;
+  }
+
+  &__label {
+    font-family: $font-display;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: $color-red-bright;
+    display: block;
+    margin-bottom: 0.5rem;
+
+    &--tba {
+      color: rgba(255, 255, 255, 0.45);
+    }
+  }
+
+  &__title {
+    font-family: $font-display;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: $color-gold;
+    margin-bottom: 0.5rem;
+  }
+
+  &__desc {
+    font-size: 0.95rem;
+    line-height: 1.7;
+    color: rgba(255, 255, 255, 0.55);
+  }
+
+  &__badge {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    font-family: $font-display;
+    font-size: 0.6rem;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    padding: 0.3rem 0.7rem;
+    background: linear-gradient(135deg, $color-red-dark, $color-red-bright);
+    border-radius: $radius-sm;
+    color: #fff;
+  }
+}
+
+@keyframes dotPulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.5); opacity: 0; }
+}

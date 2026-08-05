@@ -1,0 +1,40 @@
+@use '../../styles/variables' as *;
+
+.lang-switcher {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.2rem;
+  border-radius: $radius-sm;
+  border: 1px solid rgba(240, 208, 138, 0.15);
+  background: rgba(18, 18, 18, 0.6);
+
+  &__btn {
+    font-family: $font-display;
+    font-size: 0.625rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 0.35rem 0.55rem;
+    border-radius: 2px;
+    color: rgba(255, 255, 255, 0.55);
+    transition: color $transition-fast, background $transition-fast, box-shadow $transition-fast;
+
+    &:hover {
+      color: $color-gold;
+    }
+
+    &--active {
+      color: $color-gold;
+      background: rgba(198, 23, 23, 0.25);
+      box-shadow: inset 0 0 0 1px rgba(240, 208, 138, 0.2);
+    }
+  }
+
+  &--compact {
+    .lang-switcher__btn {
+      padding: 0.3rem 0.45rem;
+      font-size: 0.5625rem;
+    }
+  }
+}

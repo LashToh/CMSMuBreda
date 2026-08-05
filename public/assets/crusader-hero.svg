@@ -1,0 +1,85 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 700" fill="none">
+  <defs>
+    <linearGradient id="armorGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#C0C0C0"/>
+      <stop offset="50%" stop-color="#E8E8E8"/>
+      <stop offset="100%" stop-color="#909090"/>
+    </linearGradient>
+    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F0D08A"/>
+      <stop offset="50%" stop-color="#FFF5DC"/>
+      <stop offset="100%" stop-color="#C9A84C"/>
+    </linearGradient>
+    <linearGradient id="capeGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#C61717"/>
+      <stop offset="100%" stop-color="#6D0000"/>
+    </linearGradient>
+    <radialGradient id="glowGrad" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#C61717" stop-opacity="0.4"/>
+      <stop offset="100%" stop-color="#C61717" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="4" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <!-- Background glow -->
+  <ellipse cx="250" cy="400" rx="200" ry="250" fill="url(#glowGrad)"/>
+
+  <!-- Cape -->
+  <path d="M180 180 Q250 160 320 180 L340 450 Q250 480 160 450 Z" fill="url(#capeGrad)" opacity="0.9"/>
+  <path d="M190 200 Q250 190 310 200 L325 420 Q250 440 175 420 Z" fill="#1B0000" opacity="0.3"/>
+
+  <!-- Legs -->
+  <rect x="210" y="420" width="35" height="120" rx="8" fill="url(#armorGrad)"/>
+  <rect x="255" y="420" width="35" height="120" rx="8" fill="url(#armorGrad)"/>
+  <rect x="205" y="530" width="45" height="25" rx="4" fill="url(#goldGrad)"/>
+  <rect x="250" y="530" width="45" height="25" rx="4" fill="url(#goldGrad)"/>
+
+  <!-- Body armor -->
+  <path d="M195 200 L305 200 L320 280 L310 420 L190 420 L180 280 Z" fill="url(#armorGrad)"/>
+  <path d="M220 220 L280 220 L275 380 L225 380 Z" fill="#A0A0A0" opacity="0.5"/>
+  <!-- Cross emblem -->
+  <rect x="240" y="250" width="20" height="60" rx="2" fill="url(#goldGrad)"/>
+  <rect x="225" y="270" width="50" height="15" rx="2" fill="url(#goldGrad)"/>
+
+  <!-- Shoulder pads -->
+  <ellipse cx="190" cy="210" rx="30" ry="20" fill="url(#armorGrad)" transform="rotate(-15 190 210)"/>
+  <ellipse cx="310" cy="210" rx="30" ry="20" fill="url(#armorGrad)" transform="rotate(15 310 210)"/>
+  <ellipse cx="190" cy="210" rx="20" ry="12" fill="url(#goldGrad)" opacity="0.6" transform="rotate(-15 190 210)"/>
+  <ellipse cx="310" cy="210" rx="20" ry="12" fill="url(#goldGrad)" opacity="0.6" transform="rotate(15 310 210)"/>
+
+  <!-- Helmet -->
+  <ellipse cx="250" cy="155" rx="45" ry="50" fill="url(#armorGrad)"/>
+  <path d="M210 140 Q250 110 290 140 L285 170 Q250 160 215 170 Z" fill="url(#goldGrad)"/>
+  <rect x="235" y="145" width="30" height="8" rx="2" fill="#333" opacity="0.6"/>
+  <!-- Helmet crest -->
+  <path d="M250 105 L260 130 L250 125 L240 130 Z" fill="url(#goldGrad)"/>
+
+  <!-- Shield (left arm) -->
+  <g transform="translate(120, 250) rotate(-10)">
+    <path d="M0 0 L60 0 L60 100 Q30 130 0 100 Z" fill="url(#armorGrad)" stroke="url(#goldGrad)" stroke-width="3" filter="url(#glow)"/>
+    <path d="M15 15 L45 15 L45 85 Q30 105 15 85 Z" fill="#1B0000" opacity="0.4"/>
+    <rect x="25" y="35" width="10" height="35" fill="url(#goldGrad)"/>
+    <rect x="18" y="50" width="24" height="8" fill="url(#goldGrad)"/>
+  </g>
+
+  <!-- War Hammer (right arm) -->
+  <g transform="translate(340, 180) rotate(25)">
+    <!-- Handle -->
+    <rect x="18" y="40" width="12" height="180" rx="4" fill="#5C3A1E"/>
+    <rect x="16" y="40" width="16" height="30" rx="2" fill="url(#goldGrad)"/>
+    <!-- Hammer head -->
+    <rect x="-30" y="10" width="100" height="45" rx="6" fill="url(#armorGrad)" stroke="url(#goldGrad)" stroke-width="2" filter="url(#glow)"/>
+    <rect x="-25" y="15" width="90" height="35" rx="4" fill="#B0B0B0" opacity="0.4"/>
+    <!-- Spikes -->
+    <polygon points="-30,32 -40,22 -40,42" fill="url(#goldGrad)"/>
+    <polygon points="70,32 80,22 80,42" fill="url(#goldGrad)"/>
+    <!-- Holy glow on hammer -->
+    <ellipse cx="20" cy="32" rx="50" ry="30" fill="#C61717" opacity="0.15"/>
+  </g>
+
+  <!-- Ground shadow -->
+  <ellipse cx="250" cy="680" rx="120" ry="15" fill="#000" opacity="0.4"/>
+</svg>

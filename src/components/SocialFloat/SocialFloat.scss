@@ -1,0 +1,163 @@
+@use '../../styles/variables' as *;
+
+@keyframes social-float-glow {
+  0%,
+  100% {
+    box-shadow:
+      0 0 28px rgba(198, 23, 23, 0.55),
+      0 0 48px rgba(240, 208, 138, 0.2),
+      0 12px 36px rgba(0, 0, 0, 0.55),
+      inset 0 0 24px rgba(198, 23, 23, 0.12);
+  }
+
+  50% {
+    box-shadow:
+      0 0 40px rgba(198, 23, 23, 0.75),
+      0 0 64px rgba(240, 208, 138, 0.35),
+      0 12px 36px rgba(0, 0, 0, 0.55),
+      inset 0 0 32px rgba(198, 23, 23, 0.18);
+  }
+}
+
+.social-float {
+  position: fixed;
+  left: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 950;
+  pointer-events: none;
+
+  &__list {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.875rem;
+    list-style: none;
+    margin: 0;
+    padding: 0.5rem 0;
+    position: relative;
+
+    &::before {
+      content: '';
+      position: absolute;
+      left: 50%;
+      top: 0.75rem;
+      bottom: 0.75rem;
+      width: 2px;
+      transform: translateX(-50%);
+      background: linear-gradient(
+        to bottom,
+        transparent 0%,
+        rgba(240, 208, 138, 0.18) 12%,
+        rgba(198, 23, 23, 0.45) 50%,
+        rgba(240, 208, 138, 0.18) 88%,
+        transparent 100%
+      );
+      border-radius: 1px;
+      pointer-events: none;
+      z-index: 0;
+    }
+  }
+
+  &__link {
+    pointer-events: auto;
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 3.625rem;
+    height: 3.625rem;
+    background: rgba(12, 12, 12, 0.78);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 2px solid rgba(240, 208, 138, 0.22);
+    border-radius: $radius-md;
+    color: rgba(255, 255, 255, 0.65);
+    font-size: 1.45rem;
+    box-shadow:
+      0 0 24px rgba(198, 23, 23, 0.35),
+      0 10px 32px rgba(0, 0, 0, 0.55),
+      inset 0 0 20px rgba(198, 23, 23, 0.06);
+    transition:
+      color $transition-fast,
+      border-color $transition-fast,
+      box-shadow $transition-fast,
+      transform $transition-fast,
+      background $transition-fast;
+
+    &:hover,
+    &:focus-visible {
+      color: $color-gold;
+      border-color: rgba(198, 23, 23, 0.7);
+      transform: scale(1.1);
+      outline: none;
+      animation: social-float-glow 2.4s ease-in-out infinite;
+    }
+
+    &:focus-visible {
+      box-shadow:
+        0 0 28px rgba(198, 23, 23, 0.55),
+        0 0 48px rgba(240, 208, 138, 0.2),
+        0 0 0 2px rgba(240, 208, 138, 0.45);
+    }
+
+    &--discord:hover,
+    &--discord:focus-visible {
+      color: #7289da;
+      border-color: rgba(88, 101, 242, 0.75);
+      background: rgba(88, 101, 242, 0.12);
+      animation-name: social-float-glow;
+    }
+
+    &--instagram:hover,
+    &--instagram:focus-visible {
+      color: #e1306c;
+      border-color: rgba(225, 48, 108, 0.65);
+      background: linear-gradient(
+        135deg,
+        rgba(131, 58, 180, 0.14) 0%,
+        rgba(225, 48, 108, 0.12) 50%,
+        rgba(247, 119, 55, 0.1) 100%
+      );
+    }
+
+    &--facebook:hover,
+    &--facebook:focus-visible {
+      color: #4da3ff;
+      border-color: rgba(24, 119, 242, 0.7);
+      background: rgba(24, 119, 242, 0.12);
+    }
+  }
+
+  @media (max-width: $breakpoint-mobile) {
+    left: 0.75rem;
+    top: auto;
+    bottom: 1.25rem;
+    transform: none;
+
+    &__list {
+      flex-direction: row;
+      gap: 0.625rem;
+      padding: 0;
+
+      &::before {
+        display: none;
+      }
+    }
+
+    &__link {
+      width: 2.875rem;
+      height: 2.875rem;
+      font-size: 1.2rem;
+      border-width: 1.5px;
+      border-radius: $radius-sm;
+
+      &:hover,
+      &:focus-visible {
+        transform: scale(1.08);
+        animation-duration: 3s;
+      }
+    }
+  }
+}

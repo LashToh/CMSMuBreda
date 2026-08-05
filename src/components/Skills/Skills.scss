@@ -1,0 +1,160 @@
+@use '../../styles/variables' as *;
+
+.skills {
+  @include section-padding;
+  position: relative;
+  overflow: hidden;
+
+  &__bg {
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse at 50% 0%, rgba(109, 0, 0, 0.2) 0%, transparent 60%),
+      $color-bg-dark;
+  }
+
+  &__inner {
+    @include container;
+    position: relative;
+    z-index: 2;
+  }
+
+  &__grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+    max-width: 960px;
+    margin: 0 auto;
+
+    @media (max-width: $breakpoint-mobile) {
+      grid-template-columns: 1fr;
+      max-width: none;
+    }
+  }
+
+  &__card {
+    position: relative;
+    overflow: hidden;
+    padding: 1.75rem !important;
+    display: flex;
+    flex-direction: column;
+  }
+
+  &__card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+  }
+
+  &__card-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    border-radius: $radius-sm;
+    background: rgba(0, 0, 0, 0.35);
+    border: 1px solid rgba(198, 23, 23, 0.25);
+    filter: drop-shadow(0 0 10px rgba(198, 23, 23, 0.3));
+
+    img {
+      display: block;
+      width: auto;
+      height: 1.75rem;
+      object-fit: contain;
+      image-rendering: pixelated;
+    }
+  }
+
+  &__card-type {
+    font-family: $font-display;
+    font-size: 0.6rem;
+    font-weight: 600;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: $color-red-bright;
+    padding: 0.25rem 0.6rem;
+    border: 1px solid rgba(198, 23, 23, 0.3);
+    border-radius: $radius-sm;
+  }
+
+  &__card-name {
+    font-family: $font-display;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: $color-gold;
+    margin-bottom: 0.35rem;
+  }
+
+  &__card-req {
+    font-family: $font-display;
+    font-size: 0.65rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: $color-red-bright;
+    margin-bottom: 0.75rem;
+  }
+
+  &__card-desc {
+    font-size: 0.95rem;
+    line-height: 1.7;
+    color: rgba(255, 255, 255, 0.55);
+    flex: 1;
+  }
+
+  &__card-preview {
+    margin-top: auto;
+    padding-top: 1rem;
+    overflow: hidden;
+    position: relative;
+    z-index: 2;
+  }
+
+  &__card-preview-img {
+    display: block;
+    width: 100%;
+    height: auto;
+    max-height: 180px;
+    object-fit: cover;
+    object-position: center top;
+    border-radius: $radius-md;
+    border: 1px solid rgba(198, 23, 23, 0.35);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.55);
+  }
+
+  &__borrowed {
+    margin-top: $spacing-lg;
+    text-align: center;
+  }
+
+  &__borrowed-label {
+    font-family: $font-display;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.4);
+    display: block;
+    margin-bottom: 1rem;
+  }
+
+  &__borrowed-list {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.5rem;
+
+    li {
+      font-family: $font-display;
+      font-size: 0.7rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 0.4rem 0.9rem;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: $radius-sm;
+      color: rgba(255, 255, 255, 0.5);
+    }
+  }
+}

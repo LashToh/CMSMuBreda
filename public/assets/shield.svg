@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 350" fill="none">
+  <defs>
+    <linearGradient id="sMetal" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#D8D8D8"/>
+      <stop offset="50%" stop-color="#A8A8A8"/>
+      <stop offset="100%" stop-color="#787878"/>
+    </linearGradient>
+    <linearGradient id="sGold" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F0D08A"/>
+      <stop offset="100%" stop-color="#C9A84C"/>
+    </linearGradient>
+    <filter id="sGlow">
+      <feGaussianBlur stdDeviation="5" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <radialGradient id="sHoly" cx="50%" cy="40%" r="50%">
+      <stop offset="0%" stop-color="#F0D08A" stop-opacity="0.2"/>
+      <stop offset="100%" stop-color="#F0D08A" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <ellipse cx="140" cy="150" rx="120" ry="130" fill="url(#sHoly)"/>
+  <!-- Shield body -->
+  <path d="M40 40 L240 40 L240 220 Q140 300 40 220 Z" fill="url(#sMetal)" stroke="url(#sGold)" stroke-width="4" filter="url(#sGlow)"/>
+  <!-- Inner field -->
+  <path d="M60 55 L220 55 L220 210 Q140 275 60 210 Z" fill="#1B0000" opacity="0.35"/>
+  <!-- Cross emblem -->
+  <rect x="125" y="90" width="30" height="90" rx="3" fill="url(#sGold)"/>
+  <rect x="100" y="120" width="80" height="22" rx="3" fill="url(#sGold)"/>
+  <!-- Corner ornaments -->
+  <circle cx="70" cy="70" r="8" fill="url(#sGold)" opacity="0.7"/>
+  <circle cx="210" cy="70" r="8" fill="url(#sGold)" opacity="0.7"/>
+  <circle cx="140" cy="250" r="8" fill="url(#sGold)" opacity="0.7"/>
+  <!-- Handle -->
+  <rect x="120" y="260" width="40" height="60" rx="6" fill="#4A3020"/>
+  <rect x="115" y="310" width="50" height="15" rx="4" fill="url(#sGold)"/>
+  <!-- Light rays -->
+  <line x1="140" y1="30" x2="140" y2="10" stroke="#F0D08A" stroke-width="1" opacity="0.4"/>
+  <line x1="100" y1="40" x2="85" y2="20" stroke="#F0D08A" stroke-width="1" opacity="0.3"/>
+  <line x1="180" y1="40" x2="195" y2="20" stroke="#F0D08A" stroke-width="1" opacity="0.3"/>
+</svg>

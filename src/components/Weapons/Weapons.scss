@@ -1,0 +1,271 @@
+@use '../../styles/variables' as *;
+
+.weapons {
+  @include section-padding;
+  background: $color-bg-deep;
+  position: relative;
+
+  &__inner {
+    @include container;
+  }
+
+  &__grid {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-lg;
+  }
+
+  &__card {
+    position: relative;
+    transition: transform 0.15s ease;
+    transform-style: preserve-3d;
+    will-change: transform;
+
+    &--left .weapons__card-inner {
+      flex-direction: row;
+
+      @media (max-width: $breakpoint-tablet) {
+        flex-direction: column;
+      }
+    }
+
+    &--right .weapons__card-inner {
+      flex-direction: row-reverse;
+
+      @media (max-width: $breakpoint-tablet) {
+        flex-direction: column;
+      }
+    }
+  }
+
+  &__card-inner {
+    @include glass-panel;
+    border-radius: $radius-lg;
+    display: flex;
+    align-items: stretch;
+    gap: $spacing-lg;
+    padding: $spacing-lg;
+    position: relative;
+    overflow: hidden;
+
+    @media (max-width: $breakpoint-tablet) {
+      padding: $spacing-md;
+      gap: $spacing-md;
+    }
+  }
+
+  &__card-visual {
+    flex: 0 0 300px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    @media (max-width: $breakpoint-tablet) {
+      flex: none;
+      width: 100%;
+    }
+  }
+
+  &__card-visual-frame {
+    width: 100%;
+    min-height: 280px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+    border-radius: $radius-md;
+    background:
+      radial-gradient(ellipse at 50% 40%, rgba(198, 23, 23, 0.12) 0%, transparent 65%),
+      linear-gradient(180deg, rgba(8, 8, 8, 0.95) 0%, rgba(18, 12, 12, 0.9) 100%);
+    border: 1px solid rgba(240, 208, 138, 0.25);
+    box-shadow:
+      inset 0 0 40px rgba(0, 0, 0, 0.5),
+      0 12px 32px rgba(0, 0, 0, 0.35);
+
+    img {
+      width: auto;
+      height: auto;
+      max-width: 100%;
+      max-height: 220px;
+      object-fit: contain;
+      filter: drop-shadow(0 8px 24px rgba(0, 0, 0, 0.6));
+      transition: transform $transition-base;
+    }
+  }
+
+  &__card:hover &__card-visual-frame img {
+    transform: scale(1.04);
+  }
+
+  &__tiers {
+    margin-top: $spacing-md;
+    padding-top: $spacing-sm;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  &__tiers-label {
+    display: block;
+    font-family: $font-display;
+    font-size: 0.65rem;
+    font-weight: 600;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.45);
+    margin-bottom: 0.75rem;
+  }
+
+  &__tiers-scroll {
+    display: flex;
+    gap: 0.65rem;
+    overflow-x: auto;
+    padding-bottom: 0.5rem;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(198, 23, 23, 0.4) transparent;
+
+    &::-webkit-scrollbar {
+      height: 4px;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background: rgba(198, 23, 23, 0.4);
+      border-radius: 2px;
+    }
+  }
+
+  &__tier {
+    flex: 0 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.45rem;
+    width: 88px;
+    padding: 0.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: $radius-sm;
+    background: rgba(12, 12, 12, 0.85);
+    cursor: pointer;
+    transition: all $transition-fast;
+
+    &:hover,
+    &--active {
+      border-color: $color-gold;
+      background: rgba(198, 23, 23, 0.18);
+      box-shadow: 0 0 12px rgba(198, 23, 23, 0.25);
+
+      .weapons__tier-name {
+        color: $color-gold;
+      }
+    }
+
+    &--active {
+      box-shadow: 0 0 16px rgba(240, 208, 138, 0.2);
+    }
+  }
+
+  &__tier-thumb {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 64px;
+    height: 64px;
+    border-radius: $radius-sm;
+    background: rgba(0, 0, 0, 0.55);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+
+    img {
+      width: 52px;
+      height: 52px;
+      object-fit: contain;
+      filter: none;
+    }
+  }
+
+  &__tier-name {
+    font-size: 0.58rem;
+    line-height: 1.25;
+    text-align: center;
+    color: rgba(255, 255, 255, 0.7);
+    font-family: $font-display;
+    letter-spacing: 0.02em;
+  }
+
+  &__card-content {
+    flex: 1;
+    min-width: 0;
+  }
+
+  &__card-subtitle {
+    font-family: $font-display;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: $color-red-bright;
+    display: block;
+    margin-bottom: 0.5rem;
+  }
+
+  &__card-title {
+    font-family: $font-display;
+    font-size: clamp(1.5rem, 3vw, 2.25rem);
+    font-weight: 700;
+    @include gold-text-gradient;
+    margin-bottom: $spacing-sm;
+  }
+
+  &__card-desc {
+    font-size: 1.05rem;
+    line-height: 1.8;
+    color: rgba(255, 255, 255, 0.6);
+    margin-bottom: $spacing-md;
+  }
+
+  &__card-stats {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.65rem;
+
+    @media (max-width: $breakpoint-sm) {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  &__stat {
+    padding: 0.65rem 0.85rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: $radius-sm;
+    background: rgba(0, 0, 0, 0.35);
+
+    dt {
+      font-family: $font-display;
+      font-size: 0.58rem;
+      font-weight: 600;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.45);
+      margin-bottom: 0.25rem;
+    }
+
+    dd {
+      font-family: $font-display;
+      font-size: 0.85rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      color: rgba(255, 255, 255, 0.9);
+      margin: 0;
+    }
+
+    &--highlight {
+      border-color: rgba(240, 208, 138, 0.35);
+      background: rgba(198, 23, 23, 0.12);
+
+      dt {
+        color: $color-gold;
+      }
+
+      dd {
+        color: $color-gold;
+      }
+    }
+  }
+}

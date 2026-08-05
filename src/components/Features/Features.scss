@@ -1,0 +1,83 @@
+@use '../../styles/variables' as *;
+
+.features {
+  @include section-padding;
+  background: linear-gradient(180deg, $color-bg-dark 0%, $color-bg-deep 100%);
+
+  &__inner {
+    @include container;
+  }
+
+  &__grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+
+    @media (max-width: $breakpoint-tablet) {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    @media (max-width: $breakpoint-mobile) {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  &__card {
+    position: relative;
+    padding: 2rem !important;
+    overflow: hidden;
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, $color-red-bright, transparent);
+      opacity: 0;
+      transition: opacity $transition-base;
+    }
+
+    &:hover::before {
+      opacity: 1;
+    }
+  }
+
+  &__card-icon {
+    font-size: 2.5rem;
+    color: $color-red-bright;
+    margin-bottom: 1.25rem;
+    filter: drop-shadow(0 0 15px rgba(198, 23, 23, 0.3));
+    transition: transform $transition-base;
+
+    .features__card:hover & {
+      transform: scale(1.1);
+    }
+  }
+
+  &__card-title {
+    font-family: $font-display;
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: $color-gold;
+    margin-bottom: 0.75rem;
+  }
+
+  &__card-desc {
+    font-size: 0.95rem;
+    line-height: 1.7;
+    color: rgba(255, 255, 255, 0.55);
+  }
+
+  &__card-number {
+    position: absolute;
+    bottom: 1rem;
+    right: 1.25rem;
+    font-family: $font-display;
+    font-size: 2.5rem;
+    font-weight: 900;
+    color: rgba(255, 255, 255, 0.04);
+    line-height: 1;
+  }
+}

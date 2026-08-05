@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 500" fill="none">
+  <defs>
+    <linearGradient id="pArmor" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#D0D0D0"/>
+      <stop offset="100%" stop-color="#888"/>
+    </linearGradient>
+    <linearGradient id="pGold" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F0D08A"/>
+      <stop offset="100%" stop-color="#C9A84C"/>
+    </linearGradient>
+    <linearGradient id="pCape" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#C61717"/>
+      <stop offset="100%" stop-color="#3D0000"/>
+    </linearGradient>
+    <radialGradient id="pGlow" cx="50%" cy="40%" r="50%">
+      <stop offset="0%" stop-color="#C61717" stop-opacity="0.3"/>
+      <stop offset="100%" stop-color="#090909" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="400" height="500" fill="#090909"/>
+  <ellipse cx="200" cy="250" rx="180" ry="200" fill="url(#pGlow)"/>
+  <!-- Cape backdrop -->
+  <path d="M100 120 Q200 90 300 120 L310 400 Q200 430 90 400 Z" fill="url(#pCape)" opacity="0.85"/>
+  <!-- Helmet & head -->
+  <ellipse cx="200" cy="130" rx="55" ry="60" fill="url(#pArmor)"/>
+  <path d="M150 115 Q200 80 250 115 L245 155 Q200 145 155 155 Z" fill="url(#pGold)"/>
+  <path d="M195 100 L200 75 L205 100 Z" fill="url(#pGold)"/>
+  <!-- Face slit -->
+  <rect x="175" y="125" width="50" height="10" rx="3" fill="#222" opacity="0.7"/>
+  <!-- Torso -->
+  <path d="M140 170 L260 170 L275 280 L265 380 L135 380 L125 280 Z" fill="url(#pArmor)"/>
+  <!-- Cross -->
+  <rect x="190" y="210" width="20" height="70" rx="2" fill="url(#pGold)"/>
+  <rect x="170" y="235" width="60" height="16" rx="2" fill="url(#pGold)"/>
+  <!-- Shoulders -->
+  <ellipse cx="135" cy="185" rx="35" ry="22" fill="url(#pArmor)" transform="rotate(-12 135 185)"/>
+  <ellipse cx="265" cy="185" rx="35" ry="22" fill="url(#pArmor)" transform="rotate(12 265 185)"/>
+</svg>

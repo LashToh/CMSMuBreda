@@ -1,0 +1,16 @@
+node_modules
+dist
+dist-ssr
+*.local
+.DS_Store
+.env
+.env.*
+!.env.example
+!.env.production.example
+*.log
+.cache
+coverage
+server/data/*.db
+server/data/cms-local.json
+uploads/*
+!uploads/.gitkeep

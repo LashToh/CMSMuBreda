@@ -1,0 +1,80 @@
+// Design tokens
+$color-bg-deep: #090909;
+$color-bg-dark: #121212;
+$color-bg-crimson: #1b0000;
+$color-red-dark: #6d0000;
+$color-red-bright: #c61717;
+$color-gold: #f0d08a;
+
+$font-display: 'Cinzel', serif;
+$font-body: 'Cormorant Garamond', serif;
+
+$spacing-xs: 0.5rem;
+$spacing-sm: 1rem;
+$spacing-md: 2rem;
+$spacing-lg: 4rem;
+$spacing-xl: 8rem;
+$spacing-2xl: 12rem;
+
+$radius-sm: 4px;
+$radius-md: 8px;
+$radius-lg: 16px;
+
+$transition-fast: 0.2s ease;
+$transition-base: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+$transition-slow: 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+
+$z-navbar: 1000;
+$z-overlay: 900;
+$z-modal: 1100;
+
+$glass-bg: rgba(18, 18, 18, 0.65);
+$glass-border: rgba(240, 208, 138, 0.12);
+$glow-red: 0 0 40px rgba(198, 23, 23, 0.45);
+$glow-gold: 0 0 30px rgba(240, 208, 138, 0.25);
+
+$breakpoint-tablet: 1024px;
+$breakpoint-mobile: 768px;
+$breakpoint-sm: 480px;
+
+@mixin glass-panel {
+  background: $glass-bg;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid $glass-border;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+}
+
+@mixin red-glow {
+  box-shadow: $glow-red, inset 0 0 60px rgba(198, 23, 23, 0.08);
+}
+
+@mixin gold-text-gradient {
+  background: linear-gradient(135deg, $color-gold 0%, #fff5dc 50%, $color-gold 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+@mixin section-padding {
+  padding: $spacing-xl $spacing-md;
+
+  @media (max-width: $breakpoint-tablet) {
+    padding: $spacing-lg $spacing-md;
+  }
+
+  @media (max-width: $breakpoint-mobile) {
+    padding: $spacing-lg $spacing-sm;
+  }
+}
+
+@mixin container {
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 $spacing-md;
+
+  @media (max-width: $breakpoint-mobile) {
+    padding: 0 $spacing-sm;
+  }
+}

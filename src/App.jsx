@@ -42,7 +42,8 @@ export default function App() {
                   <Route path="/register" element={<RegisterPage />} />
                   <Route path="/account" element={<AccountPage />} />
                   <Route path="/rankings" element={<RankingsPage />} />
-                  <Route path="/shop" element={<ShopPage />} />
+                  <Route path="/donate" element={<ShopPage />} />
+                  <Route path="/shop" element={<Navigate to="/donate" replace />} />
                   <Route path="/news" element={<NewsPage />} />
                   <Route path="/downloads" element={<DownloadsPage />} />
                   <Route path="/admin" element={<AdminPage />} />

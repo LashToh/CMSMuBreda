@@ -59,11 +59,20 @@ export async function rankings(req, res, next) {
     const type = req.params.type || 'level';
     const page = Number(req.query.page || 1);
     const pageSize = Number(req.query.pageSize || 20);
+
+    // This server has no resets / grand resets; level + master level are a single board.
+    const removed = new Set(['master', 'resets', 'grandresets', 'grand-resets']);
+    if (removed.has(type)) {
+      return fail(
+        res,
+        400,
+        'INVALID_TYPE',
+        'Ranking type not supported. Use level (combined cLevel + mLevel), pk, or guilds.',
+      );
+    }
+
     const map = {
       level: () => mu.rankings.byLevel({ page, pageSize }),
-      master: () => mu.rankings.byMasterLevel({ page, pageSize }),
-      resets: () => mu.rankings.byResets({ page, pageSize }),
-      grandresets: () => mu.rankings.byGrandResets({ page, pageSize }),
       pk: () => mu.rankings.byPk({ page, pageSize }),
       guilds: () => mu.rankings.byGuilds({ page, pageSize }),
     };
@@ -110,7 +119,7 @@ export async function downloads(_req, res, next) {
 export async function shopCategories(_req, res, next) {
   try {
     if (!config.features.webshop) {
-      return fail(res, 503, 'FEATURE_DISABLED', 'WebShop is disabled.');
+      return fail(res, 503, 'FEATURE_DISABLED', 'Donate is disabled.');
     }
     return ok(res, { items: shopService.listCategories() });
   } catch (err) {
@@ -121,7 +130,7 @@ export async function shopCategories(_req, res, next) {
 export async function shopItems(req, res, next) {
   try {
     if (!config.features.webshop) {
-      return fail(res, 503, 'FEATURE_DISABLED', 'WebShop is disabled.');
+      return fail(res, 503, 'FEATURE_DISABLED', 'Donate is disabled.');
     }
     return ok(res, {
       items: shopService.listItems({ categoryId: req.query.categoryId, q: req.query.q }),

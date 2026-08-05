@@ -13,17 +13,17 @@ const defaultStore = {
       title: 'Welcome to MU Breda Season 21',
       author: 'Staff',
       content:
-        'The Crusader awakens. Register your account, download the client, and join the Open Beta.',
+        'MU Breda Season 21 is online. Register your account, download the client, and join the continent.',
       createdAt: new Date().toISOString(),
       published: true,
     },
     {
       id: '2',
       type: 'update',
-      title: 'Season 21 — Crusader Class',
+      title: 'Season 21 — Official UP',
       author: 'Staff',
       content:
-        'Allen, holy knight of Lugard, joins the battlefield with hammer, shield, and unbreakable faith.',
+        'The official Season 21 server is live. Create your account and start your adventure on MU Breda.',
       createdAt: new Date().toISOString(),
       published: true,
     },

@@ -3,9 +3,6 @@ import { ApiError, fetchRankings } from '../services/api';
 
 const TABS = [
   { id: 'level', label: 'Level' },
-  { id: 'master', label: 'Master Level' },
-  { id: 'resets', label: 'Resets' },
-  { id: 'grandresets', label: 'Grand Resets' },
   { id: 'pk', label: 'PK' },
   { id: 'guilds', label: 'Guilds' },
 ];
@@ -40,6 +37,7 @@ export default function RankingsPage() {
   }, [type, page]);
 
   const isGuild = type === 'guilds';
+  const isLevel = type === 'level';
 
   return (
     <section className="cms-page">
@@ -86,10 +84,15 @@ export default function RankingsPage() {
                     <>
                       <th>Name</th>
                       <th>Class</th>
-                      <th>Level</th>
-                      <th>ML</th>
-                      <th>Resets</th>
-                      <th>GR</th>
+                      {isLevel ? (
+                        <>
+                          <th>Level</th>
+                          <th>ML</th>
+                          <th>Total</th>
+                        </>
+                      ) : (
+                        <th>Level</th>
+                      )}
                       <th>PK</th>
                       <th>Guild</th>
                     </>
@@ -97,30 +100,40 @@ export default function RankingsPage() {
                 </tr>
               </thead>
               <tbody>
-                {data.items.map((row, i) => (
-                  <tr key={row.name + i}>
-                    <td>{(page - 1) * 20 + i + 1}</td>
-                    {isGuild ? (
-                      <>
-                        <td>{row.name}</td>
-                        <td>{row.master}</td>
-                        <td>{row.score}</td>
-                        <td>{row.members}</td>
-                      </>
-                    ) : (
-                      <>
-                        <td>{row.name}</td>
-                        <td>{row.className || row.classShort}</td>
-                        <td>{row.level}</td>
-                        <td>{row.masterLevel ?? '—'}</td>
-                        <td>{row.resets ?? '—'}</td>
-                        <td>{row.grandResets ?? '—'}</td>
-                        <td>{row.pkCount ?? 0}</td>
-                        <td>{row.guild || '—'}</td>
-                      </>
-                    )}
-                  </tr>
-                ))}
+                {data.items.map((row, i) => {
+                  const total =
+                    row.totalLevel ??
+                    (Number(row.level || 0) + Number(row.masterLevel || 0));
+                  return (
+                    <tr key={row.name + i}>
+                      <td>{(page - 1) * 20 + i + 1}</td>
+                      {isGuild ? (
+                        <>
+                          <td>{row.name}</td>
+                          <td>{row.master}</td>
+                          <td>{row.score}</td>
+                          <td>{row.members}</td>
+                        </>
+                      ) : (
+                        <>
+                          <td>{row.name}</td>
+                          <td>{row.className || row.classShort}</td>
+                          {isLevel ? (
+                            <>
+                              <td>{row.level}</td>
+                              <td>{row.masterLevel ?? '—'}</td>
+                              <td>{total}</td>
+                            </>
+                          ) : (
+                            <td>{row.level}</td>
+                          )}
+                          <td>{row.pkCount ?? 0}</td>
+                          <td>{row.guild || '—'}</td>
+                        </>
+                      )}
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           )}

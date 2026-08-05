@@ -8,12 +8,11 @@ import { useAuth } from '../../context/AuthContext';
 import LanguageSwitcher from '../LanguageSwitcher';
 import './Navbar.scss';
 
-const NAV_LINKS = [
-  { key: 'crusader', href: '#crusader' },
-  { key: 'arsenal', href: '#weapons' },
-  { key: 'skills', href: '#skills' },
-  { key: 'features', href: '#features' },
-  { key: 'timeline', href: '#timeline' },
+const CMS_LINKS = [
+  { key: 'rankings', to: '/rankings' },
+  { key: 'news', to: '/news' },
+  { key: 'donate', to: '/donate' },
+  { key: 'downloads', to: '/downloads' },
 ];
 
 export default function Navbar() {
@@ -39,6 +38,8 @@ export default function Navbar() {
     document.querySelector(href)?.scrollIntoView({ behavior: 'smooth' });
   };
 
+  const closeMenu = () => setMenuOpen(false);
+
   return (
     <header className={`navbar ${scrolled ? 'navbar--scrolled' : ''}`}>
       <nav className="navbar__inner">
@@ -59,36 +60,33 @@ export default function Navbar() {
         </div>
 
         <ul className="navbar__links">
-          {NAV_LINKS.map((link) => (
-            <li key={link.href}>
-              <a href={link.href} onClick={(e) => { e.preventDefault(); handleNav(link.href); }}>
-                {t(`nav.${link.key}`)}
-              </a>
+          {CMS_LINKS.map((link) => (
+            <li key={link.to}>
+              <Link to={link.to}>{t(`nav.${link.key}`)}</Link>
             </li>
           ))}
+          {isAuthenticated && (
+            <li>
+              <Link to="/account">{t('nav.account')}</Link>
+            </li>
+          )}
         </ul>
 
         <div className="navbar__actions">
           <LanguageSwitcher />
-          <Link to="/rankings" className="navbar__cms-link">
-            Rankings
-          </Link>
-          <Link to="/news" className="navbar__cms-link">
-            News
-          </Link>
           {isAuthenticated ? (
             <>
               <Link to="/account" className="btn btn--secondary navbar__register">
-                {user?.username || 'Account'}
+                {user?.username || t('nav.account')}
               </Link>
               <button type="button" className="btn btn--primary navbar__cta" onClick={() => logout()}>
-                Logout
+                {t('nav.logout')}
               </button>
             </>
           ) : (
             <>
               <Link to="/login" className="btn btn--secondary navbar__register">
-                Login
+                {t('nav.login')}
               </Link>
               <button type="button" className="btn btn--primary navbar__cta" onClick={openRegister}>
                 {t('nav.register')}
@@ -117,23 +115,58 @@ export default function Navbar() {
           >
             <LanguageSwitcher className="navbar__mobile-lang" />
             <ul className="navbar__mobile-links">
-              {NAV_LINKS.map((link, i) => (
+              {CMS_LINKS.map((link, i) => (
                 <motion.li
-                  key={link.href}
+                  key={link.to}
                   initial={{ opacity: 0, x: 40 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: i * 0.06 }}
                 >
-                  <a href={link.href} onClick={(e) => { e.preventDefault(); handleNav(link.href); }}>
+                  <Link to={link.to} onClick={closeMenu}>
                     {t(`nav.${link.key}`)}
-                  </a>
+                  </Link>
                 </motion.li>
               ))}
+              {isAuthenticated && (
+                <motion.li
+                  initial={{ opacity: 0, x: 40 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: CMS_LINKS.length * 0.06 }}
+                >
+                  <Link to="/account" onClick={closeMenu}>
+                    {t('nav.account')}
+                  </Link>
+                </motion.li>
+              )}
             </ul>
-            <button type="button" className="btn btn--secondary btn--large" onClick={() => { setMenuOpen(false); openRegister(); }}>
-              {t('nav.register')}
-            </button>
-            <a href="#download" className="btn btn--primary btn--large" onClick={(e) => { e.preventDefault(); handleNav('#download'); }}>
+            {isAuthenticated ? (
+              <>
+                <Link to="/account" className="btn btn--secondary btn--large" onClick={closeMenu}>
+                  {user?.username || t('nav.account')}
+                </Link>
+                <button
+                  type="button"
+                  className="btn btn--primary btn--large"
+                  onClick={() => { closeMenu(); logout(); }}
+                >
+                  {t('nav.logout')}
+                </button>
+              </>
+            ) : (
+              <>
+                <Link to="/login" className="btn btn--secondary btn--large" onClick={closeMenu}>
+                  {t('nav.login')}
+                </Link>
+                <button
+                  type="button"
+                  className="btn btn--primary btn--large"
+                  onClick={() => { closeMenu(); openRegister(); }}
+                >
+                  {t('nav.register')}
+                </button>
+              </>
+            )}
+            <a href="#download" className="navbar__mobile-play" onClick={(e) => { e.preventDefault(); handleNav('#download'); }}>
               {t('nav.playNow')}
             </a>
           </motion.div>

@@ -60,16 +60,10 @@ export function useGsapHero(ref) {
       0.2
     )
       .fromTo(
-        el.querySelector('.hero__beta'),
-        { opacity: 0, y: 24, scale: 0.92 },
-        { opacity: 1, y: 0, scale: 1, duration: 0.7 },
-        0.45
-      )
-      .fromTo(
         el.querySelectorAll('.hero__title-line'),
         { opacity: 0, y: 60 },
         { opacity: 1, y: 0, duration: 0.9, stagger: 0.12 },
-        0.55
+        0.45
       )
       .fromTo(
         el.querySelector('.hero__subtitle'),

@@ -149,15 +149,18 @@ function mapCharRow(row, guild = null) {
   const c = schemaCharacters();
   const classId = Number(pickRowValue(row, c.class) ?? 0);
   const cls = resolveClass(classId);
+  const level = Number(pickRowValue(row, c.level) ?? 0);
+  const masterLevel =
+    pickRowValue(row, c.masterLevel) != null ? Number(pickRowValue(row, c.masterLevel)) : null;
   return {
     name: pickRowValue(row, c.name),
     account: pickRowValue(row, c.account),
     classId,
     className: cls.name,
     classShort: cls.short,
-    level: Number(pickRowValue(row, c.level) ?? 0),
-    masterLevel:
-      pickRowValue(row, c.masterLevel) != null ? Number(pickRowValue(row, c.masterLevel)) : null,
+    level,
+    masterLevel,
+    totalLevel: level + Number(masterLevel || 0),
     resets: pickRowValue(row, c.resets) != null ? Number(pickRowValue(row, c.resets)) : null,
     grandResets:
       pickRowValue(row, c.grandResets) != null ? Number(pickRowValue(row, c.grandResets)) : null,
@@ -588,45 +591,38 @@ async function pagedCharacterRanking(orderBySql, opts) {
 }
 
 export const rankings = {
+  /** Combined level ranking: cLevel + mLevel (WebEngine combine_level_masterlevel). */
   async byLevel(opts) {
     const c = schemaCharacters();
-    return pagedCharacterRanking(`${qIdent(c.level)} DESC, ${qIdent(c.name)} ASC`, opts);
-  },
-
-  async byMasterLevel(opts) {
-    const c = schemaCharacters();
     try {
       return await pagedCharacterRanking(
-        `${qIdent(c.masterLevel)} DESC, ${qIdent(c.level)} DESC, ${qIdent(c.name)} ASC`,
+        `(${qIdent(c.level)} + ISNULL(${qIdent(c.masterLevel)}, 0)) DESC, ${qIdent(c.level)} DESC, ${qIdent(c.name)} ASC`,
         opts,
       );
     } catch {
-      return emptyRankingPage(opts);
+      return pagedCharacterRanking(`${qIdent(c.level)} DESC, ${qIdent(c.name)} ASC`, opts);
     }
   },
 
-  async byResets(opts) {
-    const c = schemaCharacters();
-    try {
-      return await pagedCharacterRanking(
-        `${qIdent(c.resets)} DESC, ${qIdent(c.level)} DESC, ${qIdent(c.name)} ASC`,
-        opts,
-      );
-    } catch {
-      return emptyRankingPage(opts);
-    }
+  async byMasterLevel() {
+    throw new AppError('Master Level ranking is merged into Level (combined total).', {
+      status: 400,
+      code: 'INVALID_TYPE',
+    });
   },
 
-  async byGrandResets(opts) {
-    const c = schemaCharacters();
-    try {
-      return await pagedCharacterRanking(
-        `${qIdent(c.grandResets)} DESC, ${qIdent(c.resets)} DESC, ${qIdent(c.name)} ASC`,
-        opts,
-      );
-    } catch {
-      return emptyRankingPage(opts);
-    }
+  async byResets() {
+    throw new AppError('This server has no resets ranking.', {
+      status: 400,
+      code: 'INVALID_TYPE',
+    });
+  },
+
+  async byGrandResets() {
+    throw new AppError('This server has no grand resets ranking.', {
+      status: 400,
+      code: 'INVALID_TYPE',
+    });
   },
 
   async byPk(opts) {

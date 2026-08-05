@@ -29,7 +29,7 @@ export default function ShopPage() {
       setCategories(cats.data?.items || []);
       setItems(list.data?.items || []);
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : 'WebShop temporarily unavailable.');
+      setError(err instanceof ApiError ? err.message : 'Donate temporarily unavailable.');
     } finally {
       setLoading(false);
     }
@@ -43,22 +43,23 @@ export default function ShopPage() {
     setMsg('');
     try {
       const res = await purchaseShopItem(itemId);
-      setMsg(res.message || 'Purchase recorded.');
+      setMsg(res.message || 'Donation recorded.');
     } catch (err) {
-      setMsg(err instanceof ApiError ? err.message : 'Purchase failed.');
+      setMsg(err instanceof ApiError ? err.message : 'Donation failed.');
     }
   };
 
   return (
     <section className="cms-page">
-      <p className="cms-page__label">Marketplace</p>
-      <h1 className="cms-page__title">WebShop</h1>
+      <p className="cms-page__label">Support</p>
+      <h1 className="cms-page__title">Donate</h1>
       <p className="cms-page__subtitle">
-        Catalog UI is live. Item delivery stays disabled until the Season 21 item format is verified.
+        Support MU Breda Season 21. Item delivery stays disabled until the Season 21 item format is
+        verified.
       </p>
 
       <div className="cms-alert cms-alert--info">
-        Delivery flag OFF by default (`ENABLE_WEBSHOP_DELIVERY=false`). Purchases update balances /
+        Delivery flag OFF by default (`ENABLE_WEBSHOP_DELIVERY=false`). Donations update balances /
         history only.
       </div>
 
@@ -86,7 +87,7 @@ export default function ShopPage() {
       </div>
 
       {loading ? (
-        <div className="cms-loading">Loading shop…</div>
+        <div className="cms-loading">Loading donate catalog…</div>
       ) : (
         <div className="cms-grid cms-grid--3">
           {items.map((item) => (
@@ -103,11 +104,11 @@ export default function ShopPage() {
                   style={{ marginTop: '1rem' }}
                   onClick={() => onPurchase(item.id)}
                 >
-                  Purchase
+                  Donate
                 </button>
               ) : (
                 <Link to="/login" className="btn btn--secondary" style={{ marginTop: '1rem' }}>
-                  Login to buy
+                  Login to donate
                 </Link>
               )}
             </article>

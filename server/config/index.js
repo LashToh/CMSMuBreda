@@ -50,7 +50,8 @@ export const config = {
 
   api: {
     port: envInt('PORT', envInt('API_PORT', 3001)),
-    corsOrigin: env('CORS_ORIGIN', 'http://localhost:5173'),
+    // Comma-separated list supported (e.g. http://localhost:5173,http://localhost:5174)
+    corsOrigin: env('CORS_ORIGIN', 'http://localhost:5173,http://localhost:5174'),
     trustProxy: envInt('TRUST_PROXY', 1),
   },
 

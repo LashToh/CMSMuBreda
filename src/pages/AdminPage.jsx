@@ -95,7 +95,7 @@ export default function AdminPage() {
               <div className="cms-stat__value">{data.stats?.playersOnline ?? '—'}</div>
             </div>
             <div className="cms-stat">
-              <div className="cms-stat__label">Shop Purchases</div>
+              <div className="cms-stat__label">Donations</div>
               <div className="cms-stat__value">{data.webshopPurchases ?? 0}</div>
             </div>
           </div>

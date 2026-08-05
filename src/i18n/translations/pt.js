@@ -1,10 +1,13 @@
 export default {
   nav: {
-    crusader: 'Crusader',
-    arsenal: 'Arsenal',
-    skills: 'Habilidades',
-    features: 'Novidades',
-    timeline: 'Cronograma',
+    rankings: 'Rankings',
+    news: 'Notícias',
+    donate: 'Doar',
+    downloads: 'Downloads',
+    account: 'Conta',
+    login: 'Login',
+    logout: 'Sair',
+    cmsLabel: 'Portal do jogador',
     register: 'Registrar',
     playNow: 'Jogar Agora',
     openMenu: 'Abrir menu',
@@ -12,11 +15,10 @@ export default {
   },
   hero: {
     brand: 'Mu Breda',
-    beta: 'Beta Aberta',
     season: 'Temporada 21',
-    titleAccent: 'The Crusader Awakens',
+    titleAccent: 'Servidor Oficial',
     subtitle:
-      'Um campeão divino forjado no brilho de LUGARD. Empunhe martelo e escudo exclusivos, ataque com poder sagrado e fortaleça seu grupo com a bênção de Lugard.',
+      'Entre no MU Breda Temporada 21. Crie sua conta, baixe o cliente e junte-se ao continente.',
     download: 'Baixar',
     scroll: 'Rolar',
   },
@@ -143,36 +145,34 @@ export default {
   timeline: {
     sectionLabel: 'Roteiro',
     title: 'Cronograma da Temporada',
-    subtitle:
-      'Temporada 21 Parte 1 está em beta aberta — conteúdo do Crusader jogável agora; data de lançamento oficial a confirmar.',
+    subtitle: 'Temporada 21 Parte 1 está no ar no MU Breda — servidor oficial.',
     current: 'Atual',
     items: {
-      'open-beta': {
+      'season-live': {
         label: 'Ativo Agora',
-        title: 'Beta Aberta',
+        title: 'Temporada 21 Online',
         description:
-          'Temporada 21 Parte 1 está em beta aberta. Teste a classe Crusader, Contract items e atualizações do Leader Board.',
+          'Temporada 21 Parte 1 disponível. Entre no MU Breda, crie sua conta e explore o continente.',
       },
       'crusader-kit': {
-        label: 'Em Beta',
-        title: 'Crusader Kit',
+        label: 'Disponível',
+        title: 'Conteúdo da Temporada',
         description:
-          'Gear Hammer e Paladin Shield exclusivos, stat Holy Attack e quatro skills temáticas de Lugard disponíveis para testes.',
+          'Conteúdo e sistemas da Temporada 21 Parte 1 disponíveis no servidor oficial MU Breda.',
       },
       'official-launch': {
-        label: 'A Confirmar',
-        title: 'Lançamento Oficial',
-        description:
-          'Lançamento completo da Temporada 21 Parte 1 em servidores oficiais — data a ser anunciada pela Webzen.',
+        label: 'Online',
+        title: 'UP Oficial',
+        description: 'MU Breda Temporada 21 — servidor oficial online.',
       },
     },
   },
   download: {
     sectionLabel: 'Entre na Batalha',
-    titleLine1: 'The Crusader',
-    titleLine2: 'Te Espera',
+    titleLine1: 'MU Breda',
+    titleLine2: 'Temporada 21',
     subtitle:
-      'Jogue como Crusader — campeão divino de Lugard. Domine skills ofensivas sagradas, empunhe martelo e escudo exclusivos e fortaleça seu grupo com o Sigil of Retaliation.',
+      'Baixe o cliente, registre sua conta e comece sua aventura no servidor oficial MU Breda Temporada 21.',
     downloadClient: 'Baixar Cliente',
     registerAccount: 'Registrar Conta',
     joinDiscord: 'Entrar no Discord',
@@ -195,7 +195,7 @@ export default {
   footer: {
     brandName: 'Mu Breda · Temporada 21',
     tagline:
-      'Landing promocional fan-made para Mu Breda Temporada 21. Não afiliado à Webzen Inc.',
+      'Portal oficial do jogador MU Breda Temporada 21. Não afiliado à Webzen Inc.',
     copyright: '© 2026 LashToh. Todos os direitos reservados.',
     disclaimer: 'MU Online é uma marca registrada da Webzen Inc.',
     groups: {

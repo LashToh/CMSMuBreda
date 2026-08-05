@@ -22,9 +22,14 @@ app.use(
   }),
 );
 
+const corsOrigins = String(config.api.corsOrigin)
+  .split(',')
+  .map((value) => value.trim())
+  .filter(Boolean);
+
 app.use(
   cors({
-    origin: config.api.corsOrigin,
+    origin: corsOrigins.length === 1 ? corsOrigins[0] : corsOrigins,
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   }),

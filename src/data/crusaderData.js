@@ -115,7 +115,7 @@ const RAW_SEASON21_FEATURES = [
 export const SEASON21_FEATURES = excludeSpeedServerItems(RAW_SEASON21_FEATURES);
 
 const RAW_TIMELINE = [
-  { id: 'open-beta', active: true },
+  { id: 'season-live', active: true },
   { id: 'crusader-kit', active: false },
   { id: 'official-launch', active: false },
 ];

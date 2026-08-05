@@ -41,7 +41,7 @@ function publicItem(item) {
 
 export async function purchase(username, itemId) {
   if (!config.features.webshop) {
-    throw new AppError('WebShop is disabled.', { status: 503, code: 'FEATURE_DISABLED' });
+    throw new AppError('Donate is disabled.', { status: 503, code: 'FEATURE_DISABLED' });
   }
 
   const store = readStore();

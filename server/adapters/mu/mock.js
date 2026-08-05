@@ -55,14 +55,17 @@ const MOCK_CHARS = [
 
 function mapChar(c) {
   const cls = resolveClass(c.classId);
+  const level = c.level;
+  const masterLevel = c.masterLevel;
   return {
     name: c.name,
     account: c.account,
     classId: c.classId,
     className: cls.name,
     classShort: cls.short,
-    level: c.level,
-    masterLevel: c.masterLevel,
+    level,
+    masterLevel,
+    totalLevel: Number(level || 0) + Number(masterLevel || 0),
     resets: c.resets,
     grandResets: c.grandResets,
     strength: c.strength,
@@ -263,21 +266,33 @@ const RANK_POOL = [
 ];
 
 export const rankings = {
+  /** Combined level ranking: cLevel + mLevel (WebEngine combine_level_masterlevel). */
   async byLevel(opts) {
-    const sorted = [...RANK_POOL].sort((a, b) => b.level - a.level || b.masterLevel - a.masterLevel);
+    const sorted = [...RANK_POOL].sort(
+      (a, b) =>
+        (b.totalLevel ?? b.level + b.masterLevel) - (a.totalLevel ?? a.level + a.masterLevel) ||
+        b.level - a.level ||
+        a.name.localeCompare(b.name),
+    );
     return rankingPage(sorted, opts);
   },
-  async byMasterLevel(opts) {
-    const sorted = [...RANK_POOL].sort((a, b) => b.masterLevel - a.masterLevel || b.level - a.level);
-    return rankingPage(sorted, opts);
+  async byMasterLevel() {
+    throw new AppError('Master Level ranking is merged into Level (combined total).', {
+      status: 400,
+      code: 'INVALID_TYPE',
+    });
   },
-  async byResets(opts) {
-    const sorted = [...RANK_POOL].sort((a, b) => b.resets - a.resets || b.level - a.level);
-    return rankingPage(sorted, opts);
+  async byResets() {
+    throw new AppError('This server has no resets ranking.', {
+      status: 400,
+      code: 'INVALID_TYPE',
+    });
   },
-  async byGrandResets(opts) {
-    const sorted = [...RANK_POOL].sort((a, b) => b.grandResets - a.grandResets || b.resets - a.resets);
-    return rankingPage(sorted, opts);
+  async byGrandResets() {
+    throw new AppError('This server has no grand resets ranking.', {
+      status: 400,
+      code: 'INVALID_TYPE',
+    });
   },
   async byPk(opts) {
     const sorted = [...RANK_POOL].sort((a, b) => b.pkCount - a.pkCount);

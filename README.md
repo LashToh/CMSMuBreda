@@ -76,7 +76,7 @@ Gift code: **WELCOME21**
 | Account | `/api/account` `characters` `tools/*` |
 | Rankings | `/api/rankings/:type` |
 | Server | `/api/server` |
-| Shop | `/api/shop/*` |
+| Donate (API `/api/shop/*`) | UI `/donate` — backend paths unchanged |
 | Gift codes | `/api/giftcodes/redeem` |
 | News / Downloads | `/api/news` `/api/downloads` |
 | Vote | `/api/vote/*` |

@@ -7,7 +7,7 @@ import './CmsShell.scss';
 const LINKS = [
   { to: '/rankings', label: 'Rankings' },
   { to: '/news', label: 'News' },
-  { to: '/shop', label: 'WebShop' },
+  { to: '/donate', label: 'Donate' },
   { to: '/downloads', label: 'Downloads' },
 ];
 

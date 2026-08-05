@@ -107,8 +107,7 @@ export default function AccountPage() {
                       <th>Class</th>
                       <th>Level</th>
                       <th>ML</th>
-                      <th>Resets</th>
-                      <th>GR</th>
+                      <th>Total</th>
                       <th>PK</th>
                       <th>Guild</th>
                       <th>Status</th>
@@ -121,8 +120,10 @@ export default function AccountPage() {
                         <td>{c.className}</td>
                         <td>{c.level}</td>
                         <td>{c.masterLevel ?? '—'}</td>
-                        <td>{c.resets ?? '—'}</td>
-                        <td>{c.grandResets ?? '—'}</td>
+                        <td>
+                          {c.totalLevel ??
+                            Number(c.level || 0) + Number(c.masterLevel || 0)}
+                        </td>
                         <td>{c.pkCount ?? 0}</td>
                         <td>{c.guild || '—'}</td>
                         <td>{c.online ? 'Online' : 'Offline'}</td>
@@ -135,8 +136,8 @@ export default function AccountPage() {
               <div className="cms-empty">No characters found on this account.</div>
             )}
             <p style={{ marginTop: '1rem', opacity: 0.7 }}>
-              Character tools (Reset, Clear PK, Unstuck) remain disabled until Season 21 schema
-              verification. Flags: reset={String(data.features?.reset)}, clearPk=
+              This server has no resets or grand resets. Character tools (Clear PK, Unstuck)
+              remain gated until Season 21 schema verification. Flags: clearPk=
               {String(data.features?.clearPk)}.
             </p>
           </div>
@@ -199,7 +200,7 @@ export default function AccountPage() {
                 </button>
               </form>
               <p style={{ marginTop: '1rem' }}>
-                <Link to="/shop">Visit WebShop →</Link>
+                <Link to="/donate">Visit Donate →</Link>
               </p>
             </div>
           </div>

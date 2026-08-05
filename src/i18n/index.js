@@ -14,6 +14,39 @@ export const LOCALE_LABELS = {
   pt: 'PT',
 };
 
+/** Map a BCP 47 / Accept-Language tag to a supported locale, or null if unmatched. */
+function mapLanguageTag(tag) {
+  if (!tag || typeof tag !== 'string') return null;
+  const primary = tag.toLowerCase().split(/[-_]/)[0];
+  if (primary === 'es') return 'es';
+  if (primary === 'pt') return 'pt';
+  if (primary === 'en') return 'en';
+  return null;
+}
+
+/**
+ * Detect preferred locale from the browser (navigator.languages / navigator.language).
+ * Falls back to DEFAULT_LOCALE when unavailable or unsupported.
+ */
+export function detectBrowserLocale() {
+  try {
+    if (typeof navigator === 'undefined') return DEFAULT_LOCALE;
+
+    const candidates = [
+      ...(Array.isArray(navigator.languages) ? navigator.languages : []),
+      navigator.language,
+    ].filter(Boolean);
+
+    for (const tag of candidates) {
+      const locale = mapLanguageTag(tag);
+      if (locale) return locale;
+    }
+  } catch {
+    /* ignore detection errors */
+  }
+  return DEFAULT_LOCALE;
+}
+
 function getNested(obj, path) {
   return path.split('.').reduce((acc, key) => (acc != null ? acc[key] : undefined), obj);
 }

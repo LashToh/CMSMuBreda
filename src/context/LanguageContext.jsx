@@ -3,22 +3,27 @@ import {
   DEFAULT_LOCALE,
   LOCALES,
   STORAGE_KEY,
+  detectBrowserLocale,
   translate,
 } from '../i18n';
 
 const LanguageContext = createContext(null);
 
-function readStoredLocale() {
+function readInitialLocale() {
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
+    // No saved preference yet — soft-detect from browser languages.
+    if (stored === null) {
+      return detectBrowserLocale();
+    }
     return LOCALES.includes(stored) ? stored : DEFAULT_LOCALE;
   } catch {
-    return DEFAULT_LOCALE;
+    return detectBrowserLocale();
   }
 }
 
 export function LanguageProvider({ children }) {
-  const [locale, setLocaleState] = useState(readStoredLocale);
+  const [locale, setLocaleState] = useState(readInitialLocale);
 
   const setLocale = useCallback((next) => {
     if (!LOCALES.includes(next)) return;

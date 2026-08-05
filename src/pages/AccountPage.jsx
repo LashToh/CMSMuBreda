@@ -6,6 +6,7 @@ import {
   changePassword,
   fetchAccount,
   redeemGiftCode,
+  unstuckCharacter,
 } from '../services/api';
 
 export default function AccountPage() {
@@ -16,6 +17,7 @@ export default function AccountPage() {
   const [pwd, setPwd] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' });
   const [giftCode, setGiftCode] = useState('');
   const [msg, setMsg] = useState('');
+  const [busyChar, setBusyChar] = useState('');
 
   const load = async () => {
     setLoading(true);
@@ -58,6 +60,20 @@ export default function AccountPage() {
       await load();
     } catch (err) {
       setMsg(err instanceof ApiError ? err.message : 'Redemption failed.');
+    }
+  };
+
+  const onUnstuck = async (characterName) => {
+    setMsg('');
+    setBusyChar(characterName);
+    try {
+      const res = await unstuckCharacter(characterName);
+      setMsg(res.message || `${characterName} moved to safe zone.`);
+      await load();
+    } catch (err) {
+      setMsg(err instanceof ApiError ? err.message : 'Unstuck failed.');
+    } finally {
+      setBusyChar('');
     }
   };
 
@@ -111,6 +127,7 @@ export default function AccountPage() {
                       <th>PK</th>
                       <th>Guild</th>
                       <th>Status</th>
+                      {data.features?.unstuck !== false && <th>Tools</th>}
                     </tr>
                   </thead>
                   <tbody>
@@ -127,6 +144,23 @@ export default function AccountPage() {
                         <td>{c.pkCount ?? 0}</td>
                         <td>{c.guild || '—'}</td>
                         <td>{c.online ? 'Online' : 'Offline'}</td>
+                        {data.features?.unstuck !== false && (
+                          <td>
+                            <button
+                              type="button"
+                              className="btn btn--secondary"
+                              disabled={Boolean(c.online) || busyChar === c.name}
+                              title={
+                                c.online
+                                  ? 'Character must be offline'
+                                  : 'Move character to safe zone'
+                              }
+                              onClick={() => onUnstuck(c.name)}
+                            >
+                              {busyChar === c.name ? '…' : 'Unstuck'}
+                            </button>
+                          </td>
+                        )}
                       </tr>
                     ))}
                   </tbody>
@@ -135,11 +169,12 @@ export default function AccountPage() {
             ) : (
               <div className="cms-empty">No characters found on this account.</div>
             )}
-            <p style={{ marginTop: '1rem', opacity: 0.7 }}>
-              This server has no resets or grand resets. Character tools (Clear PK, Unstuck)
-              remain gated until Season 21 schema verification. Flags: clearPk=
-              {String(data.features?.clearPk)}.
-            </p>
+            {data.features?.unstuck !== false && (
+              <p style={{ marginTop: '1rem', opacity: 0.7 }}>
+                Unstuck moves the character to the safe map configured in AdminCP (default
+                Lorencia). The character must be offline.
+              </p>
+            )}
           </div>
 
           <div className="cms-grid cms-grid--2">

@@ -497,7 +497,7 @@ export const characters = {
 
   async unstuck(username, characterName) {
     if (!config.features.unstuck) {
-      featureDisabled('Unstuck is disabled until safe coordinates are verified.');
+      featureDisabled('Unstuck is disabled.');
     }
     await ensureAccountOffline(username);
     await ensureCharacterOwned(username, characterName);

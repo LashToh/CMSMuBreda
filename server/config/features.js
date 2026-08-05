@@ -14,7 +14,7 @@ export const featureFlags = {
   reset: flag('ENABLE_RESET', false),
   grandReset: flag('ENABLE_GRAND_RESET', false),
   clearPk: flag('ENABLE_CLEAR_PK', false),
-  unstuck: flag('ENABLE_UNSTUCK', false),
+  unstuck: flag('ENABLE_UNSTUCK', true),
   vip: flag('ENABLE_VIP', false),
   giftCodes: flag('ENABLE_GIFT_CODES', true),
   voteRewards: flag('ENABLE_VOTE_REWARDS', false),

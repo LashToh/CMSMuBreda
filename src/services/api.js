@@ -87,6 +87,14 @@ export async function fetchCharacters() {
   return request('/api/account/characters', { auth: true });
 }
 
+export async function unstuckCharacter(characterName) {
+  return request('/api/account/tools/unstuck', {
+    method: 'POST',
+    body: { characterName },
+    auth: true,
+  });
+}
+
 export async function fetchServerInfo() {
   return request('/api/server');
 }

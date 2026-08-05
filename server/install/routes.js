@@ -116,7 +116,7 @@ router.post('/', async (req, res) => {
     ENABLE_RESET: 'false',
     ENABLE_GRAND_RESET: 'false',
     ENABLE_CLEAR_PK: 'false',
-    ENABLE_UNSTUCK: 'false',
+    ENABLE_UNSTUCK: 'true',
     ENABLE_WEBSHOP_DELIVERY: 'false',
   };
 

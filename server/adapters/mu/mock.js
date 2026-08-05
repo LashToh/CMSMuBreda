@@ -208,11 +208,30 @@ export const characters = {
     });
   },
 
-  async unstuck() {
-    throw new AppError('Unstuck is disabled until safe coordinates are verified.', {
-      status: 503,
-      code: 'FEATURE_DISABLED',
-    });
+  async unstuck(username, characterName) {
+    if (!config.features.unstuck) {
+      throw new AppError('Unstuck is disabled.', { status: 503, code: 'FEATURE_DISABLED' });
+    }
+    const c = MOCK_CHARS.find(
+      (x) =>
+        x.account.toLowerCase() === String(username).toLowerCase() &&
+        x.name.toLowerCase() === String(characterName).toLowerCase(),
+    );
+    if (!c) {
+      throw new AppError('Character not found.', { status: 404, code: 'NOT_FOUND' });
+    }
+    if (c.online) {
+      throw new AppError('Character must be offline.', { status: 400, code: 'ACCOUNT_ONLINE' });
+    }
+    c.map = config.tools.unstuckMap;
+    c.posX = config.tools.unstuckX;
+    c.posY = config.tools.unstuckY;
+    return {
+      name: c.name,
+      map: c.map,
+      posX: c.posX,
+      posY: c.posY,
+    };
   },
 
   async reset() {

@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
+import { FaDownload } from 'react-icons/fa';
 import { ApiError, fetchDownloads, fetchServerInfo } from '../services/api';
+import { mirrorsWithUrls } from '../data/downloadMirrors';
 
 export default function DownloadsPage() {
   const [items, setItems] = useState([]);
@@ -35,21 +37,44 @@ export default function DownloadsPage() {
       {error && <div className="cms-alert cms-alert--error">{error}</div>}
 
       <div className="cms-grid cms-grid--3">
-        {items.map((item) => (
-          <article key={item.id} className="cms-panel">
-            <p className="cms-page__label">{item.type}</p>
-            <h2 style={{ fontFamily: 'Cinzel, serif', color: '#f0d08a' }}>{item.title}</h2>
-            <p style={{ opacity: 0.8, margin: '0.75rem 0 1rem' }}>{item.description}</p>
-            <p style={{ opacity: 0.6, marginBottom: '1rem' }}>Size: {item.size}</p>
-            {item.url ? (
-              <a className="btn btn--primary" href={item.url} target="_blank" rel="noreferrer">
-                Download
-              </a>
-            ) : (
-              <span className="cms-alert cms-alert--info">Link pending configuration</span>
-            )}
-          </article>
-        ))}
+        {items.map((item) => {
+          const mirrors = mirrorsWithUrls(item, { fallbackSize: item.size || '' });
+          return (
+            <article key={item.id} className="cms-panel">
+              <p className="cms-page__label">{item.type}</p>
+              <h2 style={{ fontFamily: 'Cinzel, serif', color: '#f0d08a' }}>{item.title}</h2>
+              {item.description ? (
+                <p style={{ opacity: 0.8, margin: '0.75rem 0 1rem' }}>{item.description}</p>
+              ) : null}
+              {item.size ? (
+                <p style={{ opacity: 0.6, marginBottom: '1rem' }}>Size: {item.size}</p>
+              ) : null}
+              {mirrors.length ? (
+                <div className="cms-mirrors">
+                  {mirrors.map((m) => (
+                    <a
+                      key={m.id}
+                      className={`btn ${m.id === 'direct' ? 'btn--primary' : 'btn--secondary'} cms-mirrors__item`}
+                      href={m.url}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      <span className="cms-mirrors__title">
+                        <FaDownload /> {m.label}
+                      </span>
+                      {m.description ? (
+                        <span className="cms-mirrors__desc">{m.description}</span>
+                      ) : null}
+                      {m.size ? <span className="cms-mirrors__size">{m.size}</span> : null}
+                    </a>
+                  ))}
+                </div>
+              ) : (
+                <span className="cms-alert cms-alert--info">Mirrors pending configuration</span>
+              )}
+            </article>
+          );
+        })}
       </div>
     </section>
   );

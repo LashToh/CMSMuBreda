@@ -51,7 +51,7 @@ npm run build
    - News
    - Downloads
    - Donate (paquetes WCoin)
-   - Integrations (Mercado Pago / Stripe / PayPal — secretos enmascarados)
+   - Integrations (Mercado Pago / AstroPay / PayPal — secretos enmascarados)
    - Gift Codes
    - **CMS Settings** (todo lo configurable post-install):
      - **General** — info del server, redes, download URL, `CORS_ORIGIN`
@@ -78,12 +78,66 @@ En cPanel lo recomendado es **un solo proceso Node**:
 VITE_API_URL=
 ```
 
+## API en subdominio (`api.mubreda.net`)
+
+Si preferís separar sitio y API en **cPanel**:
+
+> **¿VPS Linux (PM2 + Nginx)?** Usá la guía dedicada: **[VPS.md](./VPS.md)** (API-only en `api.mubreda.net`, sitio aún no desplegado desde este repo).
+
+### 1) DNS / cPanel
+
+1. cPanel → **Subdomains** (o Domains) → creá `api` apuntando a una carpeta (ej. `api.mubreda.net`).
+2. SSL: activá HTTPS para `api.mubreda.net` (AutoSSL / Let's Encrypt).
+
+### 2) App Node solo para la API
+
+Setup Node.js App con **Application URL** = `api.mubreda.net`, startup `app.js`.
+
+En el `.env` de esa app:
+
+```env
+NODE_ENV=production
+MU_DATABASE_MODE=production
+SERVE_SPA=false
+CORS_ORIGIN=https://mubreda.net,https://www.mubreda.net
+COOKIE_SECURE=true
+COOKIE_SAME_SITE=none
+COOKIE_DOMAIN=.mubreda.net
+DONATIONS_PUBLIC_BASE_URL=https://mubreda.net
+PUBLIC_BASE_URL=https://mubreda.net
+```
+
+`COOKIE_DOMAIN` con el punto al inicio (`.mubreda.net`) permite que la cookie funcione en `www` y en el sitio raíz. `SameSite=none` es obligatorio entre subdominios distintos con `credentials: include`.
+
+### 3) Frontend (sitio principal / beta)
+
+Antes de `npm run build`:
+
+```env
+VITE_API_URL=https://api.mubreda.net
+```
+
+Podés servir el `dist/` con otra app Node (mismo repo, sin `SERVE_SPA=false`) o con Apache/Nginx estático. Si usás otra app Node solo para el front, no hace falta que tenga SQL: las llamadas van a `VITE_API_URL`.
+
+### 4) Webhooks de donaciones
+
+Apuntá a la API:
+
+- `https://api.mubreda.net/api/donations/webhooks/mercadopago`
+- `https://api.mubreda.net/api/donations/webhooks/astropay`
+- `https://api.mubreda.net/api/donations/webhooks/paypal`
+
+### 5) Install
+
+Abrí `https://api.mubreda.net/install` (o el sitio si la API y el SPA están juntos).
+
+**Nota:** en shared hosting a veces es más simple **un solo dominio** (sección anterior). El subdominio de API conviene si querés aislar backend o poner la API en un VPS ([VPS.md](./VPS.md)).
 ## Donaciones (webhooks)
 
 Apuntá las URLs públicas a:
 
 - `https://tudominio.com/api/donations/webhooks/mercadopago`
-- `https://tudominio.com/api/donations/webhooks/stripe`
+- `https://api.tudominio.com/api/donations/webhooks/astropay`
 - `https://tudominio.com/api/donations/webhooks/paypal`
 
 Y cargá las keys en **AdminCP → Integrations** (recomendado) o en `.env` / Environment variables del panel.

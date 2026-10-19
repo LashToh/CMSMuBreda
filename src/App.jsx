@@ -15,6 +15,7 @@ import RankingsPage from './pages/RankingsPage';
 import ShopPage from './pages/ShopPage';
 import NewsPage from './pages/NewsPage';
 import DownloadsPage from './pages/DownloadsPage';
+import AboutPage from './pages/AboutPage';
 import AdminPage from './pages/AdminPage';
 
 function LandingLayout() {
@@ -46,6 +47,8 @@ export default function App() {
                   <Route path="/shop" element={<Navigate to="/donate" replace />} />
                   <Route path="/news" element={<NewsPage />} />
                   <Route path="/downloads" element={<DownloadsPage />} />
+                  <Route path="/about" element={<AboutPage />} />
+                  <Route path="/info" element={<Navigate to="/about" replace />} />
                   <Route path="/admin" element={<AdminPage />} />
                 </Route>
                 <Route path="*" element={<Navigate to="/" replace />} />

@@ -97,4 +97,18 @@
     padding-bottom: 0.75rem;
     border-bottom: 1px solid rgba(240, 208, 138, 0.08);
   }
+
+  &__mirror-fieldset {
+    border: 1px solid rgba(240, 208, 138, 0.18);
+    border-radius: $radius-md;
+    padding: 0.85rem 1rem 1rem;
+    margin: 0 0 0.85rem;
+
+    legend {
+      font-family: $font-display;
+      color: $color-gold;
+      padding: 0 0.35rem;
+      letter-spacing: 0.04em;
+    }
+  }
 }

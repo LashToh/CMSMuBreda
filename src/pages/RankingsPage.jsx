@@ -5,7 +5,22 @@ const TABS = [
   { id: 'level', label: 'Level' },
   { id: 'pk', label: 'PK' },
   { id: 'guilds', label: 'Guilds' },
+  { id: 'devil-square', label: 'Devil Square' },
+  { id: 'blood-castle', label: 'Blood Castle' },
+  { id: 'castle-siege', label: 'Castle Siege' },
+  { id: 'chaos-castle', label: 'Chaos Castle' },
+  { id: 'duel', label: 'Duel' },
+  { id: 'illusion-temple', label: 'Illusion Temple' },
 ];
+
+const EVENT_TYPES = new Set([
+  'devil-square',
+  'blood-castle',
+  'castle-siege',
+  'chaos-castle',
+  'duel',
+  'illusion-temple',
+]);
 
 export default function RankingsPage() {
   const [type, setType] = useState('level');
@@ -38,6 +53,7 @@ export default function RankingsPage() {
 
   const isGuild = type === 'guilds';
   const isLevel = type === 'level';
+  const isEvent = EVENT_TYPES.has(type);
 
   return (
     <section className="cms-page">
@@ -80,6 +96,13 @@ export default function RankingsPage() {
                       <th>Score</th>
                       <th>Members</th>
                     </>
+                  ) : isEvent ? (
+                    <>
+                      <th>Name</th>
+                      <th>Class</th>
+                      <th>Points</th>
+                      <th>Guild</th>
+                    </>
                   ) : (
                     <>
                       <th>Name</th>
@@ -113,6 +136,13 @@ export default function RankingsPage() {
                           <td>{row.master}</td>
                           <td>{row.score}</td>
                           <td>{row.members}</td>
+                        </>
+                      ) : isEvent ? (
+                        <>
+                          <td>{row.name}</td>
+                          <td>{row.className || row.classShort || '—'}</td>
+                          <td>{row.points ?? row.score ?? 0}</td>
+                          <td>{row.guild || '—'}</td>
                         </>
                       ) : (
                         <>

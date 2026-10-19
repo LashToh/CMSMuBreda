@@ -113,7 +113,7 @@ Consistent JSON: `{ success, message, data }` or `{ success:false, code, message
 | `ENABLE_VIP` | **false** | Needs real VIP table map |
 | `ENABLE_GIFT_CODES` | true | Local CMS store + currency adapter |
 | `ENABLE_VOTE_REWARDS` | **false** | No fake provider verification |
-| `ENABLE_DONATIONS` | true | Mercado Pago / Stripe / PayPal → WCoinC (+ mock) |
+| `ENABLE_DONATIONS` | true | Mercado Pago / AstroPay / PayPal → WCoinC (+ mock) |
 
 ---
 

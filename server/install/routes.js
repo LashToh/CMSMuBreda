@@ -194,6 +194,24 @@ router.post('/', async (req, res) => {
 });
 
 export function serveInstallPage(_req, res) {
+  // Install page uses inline <script>; relax CSP only for this HTML.
+  res.setHeader(
+    'Content-Security-Policy',
+    [
+      "default-src 'self'",
+      "base-uri 'self'",
+      "font-src 'self' https: data:",
+      "form-action 'self'",
+      "frame-ancestors 'self'",
+      "img-src 'self' data:",
+      "object-src 'none'",
+      "script-src 'self' 'unsafe-inline'",
+      "script-src-attr 'none'",
+      "style-src 'self' 'unsafe-inline'",
+      "connect-src 'self'",
+    ].join('; '),
+  );
+
   if (!installAllowed()) {
     return res.status(403).type('html').send(`
       <!doctype html><html><body style="background:#090909;color:#f0d08a;font-family:Georgia;padding:2rem">

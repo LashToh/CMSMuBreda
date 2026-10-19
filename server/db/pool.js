@@ -3,6 +3,7 @@ import { config } from '../config/index.js';
 
 let pool = null;
 let pool2 = null;
+let poolRanking = null;
 
 function buildConfig(database) {
   return {
@@ -47,6 +48,31 @@ export async function getAccountsPool() {
   return pool2;
 }
 
+/**
+ * Optional separate Ranking DB (IGCN-style).
+ * MuDevs keeps Ranking* in MuOnline — leave DB_DATABASE_RANKING empty.
+ * Never use BattleCore here (*Final_* tables are a different system).
+ */
+export async function getRankingPool() {
+  if (config.isMock) {
+    throw new Error('Database pool requested while MU_DATABASE_MODE=mock');
+  }
+  const rankingDb = String(config.db.databaseRanking || '').trim();
+  const lower = rankingDb.toLowerCase();
+  if (
+    !rankingDb ||
+    rankingDb === config.db.database ||
+    lower === 'battlecore' ||
+    lower === 'battle_core'
+  ) {
+    return getPool();
+  }
+  if (poolRanking) return poolRanking;
+  poolRanking = new sql.ConnectionPool(buildConfig(rankingDb));
+  await poolRanking.connect();
+  return poolRanking;
+}
+
 export async function closePools() {
   if (pool) {
     await pool.close();
@@ -55,6 +81,10 @@ export async function closePools() {
   if (pool2) {
     await pool2.close();
     pool2 = null;
+  }
+  if (poolRanking) {
+    await poolRanking.close();
+    poolRanking = null;
   }
 }
 

@@ -1,9 +1,20 @@
 /**
  * Donation packages (fiat → WCoinC).
- * Amounts mirrored from WebEngine mp_packs_coin / sp_packs_coin (type_M → wcoinc).
+ * ARS → Mercado Pago only. USD → AstroPay + PayPal.
  */
-/** Real gateways always listed on each pack (UI shows enabled/disabled from config). */
-const ALL_PROVIDERS = ['mercadopago', 'stripe', 'paypal', 'mock'];
+
+export function providersForFiat(fiatCurrency, { includeMock = true } = {}) {
+  const fiat = String(fiatCurrency || 'USD').toUpperCase();
+  const base = fiat === 'ARS' ? ['mercadopago'] : ['astropay', 'paypal'];
+  return includeMock ? [...base, 'mock'] : base;
+}
+
+function normalizePackProviders(pack) {
+  return {
+    ...pack,
+    providers: providersForFiat(pack.fiatCurrency, { includeMock: true }),
+  };
+}
 
 export const DEFAULT_DONATION_PACKAGES = [
   {
@@ -14,7 +25,7 @@ export const DEFAULT_DONATION_PACKAGES = [
     price: 100,
     creditCurrency: 'wcoinc',
     creditAmount: 1000,
-    providers: ALL_PROVIDERS,
+    providers: providersForFiat('ARS'),
     active: true,
     order: 1,
   },
@@ -26,7 +37,7 @@ export const DEFAULT_DONATION_PACKAGES = [
     price: 200,
     creditCurrency: 'wcoinc',
     creditAmount: 2000,
-    providers: ALL_PROVIDERS,
+    providers: providersForFiat('ARS'),
     active: true,
     order: 2,
   },
@@ -38,7 +49,7 @@ export const DEFAULT_DONATION_PACKAGES = [
     price: 300,
     creditCurrency: 'wcoinc',
     creditAmount: 3000,
-    providers: ALL_PROVIDERS,
+    providers: providersForFiat('ARS'),
     active: true,
     order: 3,
   },
@@ -50,7 +61,7 @@ export const DEFAULT_DONATION_PACKAGES = [
     price: 5,
     creditCurrency: 'wcoinc',
     creditAmount: 1000,
-    providers: ALL_PROVIDERS,
+    providers: providersForFiat('USD'),
     active: true,
     order: 10,
   },
@@ -62,7 +73,7 @@ export const DEFAULT_DONATION_PACKAGES = [
     price: 10,
     creditCurrency: 'wcoinc',
     creditAmount: 2000,
-    providers: ALL_PROVIDERS,
+    providers: providersForFiat('USD'),
     active: true,
     order: 11,
   },
@@ -74,17 +85,35 @@ export const DEFAULT_DONATION_PACKAGES = [
     price: 20,
     creditCurrency: 'wcoinc',
     creditAmount: 4500,
-    providers: ALL_PROVIDERS,
+    providers: providersForFiat('USD'),
     active: true,
     order: 12,
   },
 ];
 
+/** ARS packs first, then USD; within each currency by price ascending. */
+export function comparePackagesByValue(a, b) {
+  const fiatRank = (fiat) => {
+    const f = String(fiat || '').toUpperCase();
+    if (f === 'ARS') return 0;
+    if (f === 'USD') return 1;
+    return 2;
+  };
+  const byFiat = fiatRank(a.fiatCurrency) - fiatRank(b.fiatCurrency);
+  if (byFiat !== 0) return byFiat;
+  const byPrice = Number(a.price || 0) - Number(b.price || 0);
+  if (byPrice !== 0) return byPrice;
+  return Number(a.creditAmount || 0) - Number(b.creditAmount || 0);
+}
+
 export function listPackages(storePackages) {
   const packs = Array.isArray(storePackages) && storePackages.length
     ? storePackages
     : DEFAULT_DONATION_PACKAGES;
-  return packs.filter((p) => p.active !== false).sort((a, b) => (a.order || 0) - (b.order || 0));
+  return packs
+    .filter((p) => p.active !== false)
+    .map(normalizePackProviders)
+    .sort(comparePackagesByValue);
 }
 
 export function getPackage(packageId, storePackages) {

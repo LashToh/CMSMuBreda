@@ -6,6 +6,7 @@ import * as downloadsService from '../services/downloadsService.js';
 import * as shopService from '../services/shopService.js';
 import * as giftCodeService from '../services/giftCodeService.js';
 import * as voteService from '../services/voteService.js';
+import * as aboutService from '../services/aboutService.js';
 
 export async function health(_req, res) {
   return ok(res, {
@@ -51,6 +52,14 @@ export async function serverInfo(_req, res, next) {
   }
 }
 
+export async function about(_req, res, next) {
+  try {
+    return ok(res, aboutService.getAbout({ applyLive: true }));
+  } catch (err) {
+    return next(err);
+  }
+}
+
 export async function rankings(req, res, next) {
   try {
     if (!config.features.rankings) {
@@ -67,7 +76,7 @@ export async function rankings(req, res, next) {
         res,
         400,
         'INVALID_TYPE',
-        'Ranking type not supported. Use level (combined cLevel + mLevel), pk, or guilds.',
+        'Ranking type not supported. Use level, pk, guilds, or event rankings.',
       );
     }
 
@@ -75,8 +84,24 @@ export async function rankings(req, res, next) {
       level: () => mu.rankings.byLevel({ page, pageSize }),
       pk: () => mu.rankings.byPk({ page, pageSize }),
       guilds: () => mu.rankings.byGuilds({ page, pageSize }),
+      'devil-square': () => mu.rankings.byDevilSquare({ page, pageSize }),
+      devilsquare: () => mu.rankings.byDevilSquare({ page, pageSize }),
+      ds: () => mu.rankings.byDevilSquare({ page, pageSize }),
+      'blood-castle': () => mu.rankings.byBloodCastle({ page, pageSize }),
+      bloodcastle: () => mu.rankings.byBloodCastle({ page, pageSize }),
+      bc: () => mu.rankings.byBloodCastle({ page, pageSize }),
+      'castle-siege': () => mu.rankings.byCastleSiege({ page, pageSize }),
+      castlesiege: () => mu.rankings.byCastleSiege({ page, pageSize }),
+      cs: () => mu.rankings.byCastleSiege({ page, pageSize }),
+      'chaos-castle': () => mu.rankings.byChaosCastle({ page, pageSize }),
+      chaoscastle: () => mu.rankings.byChaosCastle({ page, pageSize }),
+      cc: () => mu.rankings.byChaosCastle({ page, pageSize }),
+      duel: () => mu.rankings.byDuel({ page, pageSize }),
+      'illusion-temple': () => mu.rankings.byIllusionTemple({ page, pageSize }),
+      illusiontemple: () => mu.rankings.byIllusionTemple({ page, pageSize }),
+      it: () => mu.rankings.byIllusionTemple({ page, pageSize }),
     };
-    const fn = map[type];
+    const fn = map[String(type).toLowerCase()];
     if (!fn) return fail(res, 400, 'INVALID_TYPE', 'Unknown ranking type.');
     try {
       const result = await fn();

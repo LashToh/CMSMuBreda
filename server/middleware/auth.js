@@ -8,23 +8,27 @@ export function signToken(payload) {
   });
 }
 
-export function setAuthCookie(res, token) {
-  res.cookie(config.auth.cookieName, token, {
+function cookieOptions() {
+  const opts = {
     httpOnly: true,
     secure: config.auth.cookieSecure,
     sameSite: config.auth.cookieSameSite,
-    maxAge: 7 * 24 * 60 * 60 * 1000,
     path: '/',
+  };
+  const domain = String(config.auth.cookieDomain || '').trim();
+  if (domain) opts.domain = domain;
+  return opts;
+}
+
+export function setAuthCookie(res, token) {
+  res.cookie(config.auth.cookieName, token, {
+    ...cookieOptions(),
+    maxAge: 7 * 24 * 60 * 60 * 1000,
   });
 }
 
 export function clearAuthCookie(res) {
-  res.clearCookie(config.auth.cookieName, {
-    httpOnly: true,
-    secure: config.auth.cookieSecure,
-    sameSite: config.auth.cookieSameSite,
-    path: '/',
-  });
+  res.clearCookie(config.auth.cookieName, cookieOptions());
 }
 
 export function requireAuth(req, res, next) {

@@ -1,8 +1,9 @@
-import { getPool, getAccountsPool, sql } from '../../db/pool.js';
+import { getPool, getAccountsPool, getRankingPool, sql } from '../../db/pool.js';
 import { config } from '../../config/index.js';
 import { resolveClass } from '../../utils/classes.js';
 import { hashPassword, getPasswordSqlExpression, passwordsMatch } from '../../utils/password.js';
 import { AppError } from '../../utils/errors.js';
+import { probeGameServer } from '../../utils/gameServerProbe.js';
 
 const IDENT_RE = /^[A-Za-z_][A-Za-z0-9_]*$/;
 
@@ -95,6 +96,146 @@ function schemaGuildMember() {
     name: assertIdentifier(gm.name, 'guildMember name column'),
     guild: assertIdentifier(gm.guild, 'guildMember guild column'),
   };
+}
+
+function schemaEventRanking(kind) {
+  const s = config.mu[kind];
+  if (!s?.table) {
+    throw new AppError(`Unknown event ranking kind: ${kind}`, {
+      status: 500,
+      code: 'SCHEMA_ERROR',
+    });
+  }
+  return {
+    table: assertIdentifier(s.table, `${kind} table`),
+    name: assertIdentifier(s.name, `${kind} name column`),
+    score: assertIdentifier(s.score, `${kind} score column`),
+  };
+}
+
+/**
+ * Top scores from Ranking* event tables (DS/BC/CS/CC/Duel/IT).
+ * Tries Ranking DB first, then character DB (MuDevs keeps these in MuOnline).
+ * Enriches with Character class + guild when available.
+ */
+async function queryEventScorePage(pool, ev, { offset, pageSize }) {
+  const countResult = await pool.request().query(
+    `SELECT COUNT(*) AS total FROM ${qIdent(ev.table)}`,
+  );
+  const total = Number(countResult.recordset[0]?.total ?? 0);
+  const orderBySql = `ISNULL(${qIdent(ev.score)}, 0) DESC, ${qIdent(ev.name)} ASC`;
+  const selectList = `${qIdent(ev.name)} AS name, ISNULL(${qIdent(ev.score)}, 0) AS score`;
+
+  try {
+    const scoreRows = await pool
+      .request()
+      .input('offset', sql.Int, offset)
+      .input('pageSize', sql.Int, pageSize)
+      .query(
+        `SELECT ${selectList}
+         FROM ${qIdent(ev.table)}
+         ORDER BY ${orderBySql}
+         OFFSET @offset ROWS FETCH NEXT @pageSize ROWS ONLY`,
+      );
+    return { total, rows: scoreRows.recordset || [] };
+  } catch (offsetErr) {
+    // SQL Server 2008 R2: OFFSET/FETCH not supported — use ROW_NUMBER
+    console.error(`[rankings.offset] ${ev.table}:`, offsetErr.message);
+    const scoreRows = await pool
+      .request()
+      .input('offset', sql.Int, offset)
+      .input('pageSize', sql.Int, pageSize)
+      .query(
+        `SELECT name, score FROM (
+           SELECT ${selectList}, ROW_NUMBER() OVER (ORDER BY ${orderBySql}) AS [_rn]
+           FROM ${qIdent(ev.table)}
+         ) AS ranked
+         WHERE ranked.[_rn] > @offset AND ranked.[_rn] <= (@offset + @pageSize)
+         ORDER BY ranked.[_rn]`,
+      );
+    return { total, rows: scoreRows.recordset || [] };
+  }
+}
+
+/** BattleCore holds *Final_* tables — not classic RankingDevilSquare / RankingBloodCastle. */
+function isClassicEventRankingDb(name) {
+  const n = String(name || '').trim().toLowerCase();
+  if (!n) return false;
+  if (n === 'battlecore' || n === 'battle_core') return false;
+  return true;
+}
+
+async function pagedEventScoreRanking(kind, opts) {
+  const { page, pageSize, offset } = normalizePagination(opts);
+  const ev = schemaEventRanking(kind);
+  const rankingDb = String(config.db.databaseRanking || '').trim();
+  const charDb = String(config.db.database || '').trim();
+  // MuDevs: Ranking* live in MuOnline. Prefer character DB first.
+  // Only use a separate Ranking DB when it is set, different, and not BattleCore.
+  const useSeparateRanking =
+    isClassicEventRankingDb(rankingDb) && rankingDb.toLowerCase() !== charDb.toLowerCase();
+
+  const attempts = [{ label: `character:${charDb || 'default'}`, getPool: getPool }];
+  if (useSeparateRanking) {
+    attempts.push({ label: `ranking:${rankingDb}`, getPool: getRankingPool });
+  }
+
+  let lastErr = null;
+  for (const attempt of attempts) {
+    try {
+      const pool = await attempt.getPool();
+      const { total, rows } = await queryEventScorePage(pool, ev, { offset, pageSize });
+      if (total === 0 && useSeparateRanking && attempt === attempts[0]) {
+        console.warn(
+          `[rankings.${kind}] ${attempt.label} table ${ev.table} empty — trying ranking DB`,
+        );
+        continue;
+      }
+
+      const items = await Promise.all(
+        rows.map(async (row) => {
+          const name = String(row.name || '');
+          let classId = 0;
+          let className = '—';
+          let classShort = '—';
+          let guild = null;
+          try {
+            const char = await characters.findByName(name);
+            if (char) {
+              classId = char.classId;
+              className = char.className;
+              classShort = char.classShort;
+              guild = char.guild;
+            }
+          } catch {
+            /* character lookup optional */
+          }
+          return {
+            name,
+            score: Number(row.score ?? 0),
+            points: Number(row.score ?? 0),
+            classId,
+            className,
+            classShort,
+            guild,
+          };
+        }),
+      );
+
+      if (items.length || total > 0) {
+        console.info(`[rankings.${kind}] ok via ${attempt.label} (${total} rows)`);
+      }
+      return { items, total, page, pageSize };
+    } catch (err) {
+      lastErr = err;
+      console.error(`[rankings.${kind}] ${attempt.label}:`, err.message);
+    }
+  }
+
+  if (lastErr) {
+    console.error(`[rankings.${kind}] all attempts failed:`, lastErr.message);
+  }
+  return emptyRankingPage(opts);
 }
 
 function coreCharColumns(c) {
@@ -569,70 +710,97 @@ export const characters = {
   },
 };
 
-async function pagedCharacterRanking(orderBySql, opts) {
-  const { page, pageSize, offset } = normalizePagination(opts);
-  const c = schemaCharacters();
-  const columns = [...coreCharColumns(c), ...optionalCharColumns(c)];
+async function queryPagedRows({ tableSql, selectList, orderBySql, page, pageSize, offset }) {
+  const pool = await getPool();
+  const countResult = await pool.request().query(`SELECT COUNT(*) AS total FROM ${tableSql}`);
+  const total = Number(countResult.recordset[0]?.total ?? 0);
 
   try {
-    const pool = await getPool();
-    const selectList = columns.map(qIdent).join(', ');
-    const countResult = await pool.request().query(
-      `SELECT COUNT(*) AS total FROM ${qIdent(c.table)}`,
-    );
-    const total = Number(countResult.recordset[0]?.total ?? 0);
-
     const itemsResult = await pool
       .request()
       .input('offset', sql.Int, offset)
       .input('pageSize', sql.Int, pageSize)
       .query(
         `SELECT ${selectList}
-         FROM ${qIdent(c.table)}
+         FROM ${tableSql}
          ORDER BY ${orderBySql}
          OFFSET @offset ROWS FETCH NEXT @pageSize ROWS ONLY`,
       );
-
-    const items = await mapCharRows(itemsResult.recordset);
-    return { items, total, page, pageSize };
-  } catch {
-    try {
-      const pool = await getPool();
-      const selectList = coreCharColumns(c).map(qIdent).join(', ');
-      const countResult = await pool.request().query(
-        `SELECT COUNT(*) AS total FROM ${qIdent(c.table)}`,
+    return { items: itemsResult.recordset, total };
+  } catch (offsetErr) {
+    // SQL Server < 2012 (or compatibility issues): ROW_NUMBER fallback
+    console.error('[rankings.offset]', offsetErr.message);
+    const itemsResult = await pool
+      .request()
+      .input('offset', sql.Int, offset)
+      .input('pageSize', sql.Int, pageSize)
+      .query(
+        `SELECT * FROM (
+           SELECT ${selectList}, ROW_NUMBER() OVER (ORDER BY ${orderBySql}) AS [_rn]
+           FROM ${tableSql}
+         ) AS ranked
+         WHERE ranked.[_rn] > @offset AND ranked.[_rn] <= (@offset + @pageSize)
+         ORDER BY ranked.[_rn]`,
       );
-      const total = Number(countResult.recordset[0]?.total ?? 0);
-      const itemsResult = await pool
-        .request()
-        .input('offset', sql.Int, offset)
-        .input('pageSize', sql.Int, pageSize)
-        .query(
-          `SELECT ${selectList}
-           FROM ${qIdent(c.table)}
-           ORDER BY ${orderBySql}
-           OFFSET @offset ROWS FETCH NEXT @pageSize ROWS ONLY`,
-        );
-      const items = await mapCharRows(itemsResult.recordset);
+    return { items: itemsResult.recordset, total };
+  }
+}
+
+/**
+ * Character rankings with progressive fallbacks:
+ * full columns → core columns → minimal ranking columns.
+ * Throws if every attempt fails (caller chooses empty page vs alternate ORDER BY).
+ */
+async function pagedCharacterRanking(orderBySql, opts) {
+  const { page, pageSize, offset } = normalizePagination(opts);
+  const c = schemaCharacters();
+  const tableSql = qIdent(c.table);
+  const columnSets = [
+    [...coreCharColumns(c), ...optionalCharColumns(c)],
+    coreCharColumns(c),
+    [c.name, c.account, c.class, c.level, c.pkLevel, c.pkCount],
+  ];
+
+  let lastErr;
+  for (const cols of columnSets) {
+    try {
+      const selectList = cols.map(qIdent).join(', ');
+      const { items: rows, total } = await queryPagedRows({
+        tableSql,
+        selectList,
+        orderBySql,
+        page,
+        pageSize,
+        offset,
+      });
+      const items = await mapCharRows(rows);
       return { items, total, page, pageSize };
-    } catch {
-      return emptyRankingPage(opts);
+    } catch (err) {
+      lastErr = err;
+      console.error('[rankings.character]', err.message);
     }
   }
+  throw lastErr || new Error('Character ranking query failed.');
 }
 
 export const rankings = {
   /** Combined level ranking: cLevel + mLevel (WebEngine combine_level_masterlevel). */
   async byLevel(opts) {
     const c = schemaCharacters();
-    try {
-      return await pagedCharacterRanking(
-        `(${qIdent(c.level)} + ISNULL(${qIdent(c.masterLevel)}, 0)) DESC, ${qIdent(c.level)} DESC, ${qIdent(c.name)} ASC`,
-        opts,
-      );
-    } catch {
-      return pagedCharacterRanking(`${qIdent(c.level)} DESC, ${qIdent(c.name)} ASC`, opts);
+    const orders = [
+      `(${qIdent(c.level)} + ISNULL(${qIdent(c.masterLevel)}, 0)) DESC, ${qIdent(c.level)} DESC, ${qIdent(c.name)} ASC`,
+      `${qIdent(c.level)} DESC, ${qIdent(c.name)} ASC`,
+    ];
+    let lastErr;
+    for (const orderBySql of orders) {
+      try {
+        return await pagedCharacterRanking(orderBySql, opts);
+      } catch (err) {
+        lastErr = err;
+        console.error('[rankings.byLevel]', err.message);
+      }
     }
+    return emptyRankingPage(opts);
   },
 
   async byMasterLevel() {
@@ -663,7 +831,8 @@ export const rankings = {
         `${qIdent(c.pkCount)} DESC, ${qIdent(c.name)} ASC`,
         opts,
       );
-    } catch {
+    } catch (err) {
+      console.error('[rankings.byPk]', err.message);
       return emptyRankingPage(opts);
     }
   },
@@ -674,18 +843,7 @@ export const rankings = {
     const gm = schemaGuildMember();
 
     try {
-      const pool = await getPool();
-      const countResult = await pool.request().query(
-        `SELECT COUNT(*) AS total FROM ${qIdent(g.table)}`,
-      );
-      const total = Number(countResult.recordset[0]?.total ?? 0);
-
-      const itemsResult = await pool
-        .request()
-        .input('offset', sql.Int, offset)
-        .input('pageSize', sql.Int, pageSize)
-        .query(
-          `SELECT
+      const selectList = `
              g.${qIdent(g.name)} AS name,
              g.${qIdent(g.master)} AS master,
              g.${qIdent(g.score)} AS score,
@@ -693,13 +851,17 @@ export const rankings = {
                SELECT COUNT(*)
                FROM ${qIdent(gm.table)} gm
                WHERE gm.${qIdent(gm.guild)} = g.${qIdent(g.name)}
-             ) AS members
-           FROM ${qIdent(g.table)} g
-           ORDER BY g.${qIdent(g.score)} DESC, g.${qIdent(g.name)} ASC
-           OFFSET @offset ROWS FETCH NEXT @pageSize ROWS ONLY`,
-        );
+             ) AS members`;
+      const { items: rows, total } = await queryPagedRows({
+        tableSql: `${qIdent(g.table)} g`,
+        selectList,
+        orderBySql: `g.${qIdent(g.score)} DESC, g.${qIdent(g.name)} ASC`,
+        page,
+        pageSize,
+        offset,
+      });
 
-      const items = itemsResult.recordset.map((row) => ({
+      const items = rows.map((row) => ({
         name: row.name,
         master: row.master,
         score: Number(row.score ?? 0),
@@ -707,9 +869,34 @@ export const rankings = {
       }));
 
       return { items, total, page, pageSize };
-    } catch {
+    } catch (err) {
+      console.error('[rankings.byGuilds]', err.message);
       return emptyRankingPage(opts);
     }
+  },
+
+  async byDevilSquare(opts) {
+    return pagedEventScoreRanking('devilSquare', opts);
+  },
+
+  async byBloodCastle(opts) {
+    return pagedEventScoreRanking('bloodCastle', opts);
+  },
+
+  async byCastleSiege(opts) {
+    return pagedEventScoreRanking('castleSiege', opts);
+  },
+
+  async byChaosCastle(opts) {
+    return pagedEventScoreRanking('chaosCastle', opts);
+  },
+
+  async byDuel(opts) {
+    return pagedEventScoreRanking('duel', opts);
+  },
+
+  async byIllusionTemple(opts) {
+    return pagedEventScoreRanking('illusionTemple', opts);
   },
 };
 
@@ -866,6 +1053,14 @@ export const vip = {
 
 export const serverStats = {
   async get() {
+    const gsHost = config.server.gsHost;
+    const gsPort = config.server.gsPort;
+    const gsProbe = await probeGameServer(
+      gsHost,
+      gsPort,
+      config.server.gsCheckTimeoutMs,
+    );
+
     try {
       const ms = schemaMembStat();
       const pool = await getAccountsPool();
@@ -875,22 +1070,29 @@ export const serverStats = {
          WHERE ${qIdent(ms.connectStat)} = 1`,
       );
 
+      const playersOnline = Number(onlineResult.recordset[0]?.total ?? 0);
+      // Prefer GameServer TCP probe; fall back to DB reachable when GS_HOST is unset.
+      const online = gsProbe === null ? true : gsProbe;
+
       return {
-        online: true,
-        playersOnline: Number(onlineResult.recordset[0]?.total ?? 0),
+        online,
+        playersOnline: online || gsProbe === null ? playersOnline : 0,
         totalAccounts: await accounts.count(),
         totalCharacters: await characters.count(),
         totalGuilds: await guilds.count(),
         mode: config.muDatabaseMode,
+        statusSource: gsProbe === null ? 'database' : 'gameserver',
       };
     } catch {
       return {
-        online: false,
+        online: gsProbe === true,
         playersOnline: 0,
         totalAccounts: 0,
         totalCharacters: 0,
         totalGuilds: 0,
         mode: config.muDatabaseMode,
+        statusSource: gsProbe === null ? 'database' : 'gameserver',
+        unavailable: gsProbe !== true,
       };
     }
   },

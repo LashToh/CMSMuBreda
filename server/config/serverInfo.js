@@ -24,4 +24,8 @@ export const serverInfo = {
   downloadUrl: env('DOWNLOAD_URL', ''),
   instagramUrl: env('INSTAGRAM_URL', 'https://www.instagram.com/mubredaonline/'),
   facebookUrl: env('FACEBOOK_URL', 'https://www.facebook.com/mubredaonline/'),
+  /** GameServer TCP check for Online/Offline on the home page */
+  gsHost: env('GS_HOST', env('GAME_SERVER_HOST', '')),
+  gsPort: envInt('GS_PORT', envInt('GAME_SERVER_PORT', 55901)),
+  gsCheckTimeoutMs: envInt('GS_CHECK_TIMEOUT_MS', 1500),
 };

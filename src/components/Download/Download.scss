@@ -69,6 +69,40 @@
     justify-content: center;
   }
 
+  &__mirrors {
+    width: 100%;
+    max-width: 560px;
+  }
+
+  &__mirrors-label {
+    font-family: $font-display;
+    font-size: 0.75rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: rgba(240, 208, 138, 0.75);
+    margin: 0 0 0.65rem;
+  }
+
+  &__mirrors-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.65rem;
+    justify-content: center;
+  }
+
+  &__mirror-btn {
+    font-size: 0.85rem !important;
+    padding: 0.7rem 1.1rem !important;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+  }
+
+  &__mirror-size {
+    opacity: 0.7;
+    font-size: 0.75rem;
+  }
+
   &__requirements {
     text-align: left;
     max-width: 600px;

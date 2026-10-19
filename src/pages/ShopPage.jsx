@@ -3,6 +3,10 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useTranslation } from '../context/LanguageContext';
 import {
+  calculateWcoinc,
+  currencyForProvider,
+} from '../data/donationRates';
+import {
   ApiError,
   completeMockDonation,
   fetchDonationPackages,
@@ -10,10 +14,11 @@ import {
 } from '../services/api';
 
 const PENDING_DONATION_KEY = 'mubreda-pending-donation';
+const CUSTOM_METHODS = ['mercadopago', 'astropay', 'paypal'];
 
 function normalizeProviders(raw) {
   if (!Array.isArray(raw) || raw.length === 0) {
-    return ['mercadopago', 'stripe', 'paypal'].map((id) => ({
+    return ['mercadopago', 'astropay', 'paypal'].map((id) => ({
       id,
       enabled: false,
       configured: false,
@@ -73,14 +78,28 @@ export default function ShopPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [packages, setPackages] = useState([]);
-  const [providers, setProviders] = useState({});
+  const [providerStatus, setProviderStatus] = useState({});
+  const [customMeta, setCustomMeta] = useState(null);
   const [mockMode, setMockMode] = useState(false);
   const [error, setError] = useState('');
   const [msg, setMsg] = useState('');
   const [loading, setLoading] = useState(true);
   const [busyId, setBusyId] = useState('');
   const [highlightId, setHighlightId] = useState('');
+  const [customProvider, setCustomProvider] = useState('');
+  const [customAmount, setCustomAmount] = useState('');
   const resumeTried = useRef(false);
+
+  const customCurrency = customProvider
+    ? currencyForProvider(customProvider) ||
+      customMeta?.providerCurrency?.[customProvider] ||
+      ''
+    : '';
+
+  const quote = useMemo(
+    () => calculateWcoinc(customAmount, customCurrency, customMeta || {}),
+    [customAmount, customCurrency, customMeta],
+  );
 
   const statusHint = useMemo(() => {
     const status = searchParams.get('status');
@@ -96,7 +115,8 @@ export default function ShopPage() {
     try {
       const res = await fetchDonationPackages();
       setPackages(res.data?.items || []);
-      setProviders(res.data?.providers || {});
+      setProviderStatus(res.data?.providers || {});
+      setCustomMeta(res.data?.custom || null);
       setMockMode(Boolean(res.data?.mockMode));
     } catch (err) {
       setError(err instanceof ApiError ? err.message : t('donate.unavailable'));
@@ -110,19 +130,25 @@ export default function ShopPage() {
   }, [load]);
 
   const runCheckout = useCallback(
-    async (pack, providerId) => {
+    async (payload, creditHint) => {
       setMsg('');
       setError('');
-      setBusyId(`${pack.id}:${providerId}`);
+      const busyKey = payload.packageId
+        ? `${payload.packageId}:${payload.provider}`
+        : `custom:${payload.provider}`;
+      setBusyId(busyKey);
       try {
-        const res = await startDonationCheckout({ packageId: pack.id, provider: providerId });
+        const res = await startDonationCheckout(payload);
         const data = res.data || {};
+        const credited = data.creditAmount ?? creditHint;
 
         if (data.mode === 'mock') {
           const done = await completeMockDonation(data.transactionId);
           setMsg(
             done.message ||
-              t('donate.mockCredited', { amount: Number(pack.creditAmount).toLocaleString() }),
+              t('donate.mockCredited', {
+                amount: Number(credited || 0).toLocaleString(),
+              }),
           );
           return;
         }
@@ -159,26 +185,83 @@ export default function ShopPage() {
     }
 
     if (!provider.enabled) return;
-    runCheckout(pack, providerId);
+    runCheckout({ packageId: pack.id, provider: providerId }, pack.creditAmount);
+  };
+
+  const onCustomPay = () => {
+    if (!customProvider || !customCurrency || quote.creditAmount <= 0) return;
+
+    const status = providerStatus[customProvider];
+    if (!status?.enabled) {
+      setError(
+        status?.reason
+          ? t(`donate.reasons.${status.reason}`)
+          : t('donate.checkoutFailed'),
+      );
+      return;
+    }
+
+    if (!isAuthenticated) {
+      savePendingDonation({
+        custom: true,
+        provider: customProvider,
+        amount: Number(customAmount),
+        fiatCurrency: customCurrency,
+      });
+      navigate(`/login?redirect=${encodeURIComponent('/donate')}`);
+      return;
+    }
+
+    runCheckout(
+      {
+        provider: customProvider,
+        amount: Number(customAmount),
+        fiatCurrency: customCurrency,
+      },
+      quote.creditAmount,
+    );
   };
 
   useEffect(() => {
     if (authLoading || loading || !isAuthenticated || resumeTried.current) return;
-    if (packages.length === 0) return;
 
     const pending = takePendingDonation();
-    if (!pending?.packageId || !pending?.provider) return;
+    if (!pending?.provider) return;
 
     resumeTried.current = true;
+    setMsg(t('donate.resume'));
+
+    if (pending.custom) {
+      setCustomProvider(pending.provider);
+      setCustomAmount(String(pending.amount || ''));
+      const status = providerStatus[pending.provider];
+      if (status?.enabled) {
+        runCheckout(
+          {
+            provider: pending.provider,
+            amount: Number(pending.amount),
+            fiatCurrency: pending.fiatCurrency,
+          },
+          null,
+        );
+      } else {
+        setError(
+          status?.reason
+            ? t(`donate.reasons.${status.reason}`)
+            : t('donate.checkoutFailed'),
+        );
+      }
+      return;
+    }
+
+    if (!pending.packageId || packages.length === 0) return;
     const pack = packages.find((p) => p.id === pending.packageId);
     if (!pack) return;
 
     setHighlightId(pack.id);
-    setMsg(t('donate.resume'));
-
     const entry = normalizeProviders(pack.providers).find((p) => p.id === pending.provider);
     if (entry?.enabled) {
-      runCheckout(pack, pending.provider);
+      runCheckout({ packageId: pack.id, provider: pending.provider }, pack.creditAmount);
     } else {
       setError(
         entry?.reason
@@ -186,7 +269,17 @@ export default function ShopPage() {
           : t('donate.checkoutFailed'),
       );
     }
-  }, [authLoading, loading, isAuthenticated, packages, runCheckout, t]);
+  }, [
+    authLoading,
+    loading,
+    isAuthenticated,
+    packages,
+    providerStatus,
+    runCheckout,
+    t,
+  ]);
+
+  const customBusy = busyId.startsWith('custom:');
 
   return (
     <section className="cms-page">
@@ -206,89 +299,217 @@ export default function ShopPage() {
 
       {loading ? (
         <div className="cms-loading">{t('donate.loading')}</div>
-      ) : packages.length === 0 ? (
-        <div className="cms-panel">{t('donate.empty')}</div>
       ) : (
-        <div className="cms-grid cms-grid--3">
-          {packages.map((pack) => {
-            const packProviders = normalizeProviders(pack.providers);
-            const highlighted = highlightId === pack.id;
-            return (
-              <article
-                key={pack.id}
-                className="cms-panel"
-                style={highlighted ? { outline: '1px solid #f0d08a' } : undefined}
-              >
-                <h3 style={{ fontFamily: 'Cinzel, serif', color: '#f0d08a' }}>{pack.title}</h3>
-                <p style={{ opacity: 0.8, margin: '0.75rem 0 1rem' }}>{pack.description}</p>
-                <p style={{ fontFamily: 'Cinzel, serif' }}>
-                  {pack.fiatCurrency} {Number(pack.price).toLocaleString()} →{' '}
-                  {Number(pack.creditAmount).toLocaleString()}{' '}
-                  {String(pack.creditCurrency).toUpperCase()}
-                </p>
+        <>
+          <div className="cms-panel" style={{ marginBottom: '1.5rem' }}>
+            <h2 style={{ fontFamily: 'Cinzel, serif', color: '#f0d08a', marginTop: 0 }}>
+              {t('donate.customTitle')}
+            </h2>
+            <p style={{ opacity: 0.8, marginBottom: '1rem' }}>{t('donate.customHint')}</p>
+
+            <div className="cms-form" style={{ maxWidth: 480 }}>
+              <label>
+                {t('donate.customMethod')}
                 <div
                   style={{
                     display: 'flex',
-                    flexDirection: 'column',
+                    flexWrap: 'wrap',
                     gap: '0.5rem',
-                    marginTop: '1rem',
+                    marginTop: '0.35rem',
                   }}
                 >
-                  {packProviders.map((provider) => {
-                    const busy = busyId === `${pack.id}:${provider.id}`;
-                    const label = t(`donate.providers.${provider.id}`) || provider.id;
-                    const reasonLabel = provider.reason
-                      ? t(`donate.reasons.${provider.reason}`)
-                      : '';
-                    const unavailable = !provider.enabled;
-
+                  {CUSTOM_METHODS.map((id) => {
+                    const status = providerStatus[id] || {
+                      enabled: false,
+                      reason: 'not_configured',
+                    };
+                    const selected = customProvider === id;
+                    const unavailable = !status.enabled;
                     return (
                       <button
-                        key={provider.id}
+                        key={id}
                         type="button"
-                        className={provider.id === 'mock' ? 'btn btn--secondary' : 'btn btn--primary'}
-                        disabled={Boolean(busyId) || unavailable}
-                        title={unavailable && reasonLabel ? reasonLabel : undefined}
-                        onClick={() => {
-                          if (unavailable) return;
-                          onProviderClick(pack, provider);
-                        }}
-                        style={
-                          unavailable ? { opacity: 0.55, cursor: 'not-allowed' } : undefined
+                        className={selected ? 'btn btn--primary' : 'btn btn--secondary'}
+                        disabled={unavailable}
+                        title={
+                          unavailable && status.reason
+                            ? t(`donate.reasons.${status.reason}`)
+                            : undefined
                         }
+                        onClick={() => {
+                          setCustomProvider(id);
+                          setError('');
+                        }}
+                        style={unavailable ? { opacity: 0.55 } : undefined}
                       >
-                        {busy
-                          ? t('donate.processing')
-                          : unavailable && reasonLabel
-                            ? `${label} — ${reasonLabel}`
-                            : label}
+                        {t(`donate.providers.${id}`)}
+                        {unavailable
+                          ? ` — ${t(`donate.reasons.${status.reason || 'not_configured'}`)}`
+                          : ''}
                       </button>
                     );
                   })}
                 </div>
-              </article>
-            );
-          })}
-        </div>
-      )}
+              </label>
 
-      <div className="cms-panel" style={{ marginTop: '1.5rem' }}>
-        <p style={{ margin: 0, opacity: 0.75 }}>
-          {t('donate.webhooks')}:{' '}
-          <code>/api/donations/webhooks/mercadopago</code>,{' '}
-          <code>/api/donations/webhooks/stripe</code>,{' '}
-          <code>/api/donations/webhooks/paypal</code>
-          {providers?.mercadopago || providers?.stripe || providers?.paypal
-            ? ` · MP ${
-                providers.mercadopago?.configured ? t('donate.statusOk') : t('donate.statusMissing')
-              } · Stripe ${
-                providers.stripe?.configured ? t('donate.statusOk') : t('donate.statusMissing')
-              } · PayPal ${
-                providers.paypal?.configured ? t('donate.statusOk') : t('donate.statusMissing')
-              }`
-            : null}
-        </p>
-      </div>
+              <label>
+                {t('donate.customCurrency')}
+                <input
+                  value={customCurrency || '—'}
+                  disabled
+                  readOnly
+                />
+              </label>
+
+              <label>
+                {t('donate.customAmount')}
+                <input
+                  type="number"
+                  min="1"
+                  step="1"
+                  inputMode="decimal"
+                  disabled={!customProvider}
+                  value={customAmount}
+                  onChange={(e) => setCustomAmount(e.target.value)}
+                  placeholder={
+                    customCurrency === 'ARS'
+                      ? t('donate.customAmountPlaceholderArs')
+                      : customCurrency === 'USD'
+                        ? t('donate.customAmountPlaceholderUsd')
+                        : t('donate.customAmountPlaceholder')
+                  }
+                />
+              </label>
+
+              <div
+                style={{
+                  margin: '0.5rem 0 1rem',
+                  fontFamily: 'Cinzel, serif',
+                  color: '#f0d08a',
+                }}
+              >
+                {customProvider && quote.creditAmount > 0 ? (
+                  <>
+                    <div>
+                      {t('donate.customYouGet', {
+                        amount: quote.creditAmount.toLocaleString(),
+                      })}
+                    </div>
+                    {quote.bonusApplied ? (
+                      <div style={{ fontSize: '0.9rem', opacity: 0.85, marginTop: '0.35rem' }}>
+                        {t('donate.customBonus', {
+                          base: quote.baseAmount.toLocaleString(),
+                          bonus: quote.bonusAmount.toLocaleString(),
+                        })}
+                      </div>
+                    ) : (
+                      <div style={{ fontSize: '0.85rem', opacity: 0.65, marginTop: '0.35rem' }}>
+                        {t('donate.customRates')}
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <div style={{ opacity: 0.65, fontFamily: 'inherit' }}>
+                    {t('donate.customPreviewEmpty')}
+                  </div>
+                )}
+              </div>
+
+              <button
+                type="button"
+                className="btn btn--primary"
+                disabled={
+                  !customProvider ||
+                  quote.creditAmount <= 0 ||
+                  Boolean(busyId) ||
+                  !providerStatus[customProvider]?.enabled
+                }
+                onClick={onCustomPay}
+              >
+                {customBusy ? t('donate.processing') : t('donate.customPay')}
+              </button>
+            </div>
+          </div>
+
+          <h2
+            style={{
+              fontFamily: 'Cinzel, serif',
+              color: '#f0d08a',
+              marginBottom: '1rem',
+            }}
+          >
+            {t('donate.packagesTitle')}
+          </h2>
+
+          {packages.length === 0 ? (
+            <div className="cms-panel">{t('donate.empty')}</div>
+          ) : (
+            <div className="cms-grid cms-grid--3">
+              {packages.map((pack) => {
+                const packProviders = normalizeProviders(pack.providers);
+                const highlighted = highlightId === pack.id;
+                return (
+                  <article
+                    key={pack.id}
+                    className="cms-panel"
+                    style={highlighted ? { outline: '1px solid #f0d08a' } : undefined}
+                  >
+                    <h3 style={{ fontFamily: 'Cinzel, serif', color: '#f0d08a' }}>{pack.title}</h3>
+                    <p style={{ opacity: 0.8, margin: '0.75rem 0 1rem' }}>{pack.description}</p>
+                    <p style={{ fontFamily: 'Cinzel, serif' }}>
+                      {pack.fiatCurrency} {Number(pack.price).toLocaleString()} →{' '}
+                      {Number(pack.creditAmount).toLocaleString()}{' '}
+                      {String(pack.creditCurrency).toUpperCase()}
+                    </p>
+                    <div
+                      style={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '0.5rem',
+                        marginTop: '1rem',
+                      }}
+                    >
+                      {packProviders.map((provider) => {
+                        const busy = busyId === `${pack.id}:${provider.id}`;
+                        const label = t(`donate.providers.${provider.id}`) || provider.id;
+                        const reasonLabel = provider.reason
+                          ? t(`donate.reasons.${provider.reason}`)
+                          : '';
+                        const unavailable = !provider.enabled;
+
+                        return (
+                          <button
+                            key={provider.id}
+                            type="button"
+                            className={
+                              provider.id === 'mock' ? 'btn btn--secondary' : 'btn btn--primary'
+                            }
+                            disabled={Boolean(busyId) || unavailable}
+                            title={unavailable && reasonLabel ? reasonLabel : undefined}
+                            onClick={() => {
+                              if (unavailable) return;
+                              onProviderClick(pack, provider);
+                            }}
+                            style={
+                              unavailable ? { opacity: 0.55, cursor: 'not-allowed' } : undefined
+                            }
+                          >
+                            {busy
+                              ? t('donate.processing')
+                              : unavailable && reasonLabel
+                                ? `${label} — ${reasonLabel}`
+                                : label}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </article>
+                );
+              })}
+            </div>
+          )}
+        </>
+      )}
     </section>
   );
 }

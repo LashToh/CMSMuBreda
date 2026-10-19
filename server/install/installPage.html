@@ -97,8 +97,8 @@
     <div class="wrap">
       <h1>MU Breda CMS Install</h1>
       <p class="sub">
-        Crea la cuenta <strong>administrador</strong> (MEMB_INFO) y el acceso al <strong>AdminCP</strong> (/admin),
-        como el panel de WebEngine. Luego reinicia Node en cPanel.
+        Crea la cuenta <strong>administrador</strong> (MEMB_INFO) y el acceso al <strong>AdminCP</strong>,
+        como el panel de WebEngine. Luego reiniciá la API en el VPS (<code>pm2 restart mubreda-api</code>).
       </p>
       <form class="panel" id="form">
         <h2>1. SQL Server</h2>
@@ -175,8 +175,8 @@
             throw new Error(json.message || 'Install failed');
           }
           msg.className = 'msg show ok';
-          msg.textContent = json.message || 'Installed. Restart Node, then open /login → /admin.';
-          setTimeout(() => { window.location.href = '/login'; }, 2800);
+          msg.textContent = json.message || 'Installed. On the VPS run: pm2 restart mubreda-api';
+          // API-only host may not serve the SPA — stay on this page.
         } catch (err) {
           msg.className = 'msg show err';
           msg.textContent = err.message || 'Install failed';

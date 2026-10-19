@@ -42,6 +42,12 @@ export const mu = {
     byGrandResets: (...a) => pick().rankings.byGrandResets(...a),
     byPk: (...a) => pick().rankings.byPk(...a),
     byGuilds: (...a) => pick().rankings.byGuilds(...a),
+    byDevilSquare: (...a) => pick().rankings.byDevilSquare(...a),
+    byBloodCastle: (...a) => pick().rankings.byBloodCastle(...a),
+    byCastleSiege: (...a) => pick().rankings.byCastleSiege(...a),
+    byChaosCastle: (...a) => pick().rankings.byChaosCastle(...a),
+    byDuel: (...a) => pick().rankings.byDuel(...a),
+    byIllusionTemple: (...a) => pick().rankings.byIllusionTemple(...a),
   },
 
   guilds: {

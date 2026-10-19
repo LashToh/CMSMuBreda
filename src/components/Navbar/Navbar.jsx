@@ -11,6 +11,7 @@ import './Navbar.scss';
 const CMS_LINKS = [
   { key: 'home', to: '/', end: true },
   { key: 'news', to: '/news' },
+  { key: 'about', to: '/about' },
   { key: 'rankings', to: '/rankings' },
   { key: 'donate', to: '/donate' },
   { key: 'downloads', to: '/downloads' },

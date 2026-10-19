@@ -20,3 +20,9 @@ uploads/*
 
 .ref/
 
+
+# Launcher client patches (large BMDs)
+patches/**
+!patches/README.md
+!patches/.gitkeep
+

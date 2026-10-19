@@ -10,6 +10,7 @@ export async function packages(_req, res, next) {
       items: donations.listPublicPackages(),
       providers: donations.listProvidersStatus(),
       mockMode: donations.mockModeEnabled(),
+      custom: donations.getCustomDonationMeta(),
     });
   } catch (err) {
     return next(err);
@@ -21,6 +22,8 @@ export async function checkout(req, res, next) {
     const result = await donations.startCheckout(req.user.username, {
       packageId: req.body.packageId,
       provider: req.body.provider,
+      amount: req.body.amount,
+      fiatCurrency: req.body.fiatCurrency,
     });
     return ok(res, result, 'Checkout created.');
   } catch (err) {
@@ -68,15 +71,15 @@ export async function webhookMercadoPago(req, res, next) {
   }
 }
 
-export async function webhookStripe(req, res, next) {
+export async function webhookAstroPay(req, res, next) {
   try {
-    await donations.handleStripeWebhook({
+    await donations.handleAstroPayWebhook({
       rawBody: req.body,
-      signatureHeader: req.headers['stripe-signature'],
+      signatureHeader: req.headers.signature || req.headers['Signature'],
     });
     return res.status(200).send('OK');
   } catch (err) {
-    if (err.code === 'INVALID_SIGNATURE') {
+    if (err.code === 'INVALID_SIGNATURE' || err.code === 'INVALID_PAYLOAD') {
       return res.status(400).send(err.message);
     }
     return next(err);

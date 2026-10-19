@@ -87,4 +87,39 @@ export const muSchema = {
     typeColumn: env('VIP_TYPE_COLUMN', 'Type'),
     dateColumn: env('VIP_DATE_COLUMN', 'Date'),
   },
+  /**
+   * MuDevs event ranking tables live in the character DB (MuOnline) by default.
+   * Only set DB_DATABASE_RANKING if you use a separate Ranking database.
+   * Castle Siege / Duel use KillScore / WinScore (not Score).
+   */
+  devilSquare: {
+    table: env('MU_TABLE_DEVIL_SQUARE', 'RankingDevilSquare'),
+    name: env('MU_COL_DS_NAME', 'Name'),
+    score: env('MU_COL_DS_SCORE', 'Score'),
+  },
+  bloodCastle: {
+    table: env('MU_TABLE_BLOOD_CASTLE', 'RankingBloodCastle'),
+    name: env('MU_COL_BC_NAME', 'Name'),
+    score: env('MU_COL_BC_SCORE', 'Score'),
+  },
+  castleSiege: {
+    table: env('MU_TABLE_CASTLE_SIEGE', 'RankingCastleSiege'),
+    name: env('MU_COL_CS_NAME', 'Name'),
+    score: env('MU_COL_CS_SCORE', 'KillScore'),
+  },
+  chaosCastle: {
+    table: env('MU_TABLE_CHAOS_CASTLE', 'RankingChaosCastle'),
+    name: env('MU_COL_CC_NAME', 'Name'),
+    score: env('MU_COL_CC_SCORE', 'Score'),
+  },
+  duel: {
+    table: env('MU_TABLE_DUEL', 'RankingDuel'),
+    name: env('MU_COL_DUEL_NAME', 'Name'),
+    score: env('MU_COL_DUEL_SCORE', 'WinScore'),
+  },
+  illusionTemple: {
+    table: env('MU_TABLE_ILLUSION_TEMPLE', 'RankingIllusionTemple'),
+    name: env('MU_COL_IT_NAME', 'Name'),
+    score: env('MU_COL_IT_SCORE', 'Score'),
+  },
 };

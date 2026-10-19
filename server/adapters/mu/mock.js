@@ -3,6 +3,7 @@ import { hashPassword, passwordsMatch } from '../../utils/password.js';
 import { readStore, updateStore } from '../../data/cmsStore.js';
 import { AppError } from '../../utils/errors.js';
 import { config } from '../../config/index.js';
+import { probeGameServer } from '../../utils/gameServerProbe.js';
 
 const MOCK_CHARS = [
   {
@@ -222,7 +223,7 @@ export const characters = {
   },
 
   async count() {
-    return MOCK_CHARS.length + 128;
+    return MOCK_CHARS.length;
   },
 
   async clearPk() {
@@ -273,51 +274,19 @@ export const characters = {
   },
 };
 
-function rankingPage(list, { page = 1, pageSize = 20 } = {}) {
-  const total = list.length;
-  const start = (page - 1) * pageSize;
-  return { items: list.slice(start, start + pageSize), total, page, pageSize };
+function emptyRanking(opts) {
+  const page = Math.max(1, Number(opts?.page) || 1);
+  const pageSize = Math.min(100, Math.max(1, Number(opts?.pageSize) || 20));
+  return { items: [], total: 0, page, pageSize };
 }
 
-const RANK_POOL = [
-  ...MOCK_CHARS.map(mapChar),
-  ...Array.from({ length: 40 }, (_, i) =>
-    mapChar({
-      name: `Hero${i + 1}`,
-      account: `player${i + 1}`,
-      classId: [0, 7, 14, 105, 70, 91][i % 6],
-      level: 400 - (i % 50),
-      masterLevel: 200 - i,
-      resets: 50 - i,
-      grandResets: Math.floor((50 - i) / 20),
-      strength: 1000,
-      agility: 800,
-      vitality: 700,
-      energy: 500,
-      command: 0,
-      pkLevel: 3 + (i % 4),
-      pkCount: i * 3,
-      map: 0,
-      posX: 125,
-      posY: 125,
-      money: 0,
-      levelUpPoint: 0,
-      guild: i % 3 === 0 ? 'Lugard' : i % 3 === 1 ? 'Breda' : null,
-      online: i % 5 === 0,
-    }),
-  ),
-];
-
 export const rankings = {
-  /** Combined level ranking: cLevel + mLevel (WebEngine combine_level_masterlevel). */
+  /**
+   * Mock mode does not invent ranking rows (Hero01…).
+   * Real rankings come from MSSQL Character/Guild when MU_DATABASE_MODE=production.
+   */
   async byLevel(opts) {
-    const sorted = [...RANK_POOL].sort(
-      (a, b) =>
-        (b.totalLevel ?? b.level + b.masterLevel) - (a.totalLevel ?? a.level + a.masterLevel) ||
-        b.level - a.level ||
-        a.name.localeCompare(b.name),
-    );
-    return rankingPage(sorted, opts);
+    return emptyRanking(opts);
   },
   async byMasterLevel() {
     throw new AppError('Master Level ranking is merged into Level (combined total).', {
@@ -338,23 +307,34 @@ export const rankings = {
     });
   },
   async byPk(opts) {
-    const sorted = [...RANK_POOL].sort((a, b) => b.pkCount - a.pkCount);
-    return rankingPage(sorted, opts);
+    return emptyRanking(opts);
   },
   async byGuilds(opts) {
-    const guilds = [
-      { name: 'Lugard', master: 'Allen', score: 9800, members: 42 },
-      { name: 'Breda', master: 'Hero3', score: 8700, members: 38 },
-      { name: 'Aquilas', master: 'Hero6', score: 7200, members: 27 },
-      { name: 'Temple', master: 'Hero9', score: 6100, members: 21 },
-    ];
-    return rankingPage(guilds, opts);
+    return emptyRanking(opts);
+  },
+  async byDevilSquare(opts) {
+    return emptyRanking(opts);
+  },
+  async byBloodCastle(opts) {
+    return emptyRanking(opts);
+  },
+  async byCastleSiege(opts) {
+    return emptyRanking(opts);
+  },
+  async byChaosCastle(opts) {
+    return emptyRanking(opts);
+  },
+  async byDuel(opts) {
+    return emptyRanking(opts);
+  },
+  async byIllusionTemple(opts) {
+    return emptyRanking(opts);
   },
 };
 
 export const guilds = {
   async count() {
-    return 24;
+    return 0;
   },
 };
 
@@ -396,14 +376,24 @@ export const vip = {
 
 export const serverStats = {
   async get() {
-    const onlinePlayers = RANK_POOL.filter((c) => c.online).length + 87;
+    // Mock mode simulates player counts. Set MU_DATABASE_MODE=production
+    // to read MEMB_STAT from the real MU database.
+    const gsProbe = await probeGameServer(
+      config.server.gsHost,
+      config.server.gsPort,
+      config.server.gsCheckTimeoutMs,
+    );
+    const online = gsProbe === null ? false : gsProbe;
+
     return {
-      online: true,
-      playersOnline: onlinePlayers,
+      online,
+      // No invented online counts in mock — use production DB for real numbers.
+      playersOnline: 0,
       totalAccounts: await accounts.count(),
       totalCharacters: await characters.count(),
       totalGuilds: await guilds.count(),
       mode: 'mock',
+      statusSource: gsProbe === null ? 'mock' : 'gameserver',
     };
   },
 };

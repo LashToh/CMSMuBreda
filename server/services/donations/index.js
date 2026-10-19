@@ -4,9 +4,17 @@ import { getDonationStore } from './transactions.js';
 import { createPendingTransaction, listTransactionsForUser, updateTransaction } from './transactions.js';
 import { getPackage, listPackages } from './packages.js';
 import { fulfillDonation } from './fulfill.js';
+import {
+  BONUS_PERCENT,
+  calculateWcoinc,
+  currencyForProvider,
+  getCustomDonationMeta,
+} from './rates.js';
 import * as mercadopago from './providers/mercadopago.js';
-import * as stripe from './providers/stripe.js';
+import * as astropay from './providers/astropay.js';
 import * as paypal from './providers/paypal.js';
+
+export { getCustomDonationMeta, calculateWcoinc, currencyForProvider };
 
 export function donationsEnabled() {
   return Boolean(config.features.donations);
@@ -16,7 +24,7 @@ export function mockModeEnabled() {
   return Boolean(config.donations.mockMode) || config.isMock;
 }
 
-const REAL_PROVIDERS = ['mercadopago', 'stripe', 'paypal'];
+const REAL_PROVIDERS = ['mercadopago', 'astropay', 'paypal'];
 
 function providerReason(id, { featureEnabled, configured }) {
   if (id === 'mock') {
@@ -29,10 +37,10 @@ function providerReason(id, { featureEnabled, configured }) {
 
 export function listProvidersStatus() {
   const mpConfigured = mercadopago.isConfigured();
-  const stripeConfigured = stripe.isConfigured();
+  const astroConfigured = astropay.isConfigured();
   const paypalConfigured = paypal.isConfigured();
   const mpFeature = Boolean(config.donations.mercadopago.enabled);
-  const stripeFeature = Boolean(config.donations.stripe.enabled);
+  const astroFeature = Boolean(config.donations.astropay.enabled);
   const paypalFeature = Boolean(config.donations.paypal.enabled);
   const mockOn = mockModeEnabled();
 
@@ -42,10 +50,10 @@ export function listProvidersStatus() {
       configured: mpConfigured,
       reason: providerReason('mercadopago', { featureEnabled: mpFeature, configured: mpConfigured }),
     },
-    stripe: {
-      enabled: stripeFeature && stripeConfigured,
-      configured: stripeConfigured,
-      reason: providerReason('stripe', { featureEnabled: stripeFeature, configured: stripeConfigured }),
+    astropay: {
+      enabled: astroFeature && astroConfigured,
+      configured: astroConfigured,
+      reason: providerReason('astropay', { featureEnabled: astroFeature, configured: astroConfigured }),
     },
     paypal: {
       enabled: paypalFeature && paypalConfigured,
@@ -67,8 +75,8 @@ function providerAvailable(provider) {
 }
 
 /**
- * Public package list: always expose MP / Stripe / PayPal (+ mock in mock mode)
- * with per-provider enabled flag so the CMS can show disabled buttons + reasons.
+ * Public package list: only gateways allowed for that pack's currency
+ * (ARS → MP, USD → AstroPay/PayPal) + mock when mock mode is on.
  */
 export function listPublicPackages() {
   const store = getDonationStore();
@@ -87,20 +95,18 @@ export function listPublicPackages() {
       creditCurrency: p.creditCurrency,
       creditAmount: p.creditAmount,
       order: p.order,
-      providers: visibleIds.map((id) => {
-        const supported = packSet.size === 0 || packSet.has(id);
-        const base = status[id] || { enabled: false, configured: false, reason: 'disabled' };
-        const enabled = supported && Boolean(base.enabled);
-        let reason = null;
-        if (!supported) reason = 'not_supported';
-        else if (!base.enabled) reason = base.reason || 'not_configured';
-        return {
-          id,
-          enabled,
-          configured: Boolean(base.configured),
-          reason,
-        };
-      }),
+      providers: visibleIds
+        .filter((id) => packSet.has(id) || (id === 'astropay' && packSet.has('stripe')))
+        .map((id) => {
+          const base = status[id] || { enabled: false, configured: false, reason: 'disabled' };
+          const enabled = Boolean(base.enabled);
+          return {
+            id,
+            enabled,
+            configured: Boolean(base.configured),
+            reason: enabled ? null : base.reason || 'not_configured',
+          };
+        }),
     };
   });
 }
@@ -109,24 +115,82 @@ function publicBaseUrl() {
   return config.donations.publicBaseUrl.replace(/\/$/, '');
 }
 
-export async function startCheckout(username, { packageId, provider }) {
-  if (!donationsEnabled()) {
-    throw new AppError('Donations are disabled.', { status: 503, code: 'FEATURE_DISABLED' });
-  }
-
-  const store = getDonationStore();
-  const pack = getPackage(packageId, store.donationPackages);
-  if (!pack) {
-    throw new AppError('Package not found.', { status: 404, code: 'NOT_FOUND' });
-  }
-
+function buildCustomPack(provider, amount, fiatCurrencyHint) {
   const selected = String(provider || '').toLowerCase();
-  if (!pack.providers?.includes(selected)) {
-    throw new AppError('Provider not available for this package.', {
+  const expectedFiat = currencyForProvider(selected);
+  if (!expectedFiat) {
+    throw new AppError('Provider not available for custom amount.', {
       status: 400,
       code: 'INVALID_PROVIDER',
     });
   }
+
+  const fiat = String(fiatCurrencyHint || expectedFiat).toUpperCase();
+  if (fiat !== expectedFiat) {
+    throw new AppError(
+      `Provider ${selected} only accepts ${expectedFiat}.`,
+      { status: 400, code: 'INVALID_CURRENCY' },
+    );
+  }
+
+  let quote;
+  try {
+    quote = calculateWcoinc(amount, fiat);
+  } catch (err) {
+    throw new AppError(err.message || 'Invalid amount.', {
+      status: 400,
+      code: err.code || 'INVALID_AMOUNT',
+    });
+  }
+
+  return {
+    id: 'custom',
+    title: `Custom ${quote.fiatAmount} ${quote.fiatCurrency}`,
+    description: quote.bonusApplied
+      ? `Custom donation (+${Math.round(BONUS_PERCENT * 100)}% bonus)`
+      : 'Custom donation',
+    fiatCurrency: quote.fiatCurrency,
+    price: quote.fiatAmount,
+    creditCurrency: 'wcoinc',
+    creditAmount: quote.creditAmount,
+    providers: [selected, 'mock'],
+    quote,
+  };
+}
+
+export async function startCheckout(username, { packageId, provider, amount, fiatCurrency }) {
+  if (!donationsEnabled()) {
+    throw new AppError('Donations are disabled.', { status: 503, code: 'FEATURE_DISABLED' });
+  }
+
+  let selected = String(provider || '').toLowerCase();
+  if (selected === 'stripe') selected = 'astropay';
+
+  const isCustom = amount != null && amount !== '';
+  let pack;
+
+  if (isCustom) {
+    pack = buildCustomPack(selected, amount, fiatCurrency);
+  } else {
+    const store = getDonationStore();
+    pack = getPackage(packageId, store.donationPackages);
+    if (!pack) {
+      throw new AppError('Package not found.', { status: 404, code: 'NOT_FOUND' });
+    }
+
+    const packProviders = (pack.providers || []).map((x) => String(x).toLowerCase());
+    const allowed =
+      packProviders.length === 0 ||
+      packProviders.includes(selected) ||
+      (selected === 'astropay' && packProviders.includes('stripe'));
+    if (!allowed) {
+      throw new AppError('Provider not available for this package.', {
+        status: 400,
+        code: 'INVALID_PROVIDER',
+      });
+    }
+  }
+
   if (!providerAvailable(selected)) {
     throw new AppError('Payment provider is not configured.', {
       status: 503,
@@ -142,16 +206,30 @@ export async function startCheckout(username, { packageId, provider }) {
     fiatAmount: pack.price,
     creditCurrency: pack.creditCurrency,
     creditAmount: pack.creditAmount,
+    meta: isCustom
+      ? {
+          custom: true,
+          baseAmount: pack.quote?.baseAmount,
+          bonusAmount: pack.quote?.bonusAmount,
+          bonusApplied: pack.quote?.bonusApplied,
+        }
+      : {},
   });
 
   const returnUrl = config.donations.successUrl || `${publicBaseUrl()}/donate?status=success`;
   const cancelUrl = config.donations.cancelUrl || `${publicBaseUrl()}/donate?status=cancel`;
-  const notifyBase = `${publicBaseUrl()}/api/donations/webhooks`;
+  // Split deploy: site is static on mubreda.net — callbacks must hit the API host.
+  const webhookRoot = String(config.donations.webhookBaseUrl || publicBaseUrl()).replace(
+    /\/$/,
+    '',
+  );
+  const webhookBase = `${webhookRoot}/api/donations/webhooks`;
 
   if (selected === 'mock') {
     return {
       mode: 'mock',
       transactionId: tx.id,
+      creditAmount: pack.creditAmount,
       message: 'Mock checkout ready. Call /api/donations/mock/complete to credit WCoinC.',
     };
   }
@@ -161,7 +239,7 @@ export async function startCheckout(username, { packageId, provider }) {
       username,
       pack,
       transactionId: tx.id,
-      notificationUrl: `${notifyBase}/mercadopago`,
+      notificationUrl: `${webhookBase}/mercadopago`,
       returnUrl,
     });
     updateTransaction(tx.id, { externalId: result.externalId });
@@ -170,15 +248,17 @@ export async function startCheckout(username, { packageId, provider }) {
       transactionId: tx.id,
       checkoutUrl: result.checkoutUrl,
       provider: 'mercadopago',
+      creditAmount: pack.creditAmount,
     };
   }
 
-  if (selected === 'stripe') {
-    const result = await stripe.createCheckoutSession({
+  if (selected === 'astropay') {
+    const result = await astropay.createDeposit({
       username,
       pack,
       transactionId: tx.id,
-      successUrl: returnUrl.includes('?') ? `${returnUrl}&session_id={CHECKOUT_SESSION_ID}` : `${returnUrl}?session_id={CHECKOUT_SESSION_ID}`,
+      callbackUrl: `${webhookBase}/astropay`,
+      redirectUrl: returnUrl,
       cancelUrl,
     });
     updateTransaction(tx.id, { externalId: result.externalId });
@@ -186,7 +266,8 @@ export async function startCheckout(username, { packageId, provider }) {
       mode: 'redirect',
       transactionId: tx.id,
       checkoutUrl: result.checkoutUrl,
-      provider: 'stripe',
+      provider: 'astropay',
+      creditAmount: pack.creditAmount,
     };
   }
 
@@ -198,6 +279,7 @@ export async function startCheckout(username, { packageId, provider }) {
       provider: 'paypal',
       action: result.action,
       fields: result.fields,
+      creditAmount: pack.creditAmount,
     };
   }
 
@@ -278,7 +360,6 @@ export async function handleMercadoPagoWebhook({ rawBody, signatureHeader, reque
   const action = payload.action;
   const paymentId = payload?.data?.id || query?.id || dataId;
   if (!paymentId || (action && !['payment.created', 'payment.updated'].includes(action))) {
-    // topic=payment without action still process if we have an id
     if (!paymentId) return { ignored: true };
   }
 
@@ -319,47 +400,68 @@ export async function handleMercadoPagoWebhook({ rawBody, signatureHeader, reque
   });
 }
 
-export async function handleStripeWebhook({ rawBody, signatureHeader }) {
-  if (!donationsEnabled() || !config.donations.stripe.enabled) {
+export async function handleAstroPayWebhook({ rawBody, signatureHeader }) {
+  if (!donationsEnabled() || !config.donations.astropay.enabled) {
     return { ignored: true };
   }
 
-  if (!stripe.verifyWebhookSignature(rawBody, signatureHeader)) {
-    throw new AppError('Invalid Stripe signature.', { status: 400, code: 'INVALID_SIGNATURE' });
+  const rawForSig = Buffer.isBuffer(rawBody)
+    ? rawBody.toString('utf8')
+    : typeof rawBody === 'string'
+      ? rawBody
+      : JSON.stringify(rawBody ?? {});
+
+  if (!astropay.verifyWebhookSignature(rawForSig, signatureHeader)) {
+    throw new AppError('Invalid AstroPay signature.', { status: 400, code: 'INVALID_SIGNATURE' });
   }
 
-  const event = JSON.parse(Buffer.isBuffer(rawBody) ? rawBody.toString('utf8') : String(rawBody));
-  if (event.type !== 'checkout.session.completed') {
-    return { ignored: true };
+  let payload = {};
+  try {
+    payload = rawForSig.trim() ? JSON.parse(rawForSig) : {};
+  } catch {
+    throw new AppError('Invalid AstroPay payload.', { status: 400, code: 'INVALID_PAYLOAD' });
   }
 
-  const session = event.data?.object || {};
-  if (session.payment_status !== 'paid') {
-    return { ignored: true, payment_status: session.payment_status };
+  const status = String(payload.status || '').toUpperCase();
+  if (status !== 'APPROVED') {
+    return { ignored: true, status };
   }
 
-  const metadata = session.metadata || {};
-  const username = metadata.username;
-  const creditAmount = Number(metadata.amount || 0);
-  const creditCurrency = metadata.credit_currency || metadata.configId || 'wcoinc';
-  const type = metadata.type || 'COINS';
+  const { findTransactionById } = await import('./transactions.js');
+  const transactionId =
+    payload.merchant_deposit_id ||
+    payload.merchant_payment_id ||
+    payload.external_reference ||
+    '';
+  const tx = transactionId ? findTransactionById(String(transactionId)) : null;
 
-  if (type !== 'COINS' || !username || creditAmount <= 0) {
-    throw new AppError('Invalid Stripe metadata.', { status: 400, code: 'INVALID_METADATA' });
+  const username = tx?.username || String(payload.user?.merchant_user_id || '').replace(
+    /[^a-zA-Z0-9_]/g,
+    '',
+  );
+  const creditAmount = Number(tx?.creditAmount || 0);
+  const creditCurrency = tx?.creditCurrency || 'wcoinc';
+
+  if (!username || creditAmount <= 0) {
+    throw new AppError('Invalid AstroPay metadata.', { status: 400, code: 'INVALID_METADATA' });
   }
+
+  const externalId = String(
+    payload.deposit_external_id || payload.payment_external_id || transactionId,
+  );
 
   return fulfillDonation({
-    transactionId: metadata.transaction_id,
-    externalId: session.id,
-    provider: 'stripe',
+    transactionId: tx?.id || transactionId || undefined,
+    externalId,
+    provider: 'astropay',
     username,
     creditCurrency,
     creditAmount,
     meta: {
-      fiatAmount: (session.amount_total || 0) / 100,
-      fiatCurrency: session.currency,
-      packageId: metadata.package_id,
-      paymentIntent: session.payment_intent,
+      fiatAmount: payload.amount ?? payload.merchant_amount,
+      fiatCurrency: payload.currency || payload.merchant_currency,
+      packageId: tx?.packageId,
+      endStatusDate: payload.end_status_date,
     },
   });
 }
@@ -395,7 +497,6 @@ export async function handlePaypalIpn(payload) {
   let creditCurrency = tx?.creditCurrency || 'wcoinc';
 
   if (!creditAmount) {
-    // Fallback: open-amount conversion (WebEngine style)
     const gross = Number(payload.mc_gross || 0);
     creditAmount = Math.floor(gross * Number(config.donations.paypal.conversionRate || 100));
   }

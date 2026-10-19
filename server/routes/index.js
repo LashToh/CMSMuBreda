@@ -7,6 +7,7 @@ import { registerSchema } from '../validators/auth.js';
 import authRoutes from './auth.js';
 import accountRoutes from './account.js';
 import donationsRoutes from './donations.js';
+import launcherRoutes from './launcher.js';
 import * as publicController from '../controllers/publicController.js';
 import * as adminController from '../controllers/adminController.js';
 import * as authController from '../controllers/authController.js';
@@ -36,6 +37,7 @@ router.use(apiLimiter);
 
 router.get('/health', publicController.health);
 router.get('/server', publicController.serverInfo);
+router.get('/about', publicController.about);
 router.get('/rankings/:type?', publicController.rankings);
 
 router.get('/news', publicController.newsList);
@@ -53,6 +55,7 @@ router.get('/vote/sites', publicController.voteSites);
 router.post('/vote/start', requireAuth, publicController.voteStart);
 
 router.use('/donations', donationsRoutes);
+router.use('/launcher', launcherRoutes);
 
 router.use('/auth', authRoutes);
 router.use('/account', accountRoutes);
@@ -74,6 +77,7 @@ admin.put('/news/:id', adminController.updateNews);
 admin.delete('/news/:id', adminController.deleteNews);
 admin.get('/downloads', adminController.listDownloads);
 admin.post('/downloads', adminController.upsertDownload);
+admin.delete('/downloads/:id', adminController.deleteDownload);
 admin.get('/giftcodes', adminController.listGiftCodes);
 admin.post('/giftcodes', adminController.createGiftCode);
 admin.get('/logs', adminController.auditLogs);
@@ -84,8 +88,12 @@ admin.put('/settings', adminController.saveSettings);
 admin.get('/accounts/search', adminController.searchAccounts);
 admin.get('/donations/packages', adminController.listDonationPackages);
 admin.post('/donations/packages', adminController.saveDonationPackage);
+admin.delete('/donations/packages/:id', adminController.deleteDonationPackage);
 admin.get('/secrets', adminController.getSecrets);
 admin.put('/secrets', adminController.saveSecrets);
+admin.get('/about', adminController.getAbout);
+admin.put('/about', adminController.saveAbout);
+admin.post('/about/reset', adminController.resetAbout);
 admin.get('/discovery/tables', adminController.discoverTables);
 admin.get('/discovery/tables/:table/columns', adminController.discoverColumns);
 router.use('/admin', admin);

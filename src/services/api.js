@@ -103,6 +103,22 @@ export async function fetchServerInfo() {
   return request('/api/server');
 }
 
+export async function fetchAbout() {
+  return request('/api/about');
+}
+
+export async function fetchAdminAbout() {
+  return request('/api/admin/about', { auth: true });
+}
+
+export async function saveAdminAbout(payload) {
+  return request('/api/admin/about', { method: 'PUT', body: payload, auth: true });
+}
+
+export async function resetAdminAbout() {
+  return request('/api/admin/about/reset', { method: 'POST', auth: true });
+}
+
 export async function fetchRankings(type = 'level', { page = 1, pageSize = 20 } = {}) {
   return request(`/api/rankings/${type}?page=${page}&pageSize=${pageSize}`);
 }
@@ -135,10 +151,14 @@ export async function fetchDonationPackages() {
   return request('/api/donations/packages');
 }
 
-export async function startDonationCheckout({ packageId, provider }) {
+export async function startDonationCheckout({ packageId, provider, amount, fiatCurrency }) {
   return request('/api/donations/checkout', {
     method: 'POST',
-    body: { packageId, provider },
+    body: {
+      ...(packageId ? { packageId } : {}),
+      provider,
+      ...(amount != null && amount !== '' ? { amount, fiatCurrency } : {}),
+    },
     auth: true,
   });
 }
@@ -183,6 +203,13 @@ export async function saveAdminDownload(payload) {
   return request('/api/admin/downloads', { method: 'POST', body: payload, auth: true });
 }
 
+export async function deleteAdminDownload(id) {
+  return request(`/api/admin/downloads/${encodeURIComponent(id)}`, {
+    method: 'DELETE',
+    auth: true,
+  });
+}
+
 export async function createGiftCodeAdmin(payload) {
   return request('/api/admin/giftcodes', { method: 'POST', body: payload, auth: true });
 }
@@ -213,6 +240,13 @@ export async function fetchAdminDonationPackages() {
 
 export async function saveAdminDonationPackage(payload) {
   return request('/api/admin/donations/packages', { method: 'POST', body: payload, auth: true });
+}
+
+export async function deleteAdminDonationPackage(id) {
+  return request(`/api/admin/donations/packages/${encodeURIComponent(id)}`, {
+    method: 'DELETE',
+    auth: true,
+  });
 }
 
 export async function fetchAdminSecrets() {

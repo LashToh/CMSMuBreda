@@ -5,10 +5,12 @@ import {
   ApiError,
   createGiftCodeAdmin,
   createNewsAdmin,
+  deleteAdminDownload,
   deleteNewsAdmin,
   fetchAdminAccounts,
   fetchAdminConfigFull,
   fetchAdminDashboard,
+  deleteAdminDonationPackage,
   fetchAdminDonationPackages,
   fetchAdminDownloads,
   fetchAdminLogs,
@@ -18,7 +20,15 @@ import {
   saveAdminSecrets,
   saveAdminConfigFull,
   fetchAdminSecrets,
+  fetchAdminAbout,
+  saveAdminAbout,
+  resetAdminAbout,
 } from '../services/api';
+import {
+  emptyMirrorsMap,
+  normalizeMirrorsMap,
+  MIRROR_PROVIDERS,
+} from '../data/downloadMirrors';
 import './AdminPage.scss';
 
 const TABS = [
@@ -27,6 +37,7 @@ const TABS = [
   { id: 'news', label: 'News' },
   { id: 'downloads', label: 'Downloads' },
   { id: 'donate', label: 'Donate' },
+  { id: 'about', label: 'Server Info' },
   { id: 'integrations', label: 'Integrations' },
   { id: 'gifts', label: 'Gift Codes' },
   { id: 'settings', label: 'CMS Settings' },
@@ -62,6 +73,9 @@ function buildSettingsForm(full) {
         downloadUrl: full?.general?.server?.downloadUrl || '',
         instagramUrl: full?.general?.server?.instagramUrl || '',
         facebookUrl: full?.general?.server?.facebookUrl || '',
+        gsHost: full?.general?.server?.gsHost || '',
+        gsPort: full?.general?.server?.gsPort ?? 55901,
+        gsCheckTimeoutMs: full?.general?.server?.gsCheckTimeoutMs ?? 1500,
       },
       corsOrigin: full?.general?.corsOrigin || '',
       trustProxy: full?.general?.trustProxy ?? 1,
@@ -76,6 +90,7 @@ function buildSettingsForm(full) {
       cookieName: full?.auth?.cookieName || 'mubreda_session',
       cookieSecure: Boolean(full?.auth?.cookieSecure),
       cookieSameSite: full?.auth?.cookieSameSite || 'lax',
+      cookieDomain: full?.auth?.cookieDomain || '',
       registration: {
         defaultSnoNumb: full?.auth?.registration?.defaultSnoNumb || '1111111111111',
         insertViCurrInfo: Boolean(full?.auth?.registration?.insertViCurrInfo),
@@ -110,6 +125,12 @@ function buildSettingsForm(full) {
       characters: { ...(full?.muSchema?.characters || {}) },
       membStat: { ...(full?.muSchema?.membStat || {}) },
       vip: { ...(full?.muSchema?.vip || {}) },
+      devilSquare: { ...(full?.muSchema?.devilSquare || {}) },
+      bloodCastle: { ...(full?.muSchema?.bloodCastle || {}) },
+      castleSiege: { ...(full?.muSchema?.castleSiege || {}) },
+      chaosCastle: { ...(full?.muSchema?.chaosCastle || {}) },
+      duel: { ...(full?.muSchema?.duel || {}) },
+      illusionTemple: { ...(full?.muSchema?.illusionTemple || {}) },
     },
     db: {
       host: full?.db?.host || '',
@@ -118,6 +139,7 @@ function buildSettingsForm(full) {
       password: '',
       database: full?.db?.database || '',
       database2: full?.db?.database2 || '',
+      databaseRanking: full?.db?.databaseRanking || '',
       encrypt: Boolean(full?.db?.encrypt),
       trustServerCertificate: Boolean(full?.db?.trustServerCertificate),
     },
@@ -135,11 +157,13 @@ export default function AdminPage() {
   const [news, setNews] = useState({ title: '', content: '', type: 'announcement' });
   const [downloads, setDownloads] = useState([]);
   const [downloadForm, setDownloadForm] = useState({
+    id: '',
     title: '',
     description: '',
     url: '',
     type: 'client',
-    size: '—',
+    size: '',
+    mirrors: emptyMirrorsMap(),
   });
   const [gift, setGift] = useState({
     code: '',
@@ -153,13 +177,15 @@ export default function AdminPage() {
   const [settingsMeta, setSettingsMeta] = useState(null);
   const [settingsSection, setSettingsSection] = useState('general');
   const [packs, setPacks] = useState([]);
-  const [packForm, setPackForm] = useState({
+  const emptyPackForm = () => ({
+    id: '',
     title: '',
     fiatCurrency: 'USD',
     price: 10,
     creditAmount: 1000,
     creditCurrency: 'wcoinc',
   });
+  const [packForm, setPackForm] = useState(emptyPackForm);
   const [logs, setLogs] = useState([]);
   const [secrets, setSecrets] = useState(null);
   const [secretForm, setSecretForm] = useState({
@@ -167,13 +193,15 @@ export default function AdminPage() {
     mockMode: false,
     mpToken: '',
     mpWebhook: '',
-    stripeSecret: '',
-    stripeWebhook: '',
-    stripePub: '',
+    astroApiKey: '',
+    astroApiSecret: '',
+    astroSandbox: true,
+    astroCountry: 'AR',
     paypalEmail: '',
     paypalNotify: '',
     paypalReturn: '',
   });
+  const [aboutJson, setAboutJson] = useState('');
 
   const flash = (text) => {
     setMsg(text);
@@ -218,6 +246,10 @@ export default function AdminPage() {
           const res = await fetchAdminDonationPackages();
           setPacks(res.data?.items || []);
         }
+        if (tab === 'about') {
+          const res = await fetchAdminAbout();
+          setAboutJson(JSON.stringify(res.data || { sections: [] }, null, 2));
+        }
         if (tab === 'integrations') {
           const res = await fetchAdminSecrets();
           setSecrets(res.data);
@@ -226,9 +258,10 @@ export default function AdminPage() {
             mockMode: Boolean(res.data?.donations?.mockMode),
             mpToken: '',
             mpWebhook: '',
-            stripeSecret: '',
-            stripeWebhook: '',
-            stripePub: '',
+            astroApiKey: '',
+            astroApiSecret: '',
+            astroSandbox: res.data?.donations?.astropay?.sandbox !== false,
+            astroCountry: res.data?.donations?.astropay?.country || 'AR',
             paypalEmail: res.data?.donations?.paypal?.email || '',
             paypalNotify: res.data?.donations?.paypal?.notifyUrl || '',
             paypalReturn: res.data?.donations?.paypal?.returnUrl || '',
@@ -273,17 +306,69 @@ export default function AdminPage() {
     }
   };
 
+  const resetDownloadForm = () => {
+    setDownloadForm({
+      id: '',
+      title: '',
+      description: '',
+      url: '',
+      type: 'client',
+      size: '',
+      mirrors: emptyMirrorsMap(),
+    });
+  };
+
   const onSaveDownload = async (e) => {
     e.preventDefault();
     try {
-      await saveAdminDownload(downloadForm);
+      const mirrors = normalizeMirrorsMap({
+        url: downloadForm.url,
+        mirrors: downloadForm.mirrors,
+      });
+      await saveAdminDownload({
+        id: downloadForm.id || undefined,
+        title: downloadForm.title,
+        description: downloadForm.description,
+        size: downloadForm.size,
+        type: downloadForm.type,
+        url: mirrors.direct.url,
+        mirrors,
+      });
       flash('Download saved.');
-      setDownloadForm({ title: '', description: '', url: '', type: 'client', size: '—' });
+      resetDownloadForm();
       const res = await fetchAdminDownloads();
       setDownloads(res.data?.items || []);
     } catch (err) {
       setError(err instanceof ApiError ? err.message : 'Failed.');
     }
+  };
+
+  const onDeleteDownload = async () => {
+    if (!downloadForm.id) return;
+    if (!window.confirm(`Delete download “${downloadForm.title || downloadForm.id}”?`)) return;
+    try {
+      await deleteAdminDownload(downloadForm.id);
+      flash('Download deleted.');
+      resetDownloadForm();
+      const res = await fetchAdminDownloads();
+      setDownloads(res.data?.items || []);
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : 'Failed.');
+    }
+  };
+
+  const setMirrorField = (mirrorId, field, value) => {
+    setDownloadForm((d) => ({
+      ...d,
+      mirrors: {
+        ...d.mirrors,
+        [mirrorId]: {
+          ...(d.mirrors?.[mirrorId] || emptyMirrorsMap()[mirrorId]),
+          [field]: value,
+        },
+      },
+      ...(mirrorId === 'direct' && field === 'url' ? { url: value } : {}),
+    }));
   };
 
   const onCreateGift = async (e) => {
@@ -336,15 +421,41 @@ export default function AdminPage() {
   const onSavePack = async (e) => {
     e.preventDefault();
     try {
-      await saveAdminDonationPackage(packForm);
-      flash('Donation package saved.');
-      setPackForm({
-        title: '',
-        fiatCurrency: 'USD',
-        price: 10,
-        creditAmount: 1000,
-        creditCurrency: 'wcoinc',
+      await saveAdminDonationPackage({
+        id: packForm.id || undefined,
+        title: packForm.title,
+        fiatCurrency: packForm.fiatCurrency,
+        price: packForm.price,
+        creditAmount: packForm.creditAmount,
+        creditCurrency: packForm.creditCurrency,
       });
+      flash('Donation package saved.');
+      setPackForm(emptyPackForm());
+      const res = await fetchAdminDonationPackages();
+      setPacks(res.data?.items || []);
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : 'Failed.');
+    }
+  };
+
+  const onEditPack = (p) => {
+    setPackForm({
+      id: p.id || '',
+      title: p.title || '',
+      fiatCurrency: p.fiatCurrency || 'USD',
+      price: p.price ?? 10,
+      creditAmount: p.creditAmount ?? 1000,
+      creditCurrency: p.creditCurrency || 'wcoinc',
+    });
+  };
+
+  const onDeletePack = async (p) => {
+    if (!p?.id) return;
+    if (!window.confirm(`Delete package “${p.title || p.id}”?`)) return;
+    try {
+      await deleteAdminDonationPackage(p.id);
+      flash('Donation package deleted.');
+      if (packForm.id === p.id) setPackForm(emptyPackForm());
       const res = await fetchAdminDonationPackages();
       setPacks(res.data?.items || []);
     } catch (err) {
@@ -363,10 +474,11 @@ export default function AdminPage() {
             accessToken: secretForm.mpToken,
             webhookSecret: secretForm.mpWebhook,
           },
-          stripe: {
-            secretKey: secretForm.stripeSecret,
-            webhookSecret: secretForm.stripeWebhook,
-            publishableKey: secretForm.stripePub,
+          astropay: {
+            apiKey: secretForm.astroApiKey,
+            apiSecret: secretForm.astroApiSecret,
+            sandbox: secretForm.astroSandbox,
+            country: secretForm.astroCountry,
           },
           paypal: {
             email: secretForm.paypalEmail,
@@ -380,11 +492,12 @@ export default function AdminPage() {
         ...f,
         mpToken: '',
         mpWebhook: '',
-        stripeSecret: '',
-        stripeWebhook: '',
-        stripePub: '',
+        astroApiKey: '',
+        astroApiSecret: '',
         publicBaseUrl: res.data?.donations?.publicBaseUrl || f.publicBaseUrl,
         mockMode: Boolean(res.data?.donations?.mockMode),
+        astroSandbox: res.data?.donations?.astropay?.sandbox !== false,
+        astroCountry: res.data?.donations?.astropay?.country || 'AR',
         paypalEmail: res.data?.donations?.paypal?.email || '',
         paypalNotify: res.data?.donations?.paypal?.notifyUrl || '',
         paypalReturn: res.data?.donations?.paypal?.returnUrl || '',
@@ -573,7 +686,9 @@ export default function AdminPage() {
       {tab === 'downloads' && (
         <div className="cms-grid cms-grid--2">
           <div className="cms-panel">
-            <h2 className="admincp__h2">Add / update download</h2>
+            <h2 className="admincp__h2">
+              {downloadForm.id ? 'Edit download' : 'Add download'}
+            </h2>
             <form className="cms-form" onSubmit={onSaveDownload}>
               <label>
                 Title
@@ -584,10 +699,20 @@ export default function AdminPage() {
                 />
               </label>
               <label>
-                URL
+                Description
+                <textarea
+                  rows={3}
+                  value={downloadForm.description}
+                  onChange={(e) => setDownloadForm((d) => ({ ...d, description: e.target.value }))}
+                  placeholder="Shown on the downloads page"
+                />
+              </label>
+              <label>
+                Size
                 <input
-                  value={downloadForm.url}
-                  onChange={(e) => setDownloadForm((d) => ({ ...d, url: e.target.value }))}
+                  value={downloadForm.size}
+                  onChange={(e) => setDownloadForm((d) => ({ ...d, size: e.target.value }))}
+                  placeholder="e.g. 2.4 GB"
                 />
               </label>
               <label>
@@ -602,32 +727,115 @@ export default function AdminPage() {
                   <option value="tools">Tools</option>
                 </select>
               </label>
-              <label>
-                Description
-                <textarea
-                  rows={3}
-                  value={downloadForm.description}
-                  onChange={(e) => setDownloadForm((d) => ({ ...d, description: e.target.value }))}
-                />
-              </label>
-              <button type="submit" className="btn btn--primary">
-                Save
-              </button>
+
+              <h3 className="admincp__h3">Mirrors (label, description, link, size)</h3>
+              <p className="admincp__note">
+                Leave link empty to hide that mirror. Size on a mirror overrides the package size.
+              </p>
+              {MIRROR_PROVIDERS.map((provider) => {
+                const mirror = downloadForm.mirrors?.[provider.id] || emptyMirrorsMap()[provider.id];
+                return (
+                  <fieldset key={provider.id} className="admincp__mirror-fieldset">
+                    <legend>{provider.label}</legend>
+                    <label>
+                      Label
+                      <input
+                        value={mirror.label || ''}
+                        onChange={(e) => setMirrorField(provider.id, 'label', e.target.value)}
+                        placeholder={provider.label}
+                      />
+                    </label>
+                    <label>
+                      Description
+                      <input
+                        value={mirror.description || ''}
+                        onChange={(e) =>
+                          setMirrorField(provider.id, 'description', e.target.value)
+                        }
+                        placeholder="Optional short note"
+                      />
+                    </label>
+                    <label>
+                      Link
+                      <input
+                        value={mirror.url || ''}
+                        onChange={(e) => setMirrorField(provider.id, 'url', e.target.value)}
+                        placeholder="https://"
+                      />
+                    </label>
+                    <label>
+                      Size
+                      <input
+                        value={mirror.size || ''}
+                        onChange={(e) => setMirrorField(provider.id, 'size', e.target.value)}
+                        placeholder="Optional (uses package size if empty)"
+                      />
+                    </label>
+                  </fieldset>
+                );
+              })}
+
+              <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+                <button type="submit" className="btn btn--primary">
+                  Save
+                </button>
+                {downloadForm.id && (
+                  <>
+                    <button
+                      type="button"
+                      className="btn btn--secondary"
+                      onClick={resetDownloadForm}
+                    >
+                      New
+                    </button>
+                    <button type="button" className="btn btn--secondary" onClick={onDeleteDownload}>
+                      Delete
+                    </button>
+                  </>
+                )}
+              </div>
             </form>
           </div>
           <div className="cms-panel">
             <h2 className="admincp__h2">Configured downloads</h2>
             <ul className="admincp__list">
-              {downloads.map((d) => (
-                <li key={d.id}>
-                  <div>
-                    <strong>{d.title}</strong>
-                    <span>
-                      {d.type} · {d.url || 'no url'}
-                    </span>
-                  </div>
-                </li>
-              ))}
+              {downloads.map((d) => {
+                const map = normalizeMirrorsMap(d);
+                const mirrorCount = Object.values(map).filter((m) => m.url).length;
+                return (
+                  <li key={d.id}>
+                    <div>
+                      <strong>{d.title}</strong>
+                      <span>
+                        {d.type}
+                        {d.size ? ` · ${d.size}` : ''}
+                        {` · ${mirrorCount} mirror${mirrorCount === 1 ? '' : 's'}`}
+                      </span>
+                      {d.description ? (
+                        <span style={{ display: 'block', opacity: 0.7 }}>{d.description}</span>
+                      ) : null}
+                    </div>
+                    <button
+                      type="button"
+                      className="btn btn--secondary"
+                      onClick={() => {
+                        const mirrors = normalizeMirrorsMap(d);
+                        setDownloadForm({
+                          id: d.id,
+                          title: d.title || '',
+                          description: d.description || '',
+                          url: mirrors.direct.url || d.url || '',
+                          type: d.type || 'client',
+                          size: d.size || '',
+                          mirrors,
+                        });
+                      }}
+                    >
+                      Edit
+                    </button>
+                  </li>
+                );
+              })}
             </ul>
           </div>
         </div>
@@ -636,7 +844,9 @@ export default function AdminPage() {
       {tab === 'donate' && (
         <div className="cms-grid cms-grid--2">
           <div className="cms-panel">
-            <h2 className="admincp__h2">Add donation package</h2>
+            <h2 className="admincp__h2">
+              {packForm.id ? 'Edit donation package' : 'Add donation package'}
+            </h2>
             <form className="cms-form" onSubmit={onSavePack}>
               <label>
                 Title
@@ -672,13 +882,24 @@ export default function AdminPage() {
                   onChange={(e) => setPackForm((p) => ({ ...p, creditAmount: e.target.value }))}
                 />
               </label>
-              <button type="submit" className="btn btn--primary">
-                Save package
-              </button>
+              <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+                <button type="submit" className="btn btn--primary">
+                  Save package
+                </button>
+                {packForm.id && (
+                  <button
+                    type="button"
+                    className="btn btn--secondary"
+                    onClick={() => setPackForm(emptyPackForm())}
+                  >
+                    New
+                  </button>
+                )}
+              </div>
             </form>
             <p className="admincp__note">
-              Las keys de MP / Stripe / PayPal se configuran en la pestaña{' '}
-              <strong>Integrations</strong> (solo admin).
+              ARS → solo Mercado Pago. USD → AstroPay y PayPal. Las keys se
+              configuran en <strong>Integrations</strong>.
             </p>
           </div>
           <div className="cms-panel">
@@ -689,6 +910,7 @@ export default function AdminPage() {
                   <th>Title</th>
                   <th>Price</th>
                   <th>WCoinC</th>
+                  <th />
                 </tr>
               </thead>
               <tbody>
@@ -699,10 +921,87 @@ export default function AdminPage() {
                       {p.price} {p.fiatCurrency}
                     </td>
                     <td>{p.creditAmount}</td>
+                    <td style={{ whiteSpace: 'nowrap' }}>
+                      <button
+                        type="button"
+                        className="btn btn--secondary"
+                        onClick={() => onEditPack(p)}
+                      >
+                        Edit
+                      </button>{' '}
+                      <button
+                        type="button"
+                        className="btn btn--secondary"
+                        onClick={() => onDeletePack(p)}
+                      >
+                        Delete
+                      </button>
+                    </td>
                   </tr>
                 ))}
               </tbody>
             </table>
+          </div>
+        </div>
+      )}
+
+      {tab === 'about' && (
+        <div className="cms-panel">
+          <h2 className="admincp__h2">Server Info (página /about)</h2>
+          <p style={{ opacity: 0.75, marginTop: 0 }}>
+            Editá secciones y filas en JSON. Cada label puede ser texto o{' '}
+            <code>{'{ "es": "...", "en": "...", "pt": "..." }'}</code>. EXP/Drop del bloque
+            General se sincronizan con CMS Settings al publicar en la web.
+          </p>
+          <textarea
+            className="cms-input"
+            rows={22}
+            value={aboutJson}
+            onChange={(e) => setAboutJson(e.target.value)}
+            spellCheck={false}
+            style={{ width: '100%', fontFamily: 'ui-monospace, monospace', fontSize: '0.85rem' }}
+          />
+          <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1rem', flexWrap: 'wrap' }}>
+            <button
+              type="button"
+              className="btn btn--primary"
+              onClick={async () => {
+                try {
+                  const parsed = JSON.parse(aboutJson);
+                  const res = await saveAdminAbout(parsed);
+                  setAboutJson(JSON.stringify(res.data || parsed, null, 2));
+                  flash('Server info saved.');
+                } catch (err) {
+                  setError(
+                    err instanceof SyntaxError
+                      ? `JSON inválido: ${err.message}`
+                      : err instanceof ApiError
+                        ? err.message
+                        : 'Failed to save.',
+                  );
+                }
+              }}
+            >
+              Save
+            </button>
+            <button
+              type="button"
+              className="btn btn--secondary"
+              onClick={async () => {
+                try {
+                  const res = await resetAdminAbout();
+                  setAboutJson(JSON.stringify(res.data || { sections: [] }, null, 2));
+                  flash('Restored defaults.');
+                } catch (err) {
+                  setError(err instanceof ApiError ? err.message : 'Failed to reset.');
+                }
+              }}
+            >
+              Reset defaults
+            </button>
+            <a className="btn btn--secondary" href="/about" target="_blank" rel="noreferrer">
+              Preview /about
+            </a>
           </div>
         </div>
       )}
@@ -715,9 +1014,9 @@ export default function AdminPage() {
             {secrets.donations?.mercadopago?.accessToken?.set
               ? secrets.donations.mercadopago.accessToken.hint
               : 'sin configurar'}{' '}
-            · Stripe{' '}
-            {secrets.donations?.stripe?.secretKey?.set
-              ? secrets.donations.stripe.secretKey.hint
+            · AstroPay{' '}
+            {secrets.donations?.astropay?.apiKey?.set
+              ? secrets.donations.astropay.apiKey.hint
               : 'sin configurar'}{' '}
             · PayPal {secrets.donations?.paypal?.email || 'sin email'}
           </p>
@@ -764,32 +1063,45 @@ export default function AdminPage() {
                 />
               </label>
               <label>
-                Stripe Secret Key
+                AstroPay API Key
                 <input
                   type="password"
                   autoComplete="off"
-                  value={secretForm.stripeSecret}
-                  onChange={(e) => setSecretForm((f) => ({ ...f, stripeSecret: e.target.value }))}
-                  placeholder="sk_..."
+                  value={secretForm.astroApiKey}
+                  onChange={(e) => setSecretForm((f) => ({ ...f, astroApiKey: e.target.value }))}
+                  placeholder="Merchant Gateway API Key"
                 />
               </label>
               <label>
-                Stripe Webhook Secret
+                AstroPay API Secret
                 <input
                   type="password"
                   autoComplete="off"
-                  value={secretForm.stripeWebhook}
-                  onChange={(e) => setSecretForm((f) => ({ ...f, stripeWebhook: e.target.value }))}
-                  placeholder="whsec_..."
+                  value={secretForm.astroApiSecret}
+                  onChange={(e) => setSecretForm((f) => ({ ...f, astroApiSecret: e.target.value }))}
+                  placeholder="Secret (firma HMAC + callbacks)"
                 />
               </label>
               <label>
-                Stripe Publishable Key
+                AstroPay Country (ISO)
                 <input
-                  value={secretForm.stripePub}
-                  onChange={(e) => setSecretForm((f) => ({ ...f, stripePub: e.target.value }))}
-                  placeholder="pk_..."
+                  value={secretForm.astroCountry}
+                  onChange={(e) => setSecretForm((f) => ({ ...f, astroCountry: e.target.value }))}
+                  placeholder="AR"
+                  maxLength={2}
                 />
+              </label>
+              <label>
+                AstroPay environment
+                <select
+                  value={secretForm.astroSandbox ? 'sandbox' : 'production'}
+                  onChange={(e) =>
+                    setSecretForm((f) => ({ ...f, astroSandbox: e.target.value === 'sandbox' }))
+                  }
+                >
+                  <option value="sandbox">Sandbox</option>
+                  <option value="production">Production</option>
+                </select>
               </label>
               <label>
                 PayPal Email
@@ -943,6 +1255,43 @@ export default function AdminPage() {
                       />
                     </label>
                   ))}
+                  <label>
+                    gsHost (GameServer IP for Online/Offline)
+                    <input
+                      value={settings.general.server?.gsHost ?? ''}
+                      placeholder="127.0.0.1"
+                      onChange={(e) =>
+                        setSettings((s) => ({
+                          ...s,
+                          general: {
+                            ...s.general,
+                            server: { ...s.general.server, gsHost: e.target.value },
+                          },
+                        }))
+                      }
+                    />
+                  </label>
+                  <label>
+                    gsPort
+                    <input
+                      type="number"
+                      value={settings.general.server?.gsPort ?? 55901}
+                      onChange={(e) =>
+                        setSettings((s) => ({
+                          ...s,
+                          general: {
+                            ...s.general,
+                            server: { ...s.general.server, gsPort: e.target.value },
+                          },
+                        }))
+                      }
+                    />
+                  </label>
+                  <p className="admincp__note" style={{ gridColumn: '1 / -1' }}>
+                    Players online se leen de MEMB_STAT (ConnectStat=1) en la DB MU.
+                    Online/Offline usa TCP al GameServer (GS_HOST:GS_PORT). Requiere
+                    MU_DATABASE_MODE=production para el conteo real.
+                  </p>
                   <label>
                     CORS_ORIGIN (comma-separated)
                     <input
@@ -1180,6 +1529,19 @@ export default function AdminPage() {
                       <option value="none">none</option>
                     </select>
                   </label>
+                  <label>
+                    COOKIE_DOMAIN
+                    <input
+                      value={settings.auth.cookieDomain}
+                      onChange={(e) =>
+                        setSettings((s) => ({
+                          ...s,
+                          auth: { ...s.auth, cookieDomain: e.target.value },
+                        }))
+                      }
+                      placeholder=".mubreda.net"
+                    />
+                  </label>
                 </div>
               </>
             )}
@@ -1342,6 +1704,84 @@ export default function AdminPage() {
                     </label>
                   ))}
                 </div>
+                <h4 className="admincp__h4">Devil Square ranking</h4>
+                <div className="cms-grid cms-grid--2">
+                  {Object.keys(settings.muSchema.devilSquare || {}).map((key) => (
+                    <label key={key}>
+                      {key}
+                      <input
+                        value={settings.muSchema.devilSquare[key] ?? ''}
+                        onChange={(e) =>
+                          setSettings((s) => ({
+                            ...s,
+                            muSchema: {
+                              ...s.muSchema,
+                              devilSquare: {
+                                ...s.muSchema.devilSquare,
+                                [key]: e.target.value,
+                              },
+                            },
+                          }))
+                        }
+                      />
+                    </label>
+                  ))}
+                </div>
+                <h4 className="admincp__h4">Blood Castle ranking</h4>
+                <div className="cms-grid cms-grid--2">
+                  {Object.keys(settings.muSchema.bloodCastle || {}).map((key) => (
+                    <label key={key}>
+                      {key}
+                      <input
+                        value={settings.muSchema.bloodCastle[key] ?? ''}
+                        onChange={(e) =>
+                          setSettings((s) => ({
+                            ...s,
+                            muSchema: {
+                              ...s.muSchema,
+                              bloodCastle: {
+                                ...s.muSchema.bloodCastle,
+                                [key]: e.target.value,
+                              },
+                            },
+                          }))
+                        }
+                      />
+                    </label>
+                  ))}
+                </div>
+                {[
+                  ['castleSiege', 'Castle Siege ranking'],
+                  ['chaosCastle', 'Chaos Castle ranking'],
+                  ['duel', 'Duel ranking'],
+                  ['illusionTemple', 'Illusion Temple ranking'],
+                ].map(([section, title]) => (
+                  <div key={section}>
+                    <h4 className="admincp__h4">{title}</h4>
+                    <div className="cms-grid cms-grid--2">
+                      {Object.keys(settings.muSchema[section] || {}).map((key) => (
+                        <label key={key}>
+                          {key}
+                          <input
+                            value={settings.muSchema[section][key] ?? ''}
+                            onChange={(e) =>
+                              setSettings((s) => ({
+                                ...s,
+                                muSchema: {
+                                  ...s.muSchema,
+                                  [section]: {
+                                    ...s.muSchema[section],
+                                    [key]: e.target.value,
+                                  },
+                                },
+                              }))
+                            }
+                          />
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                ))}
               </>
             )}
 
@@ -1426,6 +1866,19 @@ export default function AdminPage() {
                         setSettings((s) => ({
                           ...s,
                           db: { ...s.db, database2: e.target.value },
+                        }))
+                      }
+                    />
+                  </label>
+                  <label>
+                    DB_DATABASE_RANKING (Devil Square / Blood Castle)
+                    <input
+                      value={settings.db.databaseRanking}
+                      placeholder="Ranking"
+                      onChange={(e) =>
+                        setSettings((s) => ({
+                          ...s,
+                          db: { ...s.db, databaseRanking: e.target.value },
                         }))
                       }
                     />

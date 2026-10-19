@@ -20,14 +20,18 @@ export default function Hero() {
 
   useEffect(() => {
     let cancelled = false;
-    (async () => {
+
+    const load = async ({ silent = false } = {}) => {
+      if (!silent) {
+        setStatus((s) => ({ ...s, loading: s.online == null }));
+      }
       try {
         const res = await fetchServerInfo();
         const stats = res.data?.stats || {};
         if (!cancelled) {
           setStatus({
             loading: false,
-            online: stats.online !== false && !stats.unavailable,
+            online: Boolean(stats.online) && !stats.unavailable,
             playersOnline:
               typeof stats.playersOnline === 'number' ? stats.playersOnline : null,
           });
@@ -37,9 +41,13 @@ export default function Hero() {
           setStatus({ loading: false, online: false, playersOnline: null });
         }
       }
-    })();
+    };
+
+    load();
+    const timer = setInterval(() => load({ silent: true }), 30000);
     return () => {
       cancelled = true;
+      clearInterval(timer);
     };
   }, []);
 

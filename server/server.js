@@ -4,9 +4,10 @@ import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
-import { config } from '../config/index.js';
+import { config } from './config/index.js';
 import { closePools } from './db/pool.js';
 import apiRoutes from './routes/index.js';
+import { PATCHES_ROOT } from './routes/launcher.js';
 import { notFoundHandler, errorHandler } from './middleware/errorHandler.js';
 import * as donationsController from './controllers/donationsController.js';
 import installRoutes, { serveInstallPage } from './install/routes.js';
@@ -43,9 +44,9 @@ app.use(
 
 // Donation webhooks need raw / urlencoded bodies before JSON parser
 app.post(
-  '/api/donations/webhooks/stripe',
+  '/api/donations/webhooks/astropay',
   express.raw({ type: 'application/json' }),
-  donationsController.webhookStripe,
+  donationsController.webhookAstroPay,
 );
 app.post(
   '/api/donations/webhooks/mercadopago',
@@ -65,14 +66,35 @@ app.use(cookieParser());
 app.get('/install', serveInstallPage);
 app.use('/api/install', installRoutes);
 
+// Client launcher patches: GET /patches/1.0.1/Data/...
+app.use(
+  '/patches',
+  express.static(PATCHES_ROOT, {
+    fallthrough: true,
+    maxAge: '1h',
+    index: false,
+  }),
+);
+
 app.use('/api', apiRoutes);
 
-// Production / cPanel: serve Vite build + SPA fallback (same Node process as API)
-const serveSpa = config.isProduction || process.env.SERVE_SPA === 'true';
+// Production / cPanel: serve Vite build + SPA fallback (same Node process as API).
+// API-only (api.mubreda.net): set SERVE_SPA=false — do not serve dist/.
+const serveSpaFlag = String(process.env.SERVE_SPA ?? '').trim().toLowerCase();
+const serveSpa =
+  serveSpaFlag === 'false' || serveSpaFlag === '0'
+    ? false
+    : config.isProduction || serveSpaFlag === 'true' || serveSpaFlag === '1';
 if (serveSpa) {
   app.use(express.static(distPath));
   app.get('*', (req, res, next) => {
-    if (req.path.startsWith('/api') || req.path.startsWith('/install')) return next();
+    if (
+      req.path.startsWith('/api') ||
+      req.path.startsWith('/install') ||
+      req.path.startsWith('/patches')
+    ) {
+      return next();
+    }
     return res.sendFile(path.join(distPath, 'index.html'), (err) => {
       if (err) next();
     });
@@ -91,8 +113,8 @@ const server = app.listen(config.api.port, () => {
   console.log(`[CMSMuBreda] MU_DATABASE_MODE=${config.muDatabaseMode}`);
   console.log(`[CMSMuBreda] HASH_METHOD=${config.hashMethod}`);
   console.log(`[CMSMuBreda] CORS_ORIGIN=${config.api.corsOrigin}`);
+  console.log(`[CMSMuBreda] Launcher patches dir: ${PATCHES_ROOT}`);
 });
-
 async function shutdown(signal) {
   console.log(`[CMSMuBreda] ${signal} received, shutting down...`);
   server.close();

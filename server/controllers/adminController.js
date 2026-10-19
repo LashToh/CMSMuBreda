@@ -12,6 +12,7 @@ import {
   getFullConfigView,
   saveFullConfig,
 } from '../services/adminConfigService.js';
+import * as aboutService from '../services/aboutService.js';
 
 export async function dashboard(req, res, next) {
   try {
@@ -95,6 +96,18 @@ export async function upsertDownload(req, res, next) {
   try {
     const item = downloadsService.upsertDownload(req.body, req.user.username);
     return ok(res, { item }, 'Download saved.');
+  } catch (err) {
+    return next(err);
+  }
+}
+
+export async function deleteDownload(req, res, next) {
+  try {
+    return ok(
+      res,
+      downloadsService.deleteDownload(req.params.id, req.user.username),
+      'Download deleted.',
+    );
   } catch (err) {
     return next(err);
   }
@@ -230,6 +243,18 @@ export async function saveDonationPackage(req, res, next) {
   }
 }
 
+export async function deleteDonationPackage(req, res, next) {
+  try {
+    return ok(
+      res,
+      adminCp.deleteDonationPackage(req.params.id, req.user.username),
+      'Donation package deleted.',
+    );
+  } catch (err) {
+    return next(err);
+  }
+}
+
 export async function getSecrets(_req, res, next) {
   try {
     return ok(res, getSecretsPublicView());
@@ -242,6 +267,32 @@ export async function saveSecrets(req, res, next) {
   try {
     const view = saveRuntimeSecretsAndEnv(req.body, req.user.username);
     return ok(res, view, 'Integrations saved. Providers update immediately; .env mirrored for restarts.');
+  } catch (err) {
+    return next(err);
+  }
+}
+
+export async function getAbout(_req, res, next) {
+  try {
+    return ok(res, aboutService.getAbout({ applyLive: false }));
+  } catch (err) {
+    return next(err);
+  }
+}
+
+export async function saveAbout(req, res, next) {
+  try {
+    const saved = aboutService.saveAbout(req.body, req.user?.username);
+    return ok(res, saved, 'Server info saved.');
+  } catch (err) {
+    return next(err);
+  }
+}
+
+export async function resetAbout(req, res, next) {
+  try {
+    const saved = aboutService.resetAbout(req.user?.username);
+    return ok(res, saved, 'Server info reset to defaults.');
   } catch (err) {
     return next(err);
   }

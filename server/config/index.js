@@ -44,6 +44,8 @@ export const config = {
     password: env('DB_PASSWORD', ''),
     database: env('DB_DATABASE', env('DB_NAME', 'MuOnline')),
     database2: env('DB_DATABASE_2', ''),
+    /** Optional Ranking DB (Devil Square / Blood Castle). Empty = same as MuOnline. */
+    databaseRanking: env('DB_DATABASE_RANKING', env('DB_RANKING', '')),
     encrypt: envBool('DB_ENCRYPT', false),
     trustServerCertificate: envBool('DB_TRUST_CERT', true),
   },
@@ -61,6 +63,8 @@ export const config = {
     cookieName: env('COOKIE_NAME', 'mubreda_session'),
     cookieSecure: envBool('COOKIE_SECURE', nodeEnv === 'production'),
     cookieSameSite: env('COOKIE_SAME_SITE', 'lax'),
+    /** e.g. .mubreda.com — required when frontend and API are on different subdomains */
+    cookieDomain: env('COOKIE_DOMAIN', ''),
   },
 
   hashMethod: env('HASH_METHOD', 'md5').toLowerCase(),
@@ -98,6 +102,11 @@ export const config = {
   donations: {
     mockMode: envBool('DONATIONS_MOCK', requestedMode !== 'production'),
     publicBaseUrl: env('DONATIONS_PUBLIC_BASE_URL', env('PUBLIC_BASE_URL', 'http://localhost:5173')),
+    /** API public origin for payment callbacks (e.g. https://api.mubreda.net). */
+    webhookBaseUrl: env(
+      'DONATIONS_WEBHOOK_BASE_URL',
+      env('PUBLIC_API_BASE_URL', 'https://api.mubreda.net'),
+    ),
     successUrl: env('DONATIONS_SUCCESS_URL', ''),
     cancelUrl: env('DONATIONS_CANCEL_URL', ''),
     mercadopago: {
@@ -106,12 +115,13 @@ export const config = {
       webhookSecret: env('MP_WEBHOOK_SECRET', ''),
       description: env('MP_DESCRIPTION', 'MU Breda donation'),
     },
-    stripe: {
-      enabled: envBool('STRIPE_ENABLED', true),
-      secretKey: env('STRIPE_SECRET_KEY', ''),
-      publishableKey: env('STRIPE_PUBLISHABLE_KEY', ''),
-      webhookSecret: env('STRIPE_WEBHOOK_SECRET', ''),
-      currency: env('STRIPE_CURRENCY', 'usd'),
+    astropay: {
+      enabled: envBool('ASTROPAY_ENABLED', true),
+      apiKey: env('ASTROPAY_API_KEY', ''),
+      apiSecret: env('ASTROPAY_API_SECRET', ''),
+      sandbox: envBool('ASTROPAY_SANDBOX', true),
+      country: env('ASTROPAY_COUNTRY', 'AR'),
+      currency: env('ASTROPAY_CURRENCY', ''),
     },
     paypal: {
       enabled: envBool('PAYPAL_ENABLED', true),

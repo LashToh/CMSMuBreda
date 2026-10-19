@@ -151,6 +151,7 @@ function applyDonationsBlock(data) {
   if (!data.donations) return;
   const d = data.donations;
   if (d.publicBaseUrl != null) config.donations.publicBaseUrl = d.publicBaseUrl;
+  if (d.webhookBaseUrl != null) config.donations.webhookBaseUrl = d.webhookBaseUrl;
   if (d.successUrl != null) config.donations.successUrl = d.successUrl;
   if (d.cancelUrl != null) config.donations.cancelUrl = d.cancelUrl;
   if (d.mockMode != null) config.donations.mockMode = Boolean(d.mockMode);
@@ -163,13 +164,14 @@ function applyDonationsBlock(data) {
       ...(d.mercadopago.description ? { description: d.mercadopago.description } : {}),
     });
   }
-  if (d.stripe) {
-    Object.assign(config.donations.stripe, {
-      ...(d.stripe.enabled != null ? { enabled: Boolean(d.stripe.enabled) } : {}),
-      ...(d.stripe.secretKey ? { secretKey: d.stripe.secretKey } : {}),
-      ...(d.stripe.publishableKey ? { publishableKey: d.stripe.publishableKey } : {}),
-      ...(d.stripe.webhookSecret ? { webhookSecret: d.stripe.webhookSecret } : {}),
-      ...(d.stripe.currency ? { currency: d.stripe.currency } : {}),
+  if (d.astropay) {
+    Object.assign(config.donations.astropay, {
+      ...(d.astropay.enabled != null ? { enabled: Boolean(d.astropay.enabled) } : {}),
+      ...(d.astropay.apiKey ? { apiKey: d.astropay.apiKey } : {}),
+      ...(d.astropay.apiSecret ? { apiSecret: d.astropay.apiSecret } : {}),
+      ...(d.astropay.sandbox != null ? { sandbox: Boolean(d.astropay.sandbox) } : {}),
+      ...(d.astropay.country ? { country: String(d.astropay.country).toUpperCase() } : {}),
+      ...(d.astropay.currency ? { currency: String(d.astropay.currency).toUpperCase() } : {}),
     });
   }
   if (d.paypal) {
@@ -197,6 +199,18 @@ export function applyAdminConfig(data = readFile()) {
 
   if (data.server) {
     Object.assign(config.server, data.server);
+    if (data.server.gsPort != null) {
+      config.server.gsPort = asInt(data.server.gsPort, config.server.gsPort);
+    }
+    if (data.server.gsCheckTimeoutMs != null) {
+      config.server.gsCheckTimeoutMs = asInt(
+        data.server.gsCheckTimeoutMs,
+        config.server.gsCheckTimeoutMs,
+      );
+    }
+    if (data.server.gsHost != null) {
+      config.server.gsHost = String(data.server.gsHost).trim();
+    }
   }
 
   if (data.features) {
@@ -250,6 +264,7 @@ export function applyAdminConfig(data = readFile()) {
     if (a.cookieName) config.auth.cookieName = String(a.cookieName);
     if (a.cookieSecure != null) config.auth.cookieSecure = Boolean(a.cookieSecure);
     if (a.cookieSameSite) config.auth.cookieSameSite = String(a.cookieSameSite);
+    if (a.cookieDomain != null) config.auth.cookieDomain = String(a.cookieDomain);
   }
 
   if (data.api) {
@@ -275,6 +290,12 @@ export function applyAdminConfig(data = readFile()) {
     if (s.guild) Object.assign(config.mu.guild, s.guild);
     if (s.guildMember) Object.assign(config.mu.guildMember, s.guildMember);
     if (s.vip) Object.assign(config.mu.vip, s.vip);
+    if (s.devilSquare) Object.assign(config.mu.devilSquare, s.devilSquare);
+    if (s.bloodCastle) Object.assign(config.mu.bloodCastle, s.bloodCastle);
+    if (s.castleSiege) Object.assign(config.mu.castleSiege, s.castleSiege);
+    if (s.chaosCastle) Object.assign(config.mu.chaosCastle, s.chaosCastle);
+    if (s.duel) Object.assign(config.mu.duel, s.duel);
+    if (s.illusionTemple) Object.assign(config.mu.illusionTemple, s.illusionTemple);
   }
 
   if (data.db) {
@@ -285,6 +306,7 @@ export function applyAdminConfig(data = readFile()) {
     if (d.password) config.db.password = String(d.password);
     if (d.database != null) config.db.database = String(d.database);
     if (d.database2 != null) config.db.database2 = String(d.database2);
+    if (d.databaseRanking != null) config.db.databaseRanking = String(d.databaseRanking);
     if (d.encrypt != null) config.db.encrypt = Boolean(d.encrypt);
     if (d.trustServerCertificate != null) {
       config.db.trustServerCertificate = Boolean(d.trustServerCertificate);
@@ -322,10 +344,11 @@ export function applyRuntimeSecrets(data) {
 
 function donationsPublicView() {
   const mp = config.donations.mercadopago;
-  const st = config.donations.stripe;
+  const ap = config.donations.astropay;
   const pp = config.donations.paypal;
   return {
     publicBaseUrl: config.donations.publicBaseUrl,
+    webhookBaseUrl: config.donations.webhookBaseUrl || '',
     successUrl: config.donations.successUrl || '',
     cancelUrl: config.donations.cancelUrl || '',
     mockMode: Boolean(config.donations.mockMode),
@@ -335,12 +358,13 @@ function donationsPublicView() {
       webhookSecret: mask(mp.webhookSecret),
       description: mp.description || '',
     },
-    stripe: {
-      enabled: Boolean(st.enabled),
-      secretKey: mask(st.secretKey),
-      publishableKey: mask(st.publishableKey),
-      webhookSecret: mask(st.webhookSecret),
-      currency: st.currency || 'usd',
+    astropay: {
+      enabled: Boolean(ap.enabled),
+      apiKey: mask(ap.apiKey),
+      apiSecret: mask(ap.apiSecret),
+      sandbox: Boolean(ap.sandbox),
+      country: ap.country || 'AR',
+      currency: ap.currency || '',
     },
     paypal: {
       enabled: Boolean(pp.enabled),
@@ -399,6 +423,9 @@ export function getFullConfigView() {
         downloadUrl: config.server.downloadUrl || '',
         instagramUrl: config.server.instagramUrl || '',
         facebookUrl: config.server.facebookUrl || '',
+        gsHost: config.server.gsHost || '',
+        gsPort: config.server.gsPort ?? 55901,
+        gsCheckTimeoutMs: config.server.gsCheckTimeoutMs ?? 1500,
       },
       corsOrigin: config.api.corsOrigin,
       trustProxy: config.api.trustProxy,
@@ -413,6 +440,7 @@ export function getFullConfigView() {
       cookieName: config.auth.cookieName,
       cookieSecure: Boolean(config.auth.cookieSecure),
       cookieSameSite: config.auth.cookieSameSite,
+      cookieDomain: config.auth.cookieDomain || '',
       registration: {
         defaultSnoNumb: config.registration.defaultSnoNumb,
         insertViCurrInfo: Boolean(config.registration.insertViCurrInfo),
@@ -430,6 +458,12 @@ export function getFullConfigView() {
       guild: { ...config.mu.guild },
       guildMember: { ...config.mu.guildMember },
       vip: { ...config.mu.vip },
+      devilSquare: { ...config.mu.devilSquare },
+      bloodCastle: { ...config.mu.bloodCastle },
+      castleSiege: { ...config.mu.castleSiege },
+      chaosCastle: { ...config.mu.chaosCastle },
+      duel: { ...config.mu.duel },
+      illusionTemple: { ...config.mu.illusionTemple },
     },
     db: {
       host: config.db.host,
@@ -438,6 +472,7 @@ export function getFullConfigView() {
       password: mask(config.db.password),
       database: config.db.database,
       database2: config.db.database2 || '',
+      databaseRanking: config.db.databaseRanking || '',
       encrypt: Boolean(config.db.encrypt),
       trustServerCertificate: Boolean(config.db.trustServerCertificate),
       warning:
@@ -475,11 +510,13 @@ function buildEnvPatchFromStored(next) {
   if (d.mercadopago?.accessToken) envPatch.MP_ACCESS_TOKEN = d.mercadopago.accessToken;
   if (d.mercadopago?.webhookSecret) envPatch.MP_WEBHOOK_SECRET = d.mercadopago.webhookSecret;
   if (d.mercadopago?.description) envPatch.MP_DESCRIPTION = d.mercadopago.description;
-  if (d.stripe?.enabled != null) envPatch.STRIPE_ENABLED = d.stripe.enabled ? 'true' : 'false';
-  if (d.stripe?.secretKey) envPatch.STRIPE_SECRET_KEY = d.stripe.secretKey;
-  if (d.stripe?.webhookSecret) envPatch.STRIPE_WEBHOOK_SECRET = d.stripe.webhookSecret;
-  if (d.stripe?.publishableKey) envPatch.STRIPE_PUBLISHABLE_KEY = d.stripe.publishableKey;
-  if (d.stripe?.currency) envPatch.STRIPE_CURRENCY = d.stripe.currency;
+  if (d.webhookBaseUrl) envPatch.DONATIONS_WEBHOOK_BASE_URL = d.webhookBaseUrl;
+  if (d.astropay?.enabled != null) envPatch.ASTROPAY_ENABLED = d.astropay.enabled ? 'true' : 'false';
+  if (d.astropay?.apiKey) envPatch.ASTROPAY_API_KEY = d.astropay.apiKey;
+  if (d.astropay?.apiSecret) envPatch.ASTROPAY_API_SECRET = d.astropay.apiSecret;
+  if (d.astropay?.sandbox != null) envPatch.ASTROPAY_SANDBOX = d.astropay.sandbox ? 'true' : 'false';
+  if (d.astropay?.country) envPatch.ASTROPAY_COUNTRY = d.astropay.country;
+  if (d.astropay?.currency) envPatch.ASTROPAY_CURRENCY = d.astropay.currency;
   if (d.paypal?.enabled != null) envPatch.PAYPAL_ENABLED = d.paypal.enabled ? 'true' : 'false';
   if (d.paypal?.sandbox != null) envPatch.PAYPAL_SANDBOX = d.paypal.sandbox ? 'true' : 'false';
   if (d.paypal?.email) envPatch.PAYPAL_EMAIL = d.paypal.email;
@@ -506,6 +543,11 @@ function buildEnvPatchFromStored(next) {
   if (srv.downloadUrl != null) envPatch.DOWNLOAD_URL = String(srv.downloadUrl);
   if (srv.instagramUrl != null) envPatch.INSTAGRAM_URL = String(srv.instagramUrl);
   if (srv.facebookUrl != null) envPatch.FACEBOOK_URL = String(srv.facebookUrl);
+  if (srv.gsHost != null) envPatch.GS_HOST = String(srv.gsHost);
+  if (srv.gsPort != null) envPatch.GS_PORT = String(srv.gsPort);
+  if (srv.gsCheckTimeoutMs != null) {
+    envPatch.GS_CHECK_TIMEOUT_MS = String(srv.gsCheckTimeoutMs);
+  }
 
   if (next.features) {
     for (const key of FEATURE_KEYS) {
@@ -549,6 +591,7 @@ function buildEnvPatchFromStored(next) {
   if (auth.cookieName) envPatch.COOKIE_NAME = String(auth.cookieName);
   if (auth.cookieSecure != null) envPatch.COOKIE_SECURE = auth.cookieSecure ? 'true' : 'false';
   if (auth.cookieSameSite) envPatch.COOKIE_SAME_SITE = String(auth.cookieSameSite);
+  if (auth.cookieDomain != null) envPatch.COOKIE_DOMAIN = String(auth.cookieDomain);
 
   if (next.api?.corsOrigin != null) envPatch.CORS_ORIGIN = String(next.api.corsOrigin);
   if (next.api?.trustProxy != null) envPatch.TRUST_PROXY = String(next.api.trustProxy);
@@ -598,6 +641,36 @@ function buildEnvPatchFromStored(next) {
   if (vip.typeColumn != null) envPatch.VIP_TYPE_COLUMN = vip.typeColumn;
   if (vip.dateColumn != null) envPatch.VIP_DATE_COLUMN = vip.dateColumn;
 
+  const ds = schema.devilSquare || {};
+  if (ds.table != null) envPatch.MU_TABLE_DEVIL_SQUARE = ds.table;
+  if (ds.name != null) envPatch.MU_COL_DS_NAME = ds.name;
+  if (ds.score != null) envPatch.MU_COL_DS_SCORE = ds.score;
+
+  const bc = schema.bloodCastle || {};
+  if (bc.table != null) envPatch.MU_TABLE_BLOOD_CASTLE = bc.table;
+  if (bc.name != null) envPatch.MU_COL_BC_NAME = bc.name;
+  if (bc.score != null) envPatch.MU_COL_BC_SCORE = bc.score;
+
+  const cs = schema.castleSiege || {};
+  if (cs.table != null) envPatch.MU_TABLE_CASTLE_SIEGE = cs.table;
+  if (cs.name != null) envPatch.MU_COL_CS_NAME = cs.name;
+  if (cs.score != null) envPatch.MU_COL_CS_SCORE = cs.score;
+
+  const cc = schema.chaosCastle || {};
+  if (cc.table != null) envPatch.MU_TABLE_CHAOS_CASTLE = cc.table;
+  if (cc.name != null) envPatch.MU_COL_CC_NAME = cc.name;
+  if (cc.score != null) envPatch.MU_COL_CC_SCORE = cc.score;
+
+  const duel = schema.duel || {};
+  if (duel.table != null) envPatch.MU_TABLE_DUEL = duel.table;
+  if (duel.name != null) envPatch.MU_COL_DUEL_NAME = duel.name;
+  if (duel.score != null) envPatch.MU_COL_DUEL_SCORE = duel.score;
+
+  const it = schema.illusionTemple || {};
+  if (it.table != null) envPatch.MU_TABLE_ILLUSION_TEMPLE = it.table;
+  if (it.name != null) envPatch.MU_COL_IT_NAME = it.name;
+  if (it.score != null) envPatch.MU_COL_IT_SCORE = it.score;
+
   const db = next.db || {};
   if (db.host != null) envPatch.DB_HOST = String(db.host);
   if (db.port != null) envPatch.DB_PORT = String(db.port);
@@ -605,6 +678,7 @@ function buildEnvPatchFromStored(next) {
   if (db.password) envPatch.DB_PASSWORD = String(db.password);
   if (db.database != null) envPatch.DB_DATABASE = String(db.database);
   if (db.database2 != null) envPatch.DB_DATABASE_2 = String(db.database2);
+  if (db.databaseRanking != null) envPatch.DB_DATABASE_RANKING = String(db.databaseRanking);
   if (db.encrypt != null) envPatch.DB_ENCRYPT = db.encrypt ? 'true' : 'false';
   if (db.trustServerCertificate != null) {
     envPatch.DB_TRUST_CERT = db.trustServerCertificate ? 'true' : 'false';
@@ -645,12 +719,19 @@ export function saveRuntimeSecretsAndEnv(payload, adminUsername) {
     'webhookSecret',
     'description',
   ]);
-  mergeProvider(next, config.donations.stripe, 'stripe', dIn.stripe || {}, [
-    'secretKey',
-    'publishableKey',
-    'webhookSecret',
+  mergeProvider(next, config.donations.astropay, 'astropay', dIn.astropay || {}, [
+    'apiKey',
+    'apiSecret',
+    'country',
     'currency',
   ]);
+  if (dIn.astropay?.sandbox != null) {
+    next.donations.astropay = next.donations.astropay || {};
+    next.donations.astropay.sandbox = Boolean(dIn.astropay.sandbox);
+  }
+  if (dIn.webhookBaseUrl != null) {
+    next.donations.webhookBaseUrl = String(dIn.webhookBaseUrl).trim();
+  }
   mergeProvider(next, config.donations.paypal, 'paypal', dIn.paypal || {}, [
     'email',
     'title',
@@ -731,6 +812,7 @@ export function saveFullConfig(payload, adminUsername) {
     if (a.cookieName != null) next.auth.cookieName = String(a.cookieName).trim();
     if (a.cookieSecure != null) next.auth.cookieSecure = asBool(a.cookieSecure, false);
     if (a.cookieSameSite != null) next.auth.cookieSameSite = String(a.cookieSameSite).trim();
+    if (a.cookieDomain != null) next.auth.cookieDomain = String(a.cookieDomain).trim();
 
     if (a.registration) {
       const r = a.registration;
@@ -775,12 +857,19 @@ export function saveFullConfig(payload, adminUsername) {
       'webhookSecret',
       'description',
     ]);
-    mergeProvider(temp, config.donations.stripe, 'stripe', dIn.stripe || {}, [
-      'secretKey',
-      'publishableKey',
-      'webhookSecret',
+    mergeProvider(temp, config.donations.astropay, 'astropay', dIn.astropay || {}, [
+      'apiKey',
+      'apiSecret',
+      'country',
       'currency',
     ]);
+    if (dIn.astropay?.sandbox != null) {
+      temp.donations.astropay = temp.donations.astropay || {};
+      temp.donations.astropay.sandbox = Boolean(dIn.astropay.sandbox);
+    }
+    if (dIn.webhookBaseUrl != null) {
+      temp.donations.webhookBaseUrl = String(dIn.webhookBaseUrl).trim();
+    }
     mergeProvider(temp, config.donations.paypal, 'paypal', dIn.paypal || {}, [
       'email',
       'title',
@@ -802,7 +891,20 @@ export function saveFullConfig(payload, adminUsername) {
 
   if (payload.muSchema) {
     next.muSchema = next.muSchema || {};
-    for (const section of ['accounts', 'characters', 'membStat', 'guild', 'guildMember', 'vip']) {
+    for (const section of [
+      'accounts',
+      'characters',
+      'membStat',
+      'guild',
+      'guildMember',
+      'vip',
+      'devilSquare',
+      'bloodCastle',
+      'castleSiege',
+      'chaosCastle',
+      'duel',
+      'illusionTemple',
+    ]) {
       if (payload.muSchema[section]) {
         next.muSchema[section] = {
           ...(next.muSchema[section] || {}),
@@ -821,6 +923,9 @@ export function saveFullConfig(payload, adminUsername) {
     mergeSecretField(next.db, 'password', dbIn.password, config.db.password);
     if (dbIn.database != null) next.db.database = String(dbIn.database).trim();
     if (dbIn.database2 != null) next.db.database2 = String(dbIn.database2).trim();
+    if (dbIn.databaseRanking != null) {
+      next.db.databaseRanking = String(dbIn.databaseRanking).trim();
+    }
     if (dbIn.encrypt != null) next.db.encrypt = Boolean(dbIn.encrypt);
     if (dbIn.trustServerCertificate != null) {
       next.db.trustServerCertificate = Boolean(dbIn.trustServerCertificate);

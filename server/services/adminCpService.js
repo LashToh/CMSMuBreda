@@ -1,7 +1,11 @@
 import { readStore, updateStore, appendAudit } from '../data/cmsStore.js';
 import { config } from '../config/index.js';
 import { writeEnvFile } from '../install/state.js';
-import { DEFAULT_DONATION_PACKAGES } from './donations/packages.js';
+import {
+  DEFAULT_DONATION_PACKAGES,
+  comparePackagesByValue,
+  providersForFiat,
+} from './donations/packages.js';
 import { AppError } from '../utils/errors.js';
 import { mu } from '../adapters/mu/index.js';
 
@@ -184,21 +188,24 @@ export function listDonationPackagesAdmin() {
     Array.isArray(store.donationPackages) && store.donationPackages.length
       ? store.donationPackages
       : DEFAULT_DONATION_PACKAGES;
-  return packs.sort((a, b) => (a.order || 0) - (b.order || 0));
+  return packs
+    .map((p) => ({ ...p, providers: providersForFiat(p.fiatCurrency) }))
+    .sort(comparePackagesByValue);
 }
 
 export function saveDonationPackage(payload, adminUsername) {
   const packs = listDonationPackagesAdmin();
   const id = payload.id || `pack-${Date.now()}`;
+  const fiatCurrency = payload.fiatCurrency || 'USD';
   const next = {
     id,
     title: payload.title || 'Pack',
     description: payload.description || '',
-    fiatCurrency: payload.fiatCurrency || 'USD',
+    fiatCurrency,
     price: Number(payload.price) || 0,
     creditCurrency: payload.creditCurrency || 'wcoinc',
     creditAmount: Number(payload.creditAmount) || 0,
-    providers: payload.providers || ['mercadopago', 'stripe', 'paypal', 'mock'],
+    providers: providersForFiat(fiatCurrency),
     active: payload.active !== false,
     order: Number(payload.order) || packs.length + 1,
   };
@@ -222,4 +229,27 @@ export function saveDonationPackage(payload, adminUsername) {
   });
 
   return listDonationPackagesAdmin().find((p) => p.id === id);
+}
+
+export function deleteDonationPackage(id, adminUsername) {
+  let found = false;
+  updateStore((s) => {
+    const list =
+      Array.isArray(s.donationPackages) && s.donationPackages.length
+        ? [...s.donationPackages]
+        : [...DEFAULT_DONATION_PACKAGES];
+    const next = list.filter((p) => p.id !== id);
+    found = next.length < list.length;
+    s.donationPackages = next;
+    return s;
+  });
+  if (!found) {
+    throw new AppError('Donation package not found.', { status: 404, code: 'NOT_FOUND' });
+  }
+  appendAudit({
+    action: 'admin.donations.package_delete',
+    username: adminUsername,
+    meta: { id },
+  });
+  return { deleted: true };
 }

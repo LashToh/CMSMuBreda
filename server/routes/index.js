@@ -11,6 +11,7 @@ import launcherRoutes from './launcher.js';
 import * as publicController from '../controllers/publicController.js';
 import * as adminController from '../controllers/adminController.js';
 import * as authController from '../controllers/authController.js';
+import * as visitController from '../controllers/visitController.js';
 
 const router = Router();
 
@@ -36,6 +37,7 @@ const registerLimiter = rateLimit({
 router.use(apiLimiter);
 
 router.get('/health', publicController.health);
+router.post('/visits', visitController.track);
 router.get('/server', publicController.serverInfo);
 router.get('/about', publicController.about);
 router.get('/rankings/:type?', publicController.rankings);
@@ -71,6 +73,7 @@ router.post(
 const admin = Router();
 admin.use(requireAuth, requireAdmin);
 admin.get('/dashboard', adminController.dashboard);
+admin.get('/visits', visitController.report);
 admin.get('/news', adminController.listNews);
 admin.post('/news', adminController.createNews);
 admin.put('/news/:id', adminController.updateNews);

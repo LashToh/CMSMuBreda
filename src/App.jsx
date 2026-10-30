@@ -1,4 +1,6 @@
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
+import { useEffect } from 'react';
+import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-router-dom';
+import { recordPageVisit } from './services/api';
 import Navbar from './components/Navbar';
 import SocialFloat from './components/SocialFloat';
 import RegisterModal from './components/Register';
@@ -18,6 +20,14 @@ import DownloadsPage from './pages/DownloadsPage';
 import AboutPage from './pages/AboutPage';
 import AdminPage from './pages/AdminPage';
 
+function VisitTracker() {
+  const { pathname } = useLocation();
+  useEffect(() => {
+    recordPageVisit(pathname);
+  }, [pathname]);
+  return null;
+}
+
 function LandingLayout() {
   return (
     <>
@@ -36,6 +46,7 @@ export default function App() {
         <AuthProvider>
           <RegisterProvider>
             <BrowserRouter>
+              <VisitTracker />
               <Routes>
                 <Route path="/" element={<LandingLayout />} />
                 <Route element={<CmsShell />}>

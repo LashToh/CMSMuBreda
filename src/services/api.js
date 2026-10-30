@@ -183,6 +183,51 @@ export async function fetchAdminDashboard() {
   return request('/api/admin/dashboard', { auth: true });
 }
 
+export async function fetchAdminVisits() {
+  return request('/api/admin/visits', { auth: true });
+}
+
+const VISITOR_KEY = 'mubreda_vid';
+const VISITOR_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+let lastTracked = { path: '', at: 0 };
+
+function visitorId() {
+  try {
+    const existing = localStorage.getItem(VISITOR_KEY);
+    if (VISITOR_RE.test(existing || '')) return existing;
+    const id = crypto.randomUUID();
+    localStorage.setItem(VISITOR_KEY, id);
+    return id;
+  } catch {
+    return undefined;
+  }
+}
+
+/** Fire-and-forget page view. Never throws into the UI. */
+export function recordPageVisit(pathname) {
+  if (typeof pathname !== 'string' || !pathname.startsWith('/')) return;
+  const lower = pathname.toLowerCase();
+  if (
+    lower.startsWith('/admin') ||
+    lower.startsWith('/install') ||
+    lower.startsWith('/api') ||
+    lower.startsWith('/patches') ||
+    lower.startsWith('/assets')
+  ) {
+    return;
+  }
+  const now = Date.now();
+  if (lastTracked.path === pathname && now - lastTracked.at < 800) return;
+  lastTracked = { path: pathname, at: now };
+  fetch(`${API_URL}/api/visits`, {
+    method: 'POST',
+    credentials: 'include',
+    keepalive: true,
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ path: pathname, visitorId: visitorId() }),
+  }).catch(() => {});
+}
+
 export async function fetchAdminNews() {
   return request('/api/admin/news', { auth: true });
 }

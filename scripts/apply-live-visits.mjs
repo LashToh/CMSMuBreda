@@ -88,11 +88,34 @@ function download(url) {
   });
 }
 
+function printTabCandidates(text) {
+  const lines = text.split('\n');
+  const hits = [];
+  lines.forEach((line, i) => {
+    if (/TABS|cms-tabs|label\s*:|tab ===|id:\s*['"](?:dashboard|accounts|news|downloads|donate|about|integrations|gifts|settings|logs|visits)/i.test(line)) {
+      hits.push(`${i + 1}:${line}`);
+    }
+  });
+  console.error(hits.length ? hits.join('\n') : 'no tab-like lines in AdminPage.jsx');
+}
+
+function failTabs(text, message) {
+  console.error(message);
+  printTabCandidates(text);
+  process.exit(1);
+}
+
+function onceInPage(text, re, label) {
+  const flags = re.flags.includes('g') ? re.flags : `${re.flags}g`;
+  const all = [...text.matchAll(new RegExp(re.source, flags))];
+  if (all.length !== 1) failTabs(admin, `${label}: expected 1 match, found ${all.length}`);
+  return all[0];
+}
+
 const admin = read('src/pages/AdminPage.jsx');
-for (const label of ['Dashboard', 'Accounts', 'News', 'Downloads', 'Donate', 'Server Info', 'Integrations', 'Gift Codes', 'CMS Settings', 'Audit Log']) {
-  if (!admin.includes(`label: '${label}'`) && !admin.includes(`label: "${label}"`)) {
-    die(`AdminPage is not the live tab bar (missing ${label})`);
-  }
+const dashboardTabs = [...admin.matchAll(/\{\s*id:\s*['"]dashboard['"][\s\S]*?\},/g)];
+if (dashboardTabs.length !== 1) {
+  failTabs(admin, `AdminPage tab list: expected 1 dashboard tab, found ${dashboardTabs.length}`);
 }
 
 let routes = read('server/routes/index.js');
@@ -201,12 +224,10 @@ function VisitTracker() {
 }
 
 if (!page.includes("id: 'visits'") && !page.includes('id: "visits"')) {
-  page = insertAfter(
-    page,
-    /\{\s*id:\s*['"]dashboard['"]\s*,\s*label:\s*['"]Dashboard['"]\s*\},/,
-    "\n  { id: 'visits', label: 'Visits' },",
-    'dashboard tab',
-  );
+  const dash = [...page.matchAll(/\{\s*id:\s*['"]dashboard['"][\s\S]*?\},/g)];
+  if (dash.length !== 1) failTabs(page, `AdminPage tab list: expected 1 dashboard tab, found ${dash.length}`);
+  const at = dash[0].index + dash[0][0].length;
+  page = `${page.slice(0, at)}\n  { id: 'visits', label: 'Visits' },${page.slice(at)}`;
 }
 if (!page.includes('fetchAdminVisits')) {
   const imported = ensureNamedImport(page, '../services/api', 'fetchAdminVisits');
@@ -214,7 +235,8 @@ if (!page.includes('fetchAdminVisits')) {
   page = imported;
 }
 if (!page.includes('setVisits')) {
-  page = insertAfter(page, /useState\(\s*['"]dashboard['"]\s*\);/, '\n  const [visits, setVisits] = useState(null);', 'tab state');
+  const state = onceInPage(page, /useState\(\s*['"]dashboard['"]\s*\);/, 'tab state');
+  page = `${page.slice(0, state.index + state[0].length)}\n  const [visits, setVisits] = useState(null);${page.slice(state.index + state[0].length)}`;
 }
 if (!page.includes("tab === 'visits'") && !page.includes('tab === "visits"')) {
   const withEffect = ensureNamedImport(page, 'react', 'useEffect');
@@ -237,7 +259,7 @@ if (!page.includes("tab === 'visits'") && !page.includes('tab === "visits"')) {
     };
   }, [tab, isAdmin]);
 `;
-  const render = once(page, /\n[ \t]*return \(\s*\n[ \t]*<section className=["']cms-page admincp["']/, 'AdminCP return');
+  const render = onceInPage(page, /\n[ \t]*return \(\s*\n[ \t]*<section className=["']cms-page admincp["']/, 'AdminCP return');
   page = page.slice(0, render.index) + `\n${effect}` + page.slice(render.index);
   const panel = [
     "      {tab === 'visits' && !visits && !error && <div className=\"cms-loading\">Loading visits…</div>}",
@@ -318,7 +340,7 @@ if (!page.includes("tab === 'visits'") && !page.includes('tab === "visits"')) {
     '',
     '',
   ].join('\n');
-  const accounts = once(page, /\n[ \t]*\{tab === ['"]accounts['"]/, 'accounts tab');
+  const accounts = onceInPage(page, /\n[ \t]*\{tab === ['"]accounts['"]/, 'accounts tab');
   page = `${page.slice(0, accounts.index)}\n${panel.trimEnd()}\n${page.slice(accounts.index + 1)}`;
 }
 

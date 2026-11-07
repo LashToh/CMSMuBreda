@@ -36,13 +36,15 @@ export const config = {
   isProduction: nodeEnv === 'production',
   muDatabaseMode,
   isMock: muDatabaseMode === 'mock',
+  /** Which game database the production mode talks to: mssql (MuDevs Season 21) | openmu (OpenMU Season 6, PostgreSQL). */
+  muBackend: env('MU_BACKEND', 'mssql').toLowerCase() === 'openmu' ? 'openmu' : 'mssql',
 
   db: {
     host: env('DB_HOST', env('DB_SERVER', '127.0.0.1')),
     port: envInt('DB_PORT', 1433),
     user: env('DB_USER', ''),
     password: env('DB_PASSWORD', ''),
-    database: env('DB_DATABASE', env('DB_NAME', 'MuOnline')),
+    database: env('DB_DATABASE', env('DB_NAME', env('MU_BACKEND', '').toLowerCase() === 'openmu' ? 'openmu' : 'MuOnline')),
     database2: env('DB_DATABASE_2', ''),
     /** Optional Ranking DB (Devil Square / Blood Castle). Empty = same as MuOnline. */
     databaseRanking: env('DB_DATABASE_RANKING', env('DB_RANKING', '')),

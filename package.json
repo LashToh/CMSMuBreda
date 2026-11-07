@@ -15,6 +15,7 @@
     "postbuild": "node -e \"console.log('Build OK — on cPanel run Start, then open /install if needed.')\""
   },
   "dependencies": {
+    "bcryptjs": "^2.4.3",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
@@ -26,6 +27,7 @@
     "jsonwebtoken": "^9.0.2",
     "lenis": "^1.1.18",
     "mssql": "^11.0.1",
+    "pg": "^8.13.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-icons": "^5.4.0",

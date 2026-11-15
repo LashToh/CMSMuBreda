@@ -19,8 +19,9 @@ const router = Router();
 
 // Public pages read these on their own (the home page asks for the server status every 30 s
 // and for the rankings on every tab), so they get a limit of their own, much higher: the
-// strict one is for logins, accounts and payments.
-const PUBLIC_READS = ['/health', '/server', '/about', '/guides', '/rankings', '/news', '/downloads', '/shop/categories', '/shop/items', '/vote/sites'];
+// strict one is for logins, accounts and payments. The Season 6 launcher downloads the client
+// file by file (a few hundred on the first run), so it is a public read too.
+const PUBLIC_READS = ['/health', '/server', '/about', '/guides', '/rankings', '/news', '/downloads', '/shop/categories', '/shop/items', '/vote/sites', '/launcher/s6'];
 const isPublicRead = (req) =>
   (req.method === 'GET' && PUBLIC_READS.some((p) => req.path === p || req.path.startsWith(`${p}/`))) ||
   // Page-view pings are as frequent as reads: they must not use up the strict budget of logins and payments.

@@ -87,3 +87,9 @@
 - Correr `npm install` (paquetes nuevos: @tiptap/*, dompurify, sanitize-html, multer) y probar: editor, subida de imágenes, YouTube, render en /guides, y el test del sanitizer con la librería real.
 - Si la API vive en otro dominio (`VITE_API_URL`), las imágenes `/uploads/...` se piden al dominio del front: hay que servirlas ahí o usar URL absoluta.
 - Commit y push (no se hizo ningún git de escritura).
+
+### Publicación en el VPS (preparación)
+- Comparado el código online (`/var/www/CMSMuBreda`) con la rama guias: lo único que estaba solo en el VPS era el endpoint del launcher de Season 6 (`/api/launcher/s6/manifest`, `/s6/version`, `/s6/files/...`, que lee `patches-s6/`) y `/launcher/s6` como lectura pública en el rate limit. Se agregó a `server/routes/launcher.js` y `server/routes/index.js` (igual al del VPS).
+- Lo demás que difiere en el VPS es código viejo de Season 21 o finales de línea (CRLF/LF).
+- Datos vivos que se pasan a la versión nueva: `.env`, `server/data/{cms-local.json, admin-secrets.json, visits.json, .installed}`; `patches/` y `patches-s6/` se enlazan, no se copian.
+- nginx de mubreda.net: falta `location ^~ /uploads/` hacia la API (127.0.0.1:3002) para las imágenes de las guías.

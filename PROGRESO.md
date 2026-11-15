@@ -93,3 +93,10 @@
 - Lo demás que difiere en el VPS es código viejo de Season 21 o finales de línea (CRLF/LF).
 - Datos vivos que se pasan a la versión nueva: `.env`, `server/data/{cms-local.json, admin-secrets.json, visits.json, .installed}`; `patches/` y `patches-s6/` se enlazan, no se copian.
 - nginx de mubreda.net: falta `location ^~ /uploads/` hacia la API (127.0.0.1:3002) para las imágenes de las guías.
+
+### Publicado en el VPS (2026-11-15)
+- Script `deploy-guias.sh` (en `~` del VPS): `respaldo` / `preparar` / `cambiar` / `volver`. Backup en `~/backups/*-20261115-080632*`.
+- Online: API (pm2 `cms-mubreda-api`, `/var/www/CMSMuBreda`) y web (`/var/www/mubreda-web/dist`) con la rama guias (c5302e5). nginx de mubreda.net con `location ^~ /uploads/` hacia 127.0.0.1:3002.
+- Versión anterior guardada en `/var/www/CMSMuBreda-anterior` y `/var/www/mubreda-web/dist-anterior` (borrar en unos días si todo anda).
+- Chequeos: tests 10/10, health/guides/launcher s6/web/guides/rankings -> 200.
+- Pendiente: el VPS tiene Node 20 y algunas librerías piden Node 22 (andan igual); actualizar Node cuando se pueda. Reinicio del VPS pendiente (actualizaciones de Ubuntu).

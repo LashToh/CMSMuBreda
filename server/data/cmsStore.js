@@ -150,6 +150,8 @@ const defaultStore = {
   cmsSettings: { server: {}, features: {} },
   /** Server Info / About page (null = use aboutDefaults.js) */
   about: null,
+  /** Guides page (null = use guidesDefaults.js) */
+  guides: null,
   mockAccounts: {},
 };
 

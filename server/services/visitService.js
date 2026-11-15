@@ -23,6 +23,7 @@ const PUBLIC_PAGES = new Set([
   '/downloads',
   '/donate',
   '/about',
+  '/guides',
 ]);
 
 const BLOCKED_PREFIXES = ['/admin', '/api', '/install', '/patches', '/launcher', '/assets'];

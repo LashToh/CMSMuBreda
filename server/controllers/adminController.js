@@ -13,6 +13,10 @@ import {
   saveFullConfig,
 } from '../services/adminConfigService.js';
 import * as aboutService from '../services/aboutService.js';
+import * as guidesService from '../services/guidesService.js';
+import { saveUploadedImage } from '../middleware/upload.js';
+import { appendAudit } from '../data/cmsStore.js';
+import { fail } from '../utils/response.js';
 
 export async function dashboard(req, res, next) {
   try {
@@ -293,6 +297,47 @@ export async function resetAbout(req, res, next) {
   try {
     const saved = aboutService.resetAbout(req.user?.username);
     return ok(res, saved, 'Server info reset to defaults.');
+  } catch (err) {
+    return next(err);
+  }
+}
+
+export async function getGuides(_req, res, next) {
+  try {
+    return ok(res, guidesService.getGuides());
+  } catch (err) {
+    return next(err);
+  }
+}
+
+export async function saveGuides(req, res, next) {
+  try {
+    const saved = guidesService.saveGuides(req.validated, req.user?.username);
+    return ok(res, saved, 'Guides saved.');
+  } catch (err) {
+    return next(err);
+  }
+}
+
+export async function resetGuides(req, res, next) {
+  try {
+    const saved = guidesService.resetGuides(req.user?.username);
+    return ok(res, saved, 'Guides reset to defaults.');
+  } catch (err) {
+    return next(err);
+  }
+}
+
+export async function uploadImage(req, res, next) {
+  try {
+    const saved = saveUploadedImage(req.file);
+    if (saved.error) return fail(res, 400, 'INVALID_IMAGE', saved.error);
+    appendAudit({
+      action: 'admin.upload',
+      actor: req.user?.username || null,
+      meta: { name: saved.name, bytes: saved.bytes, mime: saved.mime },
+    });
+    return ok(res, { url: saved.url, name: saved.name }, 'Image uploaded.', 201);
   } catch (err) {
     return next(err);
   }

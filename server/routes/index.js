@@ -4,6 +4,8 @@ import { config } from '../config/index.js';
 import { requireAuth, requireAdmin } from '../middleware/auth.js';
 import { validateBody } from '../middleware/validate.js';
 import { registerSchema } from '../validators/auth.js';
+import { guidesSchema } from '../validators/guides.js';
+import { imageUpload } from '../middleware/upload.js';
 import authRoutes from './auth.js';
 import accountRoutes from './account.js';
 import donationsRoutes from './donations.js';
@@ -18,7 +20,7 @@ const router = Router();
 // Public pages read these on their own (the home page asks for the server status every 30 s
 // and for the rankings on every tab), so they get a limit of their own, much higher: the
 // strict one is for logins, accounts and payments.
-const PUBLIC_READS = ['/health', '/server', '/about', '/rankings', '/news', '/downloads', '/shop/categories', '/shop/items', '/vote/sites'];
+const PUBLIC_READS = ['/health', '/server', '/about', '/guides', '/rankings', '/news', '/downloads', '/shop/categories', '/shop/items', '/vote/sites'];
 const isPublicRead = (req) =>
   (req.method === 'GET' && PUBLIC_READS.some((p) => req.path === p || req.path.startsWith(`${p}/`))) ||
   // Page-view pings are as frequent as reads: they must not use up the strict budget of logins and payments.
@@ -59,6 +61,7 @@ router.get('/health', publicController.health);
 router.post('/visits', visitController.track);
 router.get('/server', publicController.serverInfo);
 router.get('/about', publicController.about);
+router.get('/guides', publicController.guides);
 router.get('/rankings/:type?', publicController.rankings);
 
 router.get('/news', publicController.newsList);
@@ -116,6 +119,10 @@ admin.put('/secrets', adminController.saveSecrets);
 admin.get('/about', adminController.getAbout);
 admin.put('/about', adminController.saveAbout);
 admin.post('/about/reset', adminController.resetAbout);
+admin.get('/guides', adminController.getGuides);
+admin.put('/guides', validateBody(guidesSchema), adminController.saveGuides);
+admin.post('/guides/reset', adminController.resetGuides);
+admin.post('/uploads', imageUpload, adminController.uploadImage);
 admin.get('/discovery/tables', adminController.discoverTables);
 admin.get('/discovery/tables/:table/columns', adminController.discoverColumns);
 router.use('/admin', admin);

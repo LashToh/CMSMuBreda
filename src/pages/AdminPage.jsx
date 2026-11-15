@@ -24,12 +24,17 @@ import {
   fetchAdminAbout,
   saveAdminAbout,
   resetAdminAbout,
+  fetchAdminGuides,
+  saveAdminGuides,
+  resetAdminGuides,
 } from '../services/api';
 import {
   emptyMirrorsMap,
   normalizeMirrorsMap,
   MIRROR_PROVIDERS,
 } from '../data/downloadMirrors';
+import AdminGuidesEditor from './AdminGuidesEditor';
+import { htmlifyGuides } from '../utils/guideHtml';
 import './AdminPage.scss';
 
 const TABS = [
@@ -40,6 +45,7 @@ const TABS = [
   { id: 'downloads', label: 'Downloads' },
   { id: 'donate', label: 'Donate' },
   { id: 'about', label: 'Server Info' },
+  { id: 'guides', label: 'Guides' },
   { id: 'integrations', label: 'Integrations' },
   { id: 'gifts', label: 'Gift Codes' },
   { id: 'settings', label: 'CMS Settings' },
@@ -205,6 +211,7 @@ export default function AdminPage() {
     paypalReturn: '',
   });
   const [aboutJson, setAboutJson] = useState('');
+  const [guides, setGuides] = useState(null);
 
   const flash = (text) => {
     setMsg(text);
@@ -252,6 +259,10 @@ export default function AdminPage() {
         if (tab === 'about') {
           const res = await fetchAdminAbout();
           setAboutJson(JSON.stringify(res.data || { sections: [] }, null, 2));
+        }
+        if (tab === 'guides') {
+          const res = await fetchAdminGuides();
+          setGuides(htmlifyGuides(res.data || { categories: [] }));
         }
         if (tab === 'integrations') {
           const res = await fetchAdminSecrets();
@@ -1084,6 +1095,58 @@ export default function AdminPage() {
             </button>
             <a className="btn btn--secondary" href="/about" target="_blank" rel="noreferrer">
               Preview /about
+            </a>
+          </div>
+        </div>
+      )}
+
+      {tab === 'guides' && (
+        <div className="cms-panel">
+          <h2 className="admincp__h2">Guías (página /guides)</h2>
+          <p style={{ opacity: 0.75, marginTop: 0 }}>
+            Categorías con sus ítems. Cada título y contenido se carga en español, inglés y portugués.
+            El contenido se edita con el editor visual (negrita, listas, tablas, links, imágenes y videos de YouTube).
+          </p>
+          {guides ? (
+            <AdminGuidesEditor value={guides} onChange={setGuides} />
+          ) : (
+            !error && <div className="cms-loading">Loading guides…</div>
+          )}
+          <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1rem', flexWrap: 'wrap' }}>
+            <button
+              type="button"
+              className="btn btn--primary"
+              disabled={!guides}
+              onClick={async () => {
+                try {
+                  const res = await saveAdminGuides(guides);
+                  setGuides(htmlifyGuides(res.data || guides));
+                  flash('Guides saved.');
+                } catch (err) {
+                  setError(err instanceof ApiError ? err.message : 'Failed to save.');
+                }
+              }}
+            >
+              Save
+            </button>
+            <button
+              type="button"
+              className="btn btn--secondary"
+              onClick={async () => {
+                if (!window.confirm('¿Restaurar la guía por defecto? Se pierden los cambios guardados.')) return;
+                try {
+                  const res = await resetAdminGuides();
+                  setGuides(htmlifyGuides(res.data || { categories: [] }));
+                  flash('Restored default guides.');
+                } catch (err) {
+                  setError(err instanceof ApiError ? err.message : 'Failed to reset.');
+                }
+              }}
+            >
+              Restaurar guía por defecto
+            </button>
+            <a className="btn btn--secondary" href="/guides" target="_blank" rel="noreferrer">
+              Preview /guides
             </a>
           </div>
         </div>

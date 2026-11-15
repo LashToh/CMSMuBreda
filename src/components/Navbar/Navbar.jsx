@@ -1,17 +1,18 @@
 import { useEffect, useState } from 'react';
-import { Link, NavLink } from 'react-router-dom';
+import { Link, NavLink, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { HiMenuAlt3, HiX } from 'react-icons/hi';
 import { useRegister } from '../../context/RegisterContext';
 import { useTranslation } from '../../context/LanguageContext';
 import { useAuth } from '../../context/AuthContext';
 import LanguageSwitcher from '../LanguageSwitcher';
+import InfoMenu, { INFO_ITEMS, isInfoPath } from '../InfoMenu';
 import './Navbar.scss';
 
 const CMS_LINKS = [
   { key: 'home', to: '/', end: true },
   { key: 'news', to: '/news' },
-  { key: 'about', to: '/about' },
+  { key: 'about', to: '/about', submenu: true },
   { key: 'rankings', to: '/rankings' },
   { key: 'donate', to: '/donate' },
   { key: 'downloads', to: '/downloads' },
@@ -21,6 +22,7 @@ export default function Navbar() {
   const { openRegister } = useRegister();
   const { t } = useTranslation();
   const { isAuthenticated, user, logout } = useAuth();
+  const { pathname } = useLocation();
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -72,13 +74,17 @@ export default function Navbar() {
         <ul className="navbar__links">
           {CMS_LINKS.map((link) => (
             <li key={link.to}>
-              <NavLink
-                to={link.to}
-                end={link.end}
-                className={({ isActive }) => (isActive ? 'is-active' : undefined)}
-              >
-                {t(`nav.${link.key}`)}
-              </NavLink>
+              {link.submenu ? (
+                <InfoMenu />
+              ) : (
+                <NavLink
+                  to={link.to}
+                  end={link.end}
+                  className={({ isActive }) => (isActive ? 'is-active' : undefined)}
+                >
+                  {t(`nav.${link.key}`)}
+                </NavLink>
+              )}
             </li>
           ))}
           {isAuthenticated && (
@@ -143,14 +149,36 @@ export default function Navbar() {
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: i * 0.06 }}
                 >
-                  <NavLink
-                    to={link.to}
-                    end={link.end}
-                    className={({ isActive }) => (isActive ? 'is-active' : undefined)}
-                    onClick={closeMenu}
-                  >
-                    {t(`nav.${link.key}`)}
-                  </NavLink>
+                  {link.submenu ? (
+                    <>
+                      <span className={`navbar__mobile-group${isInfoPath(pathname) ? ' is-active' : ''}`}>
+                        {t(`nav.${link.key}`)}
+                      </span>
+                      <ul className="navbar__mobile-sub">
+                        {INFO_ITEMS.map((sub) => (
+                          <li key={sub.to}>
+                            <NavLink
+                              to={sub.to}
+                              end
+                              className={({ isActive }) => (isActive ? 'is-active' : undefined)}
+                              onClick={closeMenu}
+                            >
+                              {t(`nav.${sub.key}`)}
+                            </NavLink>
+                          </li>
+                        ))}
+                      </ul>
+                    </>
+                  ) : (
+                    <NavLink
+                      to={link.to}
+                      end={link.end}
+                      className={({ isActive }) => (isActive ? 'is-active' : undefined)}
+                      onClick={closeMenu}
+                    >
+                      {t(`nav.${link.key}`)}
+                    </NavLink>
+                  )}
                 </motion.li>
               ))}
               {isAuthenticated && (

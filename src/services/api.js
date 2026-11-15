@@ -18,17 +18,19 @@ export class ApiError extends Error {
 
 async function request(path, { method = 'GET', body, auth = false } = {}) {
   let response;
+  const isForm = typeof FormData !== 'undefined' && body instanceof FormData;
   try {
     response = await fetch(`${API_URL}${path}`, {
       method,
       credentials: 'include',
       headers: {
-        'Content-Type': 'application/json',
+        // FormData sets its own multipart Content-Type (with boundary).
+        ...(isForm ? {} : { 'Content-Type': 'application/json' }),
         ...(auth && localStorage.getItem('mubreda_token')
           ? { Authorization: `Bearer ${localStorage.getItem('mubreda_token')}` }
           : {}),
       },
-      body: body ? JSON.stringify(body) : undefined,
+      body: body ? (isForm ? body : JSON.stringify(body)) : undefined,
     });
   } catch {
     throw new ApiError(
@@ -117,6 +119,28 @@ export async function saveAdminAbout(payload) {
 
 export async function resetAdminAbout() {
   return request('/api/admin/about/reset', { method: 'POST', auth: true });
+}
+
+export async function fetchGuides() {
+  return request('/api/guides');
+}
+
+export async function fetchAdminGuides() {
+  return request('/api/admin/guides', { auth: true });
+}
+
+export async function saveAdminGuides(payload) {
+  return request('/api/admin/guides', { method: 'PUT', body: payload, auth: true });
+}
+
+export async function resetAdminGuides() {
+  return request('/api/admin/guides/reset', { method: 'POST', auth: true });
+}
+
+export async function uploadAdminImage(file) {
+  const form = new FormData();
+  form.append('file', file);
+  return request('/api/admin/uploads', { method: 'POST', body: form, auth: true });
 }
 
 export async function fetchRankings(type = 'level', { page = 1, pageSize = 20 } = {}) {

@@ -1,0 +1,164 @@
+@use '../../styles/variables' as *;
+@use '../../styles/rich-content' as *;
+
+.rte {
+  border: 1px solid rgba(240, 208, 138, 0.18);
+  border-radius: $radius-sm;
+  background: rgba(11, 15, 20, 0.65);
+
+  &:focus-within {
+    border-color: $color-red-bright;
+    box-shadow: 0 0 0 1px rgba(63, 182, 255, 0.35);
+  }
+
+  &__toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.4rem;
+    border-bottom: 1px solid rgba(240, 208, 138, 0.14);
+    background: rgba(16, 22, 29, 0.85);
+  }
+
+  &__btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 2rem;
+    height: 2rem;
+    padding: 0 0.45rem;
+    font-size: 0.85rem;
+    color: rgba(245, 230, 200, 0.8);
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: $radius-sm;
+    cursor: pointer;
+    transition: color $transition-fast, background $transition-fast;
+
+    &:hover:not(:disabled) {
+      color: $color-gold;
+      background: rgba(63, 182, 255, 0.12);
+    }
+
+    &.is-active {
+      color: $color-gold;
+      border-color: rgba(63, 182, 255, 0.55);
+      background: rgba(63, 182, 255, 0.18);
+    }
+
+    &:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+    }
+
+    &:focus-visible {
+      outline: 2px solid $color-gold;
+      outline-offset: 1px;
+    }
+  }
+
+  &__txt {
+    font-family: $font-display;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+  }
+
+  &__sep {
+    width: 1px;
+    height: 1.2rem;
+    margin: 0 0.2rem;
+    background: rgba(240, 208, 138, 0.2);
+  }
+
+  &__dialog {
+    display: grid;
+    gap: 0.6rem;
+    padding: 0.85rem;
+    border-bottom: 1px solid rgba(240, 208, 138, 0.14);
+    background: rgba(16, 22, 29, 0.95);
+
+    label {
+      display: grid;
+      gap: 0.3rem;
+      font-size: 0.8rem;
+      color: rgba(245, 230, 200, 0.75);
+    }
+
+    input {
+      width: 100%;
+      padding: 0.5rem 0.65rem;
+      color: #f5e6c8;
+      background: rgba(11, 15, 20, 0.65);
+      border: 1px solid rgba(240, 208, 138, 0.18);
+      border-radius: $radius-sm;
+      font-family: $font-body;
+      font-size: 0.9rem;
+    }
+  }
+
+  &__dialog-title {
+    font-family: $font-display;
+    font-size: 0.8rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: $color-gold;
+  }
+
+  &__dialog-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  &__error {
+    margin: 0;
+    font-size: 0.85rem;
+    color: #ffb4b4;
+  }
+
+  &__content {
+    .ProseMirror {
+      @include rich-content;
+      min-height: 9rem;
+      max-height: 32rem;
+      padding: 0.75rem 0.9rem;
+      overflow-y: auto;
+      outline: none;
+
+      p.is-editor-empty:first-child::before {
+        content: attr(data-placeholder);
+        float: left;
+        height: 0;
+        color: rgba(245, 230, 200, 0.4);
+        pointer-events: none;
+      }
+
+      img.ProseMirror-selectednode,
+      div[data-youtube-video].ProseMirror-selectednode {
+        outline: 2px solid $color-gold;
+      }
+
+      td,
+      th {
+        min-width: 4rem;
+        border: 1px dashed rgba(240, 208, 138, 0.2);
+      }
+
+      .selectedCell {
+        background: rgba(63, 182, 255, 0.18);
+      }
+
+      .tableWrapper {
+        overflow-x: auto;
+      }
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rte__btn {
+    transition: none;
+  }
+}

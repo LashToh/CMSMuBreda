@@ -28,3 +28,6 @@ patches/**
 !patches/README.md
 !patches/.gitkeep
 
+
+# Images uploaded from AdminCP (guides editor)
+server/data/uploads/

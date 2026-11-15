@@ -8,6 +8,7 @@ import { config } from './config/index.js';
 import { closePools } from './db/pool.js';
 import apiRoutes from './routes/index.js';
 import { PATCHES_ROOT } from './routes/launcher.js';
+import { UPLOADS_ROOT } from './middleware/upload.js';
 import { notFoundHandler, errorHandler } from './middleware/errorHandler.js';
 import * as donationsController from './controllers/donationsController.js';
 import installRoutes, { serveInstallPage } from './install/routes.js';
@@ -26,6 +27,14 @@ app.set('trust proxy', config.api.trustProxy);
 app.use(
   helmet({
     crossOriginResourcePolicy: { policy: 'cross-origin' },
+    // Helmet defaults plus: images from https/data (guide images) and YouTube (nocookie) embeds.
+    contentSecurityPolicy: {
+      useDefaults: true,
+      directives: {
+        'img-src': ["'self'", 'data:', 'https:'],
+        'frame-src': ["'self'", 'https://www.youtube-nocookie.com'],
+      },
+    },
   }),
 );
 
@@ -59,6 +68,8 @@ app.post(
   donationsController.webhookPaypal,
 );
 
+// Guides carry rich text (HTML) for 3 languages: they need a bigger JSON body than the rest of the API.
+app.use('/api/admin/guides', express.json({ limit: '5mb' }));
 app.use(express.json({ limit: '32kb' }));
 app.use(cookieParser());
 
@@ -73,6 +84,21 @@ app.use(
     fallthrough: true,
     maxAge: '1h',
     index: false,
+  }),
+);
+
+// Images uploaded from AdminCP (guides editor): GET /uploads/<uuid>.png
+app.use(
+  '/uploads',
+  express.static(UPLOADS_ROOT, {
+    fallthrough: true,
+    index: false,
+    dotfiles: 'ignore',
+    maxAge: '365d',
+    immutable: true,
+    setHeaders: (res) => {
+      res.setHeader('X-Content-Type-Options', 'nosniff');
+    },
   }),
 );
 
@@ -91,7 +117,8 @@ if (serveSpa) {
     if (
       req.path.startsWith('/api') ||
       req.path.startsWith('/install') ||
-      req.path.startsWith('/patches')
+      req.path.startsWith('/patches') ||
+      req.path.startsWith('/uploads')
     ) {
       return next();
     }

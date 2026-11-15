@@ -18,6 +18,7 @@ import ShopPage from './pages/ShopPage';
 import NewsPage from './pages/NewsPage';
 import DownloadsPage from './pages/DownloadsPage';
 import AboutPage from './pages/AboutPage';
+import GuidesPage from './pages/GuidesPage';
 import AdminPage from './pages/AdminPage';
 
 function VisitTracker() {
@@ -59,6 +60,7 @@ export default function App() {
                   <Route path="/news" element={<NewsPage />} />
                   <Route path="/downloads" element={<DownloadsPage />} />
                   <Route path="/about" element={<AboutPage />} />
+                  <Route path="/guides" element={<GuidesPage />} />
                   <Route path="/info" element={<Navigate to="/about" replace />} />
                   <Route path="/admin" element={<AdminPage />} />
                 </Route>

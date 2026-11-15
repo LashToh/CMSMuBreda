@@ -2,12 +2,13 @@ import { Link, NavLink, Outlet } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useTranslation } from '../../context/LanguageContext';
 import LanguageSwitcher from '../LanguageSwitcher';
+import InfoMenu from '../InfoMenu';
 import './CmsShell.scss';
 
 const LINKS = [
   { to: '/', key: 'home', end: true },
   { to: '/news', key: 'news' },
-  { to: '/about', key: 'about' },
+  { to: '/about', key: 'about', submenu: true },
   { to: '/rankings', key: 'rankings' },
   { to: '/donate', key: 'donate' },
   { to: '/downloads', key: 'downloads' },
@@ -27,16 +28,20 @@ export default function CmsShell() {
           </Link>
 
           <nav className="cms-shell__nav">
-            {LINKS.map((link) => (
-              <NavLink
-                key={link.to}
-                to={link.to}
-                end={link.end}
-                className={({ isActive }) => (isActive ? 'is-active' : '')}
-              >
-                {t(`nav.${link.key}`)}
-              </NavLink>
-            ))}
+            {LINKS.map((link) =>
+              link.submenu ? (
+                <InfoMenu key={link.to} />
+              ) : (
+                <NavLink
+                  key={link.to}
+                  to={link.to}
+                  end={link.end}
+                  className={({ isActive }) => (isActive ? 'is-active' : '')}
+                >
+                  {t(`nav.${link.key}`)}
+                </NavLink>
+              ),
+            )}
             {isAuthenticated && (
               <NavLink to="/account" className={({ isActive }) => (isActive ? 'is-active' : '')}>
                 {t('nav.account')}

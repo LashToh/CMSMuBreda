@@ -30,6 +30,7 @@ test('ignores admin, static assets, and the launcher update API', () => {
   assert.equal(normalizePublicPath('/news'), '/news');
   assert.equal(normalizePublicPath('/donate?x=1'), '/donate');
   assert.equal(normalizePublicPath('/'), '/');
+  assert.equal(normalizePublicPath('/guides'), '/guides');
   for (const skipped of [
     '/admin',
     '/admin/settings',

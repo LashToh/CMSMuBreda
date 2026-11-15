@@ -1,0 +1,147 @@
+@use '../../styles/variables' as *;
+
+.info-menu {
+  position: relative;
+  display: inline-block;
+
+  &__trigger {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    position: relative;
+    padding: 0.2rem 0;
+    font-family: $font-display;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: rgba(245, 230, 200, 0.82);
+    background: none;
+    border: 0;
+    cursor: pointer;
+    transition: color $transition-fast;
+
+    &::after {
+      content: '';
+      position: absolute;
+      bottom: -6px;
+      left: 0;
+      width: 0;
+      height: 2px;
+      background: linear-gradient(90deg, $color-gold, #fff5dc);
+      box-shadow: 0 0 10px rgba(240, 208, 138, 0.45);
+      transition: width $transition-base;
+    }
+
+    &:hover,
+    &.is-open {
+      color: #fff8e7;
+
+      &::after {
+        width: 100%;
+      }
+    }
+
+    &.is-active {
+      color: $color-gold;
+
+      &::after {
+        width: 100%;
+        background: linear-gradient(90deg, $color-red-bright, $color-gold);
+      }
+    }
+
+    &:focus-visible {
+      outline: 2px solid $color-gold;
+      outline-offset: 4px;
+      border-radius: 2px;
+    }
+  }
+
+  &__caret {
+    font-size: 0.6rem;
+    transition: transform $transition-fast;
+  }
+
+  &__trigger.is-open &__caret {
+    transform: rotate(180deg);
+  }
+
+  &__panel {
+    position: absolute;
+    top: calc(100% + 0.9rem);
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 20;
+    min-width: 12rem;
+    margin: 0;
+    padding: 0.4rem;
+    list-style: none;
+    background: rgba(11, 15, 20, 0.97);
+    border: 1px solid rgba(240, 208, 138, 0.22);
+    border-radius: $radius-md;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.55);
+    animation: info-menu-in 0.16s ease-out;
+  }
+
+  // Doubled selector so it wins over the parent nav's generic "a" link styles.
+  .info-menu__link {
+    display: block;
+    padding: 0.6rem 0.85rem;
+    font-family: $font-display;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    color: rgba(245, 230, 200, 0.85);
+    text-decoration: none;
+    text-shadow: none;
+    border-radius: $radius-sm;
+    transition: color $transition-fast, background $transition-fast;
+
+    &::after {
+      display: none;
+    }
+
+    &:hover,
+    &:focus-visible {
+      color: #fff8e7;
+      background: rgba(63, 182, 255, 0.12);
+    }
+
+    &:focus-visible {
+      outline: 2px solid $color-gold;
+      outline-offset: -2px;
+    }
+
+    &.is-active {
+      color: $color-gold;
+      background: rgba(240, 208, 138, 0.08);
+    }
+  }
+}
+
+@keyframes info-menu-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -4px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .info-menu__panel {
+    animation: none;
+  }
+
+  .info-menu__caret,
+  .info-menu__trigger,
+  .info-menu .info-menu__link {
+    transition: none;
+  }
+}

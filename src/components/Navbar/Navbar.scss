@@ -276,6 +276,36 @@
     }
   }
 
+  &__mobile-group {
+    display: block;
+    text-align: center;
+    font-family: $font-display;
+    font-size: 1.5rem;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: rgba(245, 230, 200, 0.88);
+
+    &.is-active {
+      color: $color-gold;
+    }
+  }
+
+  &__mobile-sub {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.9rem;
+    margin: 0.9rem 0 0 1.25rem;
+    padding: 0 0 0 1.1rem;
+    border-left: 1px solid rgba(240, 208, 138, 0.3);
+
+    a {
+      font-size: 1.1rem !important;
+      letter-spacing: 0.12em !important;
+    }
+  }
+
   &__mobile-links {
     display: flex;
     flex-direction: column;

@@ -7,6 +7,7 @@ import * as shopService from '../services/shopService.js';
 import * as giftCodeService from '../services/giftCodeService.js';
 import * as voteService from '../services/voteService.js';
 import * as aboutService from '../services/aboutService.js';
+import * as guidesService from '../services/guidesService.js';
 
 export async function health(_req, res) {
   return ok(res, {
@@ -57,6 +58,14 @@ export async function serverInfo(_req, res, next) {
 export async function about(_req, res, next) {
   try {
     return ok(res, aboutService.getAbout({ applyLive: true }));
+  } catch (err) {
+    return next(err);
+  }
+}
+
+export async function guides(_req, res, next) {
+  try {
+    return ok(res, guidesService.getGuides());
   } catch (err) {
     return next(err);
   }

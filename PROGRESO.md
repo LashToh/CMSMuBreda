@@ -99,4 +99,4 @@
 - Online: API (pm2 `cms-mubreda-api`, `/var/www/CMSMuBreda`) y web (`/var/www/mubreda-web/dist`) con la rama guias (c5302e5). nginx de mubreda.net con `location ^~ /uploads/` hacia 127.0.0.1:3002.
 - Versión anterior guardada en `/var/www/CMSMuBreda-anterior` y `/var/www/mubreda-web/dist-anterior` (borrar en unos días si todo anda).
 - Chequeos: tests 10/10, health/guides/launcher s6/web/guides/rankings -> 200.
-- Pendiente: el VPS tiene Node 20 y algunas librerías piden Node 22 (andan igual); actualizar Node cuando se pueda. Reinicio del VPS pendiente (actualizaciones de Ubuntu).
+- Mantenimiento (`~/mantenimiento-vps.sh`): Node 20 -> 24.22.3 (repo NodeSource), `pm2 save` (la lista guardada era del 19/10 y no tenía la API del CMS), paquetes de Ubuntu actualizados y VPS reiniciado. Todo volvió solo.

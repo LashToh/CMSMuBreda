@@ -12,6 +12,8 @@ dist-ssr
 coverage
 server/data/*.db
 server/data/cms-local.json
+server/data/visits.json
+server/data/visits.json.tmp
 server/data/.installed
 server/data/admin-secrets.json
 .ref/

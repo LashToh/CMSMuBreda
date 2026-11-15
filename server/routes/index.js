@@ -11,6 +11,7 @@ import launcherRoutes from './launcher.js';
 import * as publicController from '../controllers/publicController.js';
 import * as adminController from '../controllers/adminController.js';
 import * as authController from '../controllers/authController.js';
+import * as visitController from '../controllers/visitController.js';
 
 const router = Router();
 
@@ -19,7 +20,9 @@ const router = Router();
 // strict one is for logins, accounts and payments.
 const PUBLIC_READS = ['/health', '/server', '/about', '/rankings', '/news', '/downloads', '/shop/categories', '/shop/items', '/vote/sites'];
 const isPublicRead = (req) =>
-  req.method === 'GET' && PUBLIC_READS.some((p) => req.path === p || req.path.startsWith(`${p}/`));
+  (req.method === 'GET' && PUBLIC_READS.some((p) => req.path === p || req.path.startsWith(`${p}/`))) ||
+  // Page-view pings are as frequent as reads: they must not use up the strict budget of logins and payments.
+  (req.method === 'POST' && req.path === '/visits');
 
 const publicReadLimiter = rateLimit({
   windowMs: config.rateLimit.windowMs,
@@ -53,6 +56,7 @@ router.use(publicReadLimiter);
 router.use(apiLimiter);
 
 router.get('/health', publicController.health);
+router.post('/visits', visitController.track);
 router.get('/server', publicController.serverInfo);
 router.get('/about', publicController.about);
 router.get('/rankings/:type?', publicController.rankings);
@@ -88,6 +92,7 @@ router.post(
 const admin = Router();
 admin.use(requireAuth, requireAdmin);
 admin.get('/dashboard', adminController.dashboard);
+admin.get('/visits', visitController.report);
 admin.get('/news', adminController.listNews);
 admin.post('/news', adminController.createNews);
 admin.put('/news/:id', adminController.updateNews);

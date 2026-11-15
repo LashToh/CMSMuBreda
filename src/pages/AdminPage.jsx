@@ -15,6 +15,7 @@ import {
   fetchAdminDownloads,
   fetchAdminLogs,
   fetchAdminNews,
+  fetchAdminVisits,
   saveAdminDonationPackage,
   saveAdminDownload,
   saveAdminSecrets,
@@ -33,6 +34,7 @@ import './AdminPage.scss';
 
 const TABS = [
   { id: 'dashboard', label: 'Dashboard' },
+  { id: 'visits', label: 'Visits' },
   { id: 'accounts', label: 'Accounts' },
   { id: 'news', label: 'News' },
   { id: 'downloads', label: 'Downloads' },
@@ -150,6 +152,7 @@ export default function AdminPage() {
   const { isAuthenticated, isAdmin, loading: authLoading } = useAuth();
   const [tab, setTab] = useState('dashboard');
   const [data, setData] = useState(null);
+  const [visits, setVisits] = useState(null);
   const [error, setError] = useState('');
   const [msg, setMsg] = useState('');
 
@@ -270,6 +273,10 @@ export default function AdminPage() {
         if (tab === 'logs') {
           const res = await fetchAdminLogs();
           setLogs(res.data?.items || []);
+        }
+        if (tab === 'visits') {
+          const res = await fetchAdminVisits();
+          setVisits(res.data);
         }
         if (tab === 'dashboard') await loadDashboard();
       } catch (err) {
@@ -572,6 +579,82 @@ export default function AdminPage() {
                 ))}
               </tbody>
             </table>
+          </div>
+        </>
+      )}
+
+      {tab === 'visits' && !visits && !error && <div className="cms-loading">Loading visits…</div>}
+
+      {tab === 'visits' && visits && (
+        <>
+          <div className="cms-grid cms-grid--3">
+            <div className="cms-stat">
+              <div className="cms-stat__label">Page views ({visits.rangeDays} days)</div>
+              <div className="cms-stat__value">{visits.totalVisits ?? 0}</div>
+            </div>
+            <div className="cms-stat">
+              <div className="cms-stat__label">Unique visitors</div>
+              <div className="cms-stat__value">{visits.uniqueVisitors ?? 0}</div>
+            </div>
+            <div className="cms-stat">
+              <div className="cms-stat__label">Today</div>
+              <div className="cms-stat__value">{visits.today?.visits ?? 0}</div>
+            </div>
+          </div>
+          <p className="admincp__note">
+            Last {visits.rangeDays} days, UTC. Each load of a public page (home, news, info,
+            rankings, donate, downloads, login, account) counts as one visit. Unique visitors
+            counts a browser once for the whole range. The table shows uniques per day.
+          </p>
+          <div className="cms-grid cms-grid--2">
+            <div className="cms-panel">
+              <h2 className="admincp__h2">Visits per day</h2>
+              <div style={{ overflowX: 'auto' }}>
+                <table className="cms-table">
+                  <thead>
+                    <tr>
+                      <th>Date</th>
+                      <th>Visits</th>
+                      <th>Unique</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {(visits.days || []).map((row) => (
+                      <tr key={row.date}>
+                        <td>{row.date}</td>
+                        <td>{row.visits}</td>
+                        <td>{row.uniques}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            <div className="cms-panel">
+              <h2 className="admincp__h2">Top pages</h2>
+              {!visits.topPages?.length ? (
+                <div className="cms-empty">No page views in this range yet.</div>
+              ) : (
+                <div style={{ overflowX: 'auto' }}>
+                  <table className="cms-table">
+                    <thead>
+                      <tr>
+                        <th>Page</th>
+                        <th>Visits</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {visits.topPages.map((row) => (
+                        <tr key={row.path}>
+                          <td>{row.path}</td>
+                          <td>{row.visits}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
           </div>
         </>
       )}

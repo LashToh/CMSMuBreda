@@ -6,27 +6,15 @@
   left: 0;
   right: 0;
   z-index: $z-navbar;
-  padding: 1.25rem 0;
+  padding: 0;
   overflow: visible;
   transition: all $transition-base;
+  background: linear-gradient(180deg, rgba(11, 15, 20, 0.92), rgba(11, 15, 20, 0.7));
+  backdrop-filter: blur(6px);
+  border-bottom: 1px solid rgba(176, 115, 74, 0.35);
 
   &--scrolled {
-    padding: 0.75rem 0;
-    background: rgba(9, 9, 9, 0.85);
-    backdrop-filter: blur(20px);
-    border-bottom: 1px solid rgba(198, 23, 23, 0.15);
-
-    .navbar__logo-img {
-      height: 9rem;
-
-      @media (max-width: $breakpoint-tablet) {
-        height: 6.5rem;
-      }
-
-      @media (max-width: $breakpoint-mobile) {
-        height: 5.5rem;
-      }
-    }
+    background: rgba(11, 15, 20, 0.96);
   }
 
   &__inner {
@@ -35,15 +23,7 @@
     align-items: center;
     justify-content: space-between;
     gap: $spacing-md;
-    min-height: 14rem;
-
-    @media (max-width: $breakpoint-tablet) {
-      min-height: 8.75rem;
-    }
-
-    @media (max-width: $breakpoint-mobile) {
-      min-height: 8.75rem;
-    }
+    min-height: 4rem;
   }
 
   &__brand {
@@ -67,7 +47,7 @@
         filter:
           drop-shadow(0 2px 8px rgba(0, 0, 0, 0.35))
           drop-shadow(0 0 18px rgba(240, 208, 138, 0.35))
-          drop-shadow(0 0 28px rgba(198, 23, 23, 0.22))
+          drop-shadow(0 0 28px rgba(63, 182, 255, 0.22))
           brightness(1.08);
       }
     }
@@ -77,21 +57,33 @@
     }
   }
 
+  &__logo {
+    gap: 0.6rem;
+  }
+
   &__logo-img {
     display: block;
-    height: 14rem;
+    height: 2.4rem;
     width: auto;
     object-fit: contain;
     background: transparent;
     filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.35));
-    transition: height $transition-base, filter $transition-base;
+    transition: filter $transition-base;
+  }
 
-    @media (max-width: $breakpoint-tablet) {
-      height: 8.75rem;
+  &__logo-text {
+    font-family: $font-display;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    color: $color-text;
+    white-space: nowrap;
+
+    span {
+      color: $color-steel-light;
     }
 
-    @media (max-width: $breakpoint-mobile) {
-      height: 8.75rem;
+    @media (max-width: $breakpoint-sm) {
+      display: none;
     }
   }
 
@@ -270,7 +262,7 @@
   &__mobile {
     position: fixed;
     inset: 0;
-    background: rgba(9, 9, 9, 0.97);
+    background: rgba(11, 15, 20, 0.97);
     backdrop-filter: blur(30px);
     display: flex;
     flex-direction: column;

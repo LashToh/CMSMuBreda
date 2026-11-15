@@ -43,6 +43,8 @@ export async function serverInfo(_req, res, next) {
       maxMasterLevel: config.server.maxMasterLevel,
       resetLevel: config.server.resetLevel,
       discordUrl: config.server.discordUrl,
+      instagramUrl: config.server.instagramUrl,
+      facebookUrl: config.server.facebookUrl,
       downloadUrl: config.server.downloadUrl,
       stats,
       features: config.features,
@@ -69,8 +71,13 @@ export async function rankings(req, res, next) {
     const page = Number(req.query.page || 1);
     const pageSize = Number(req.query.pageSize || 20);
 
-    // This server has no resets / grand resets; level + master level are a single board.
-    const removed = new Set(['master', 'resets', 'grandresets', 'grand-resets']);
+    // Season 21 has no resets / grand resets (level + master level are one board);
+    // Season 6 (OpenMU) has resets and a master level board of its own.
+    const removed = new Set(
+      config.muBackend === 'openmu'
+        ? ['grandresets', 'grand-resets']
+        : ['master', 'resets', 'grandresets', 'grand-resets'],
+    );
     if (removed.has(type)) {
       return fail(
         res,
@@ -83,6 +90,8 @@ export async function rankings(req, res, next) {
     const map = {
       level: () => mu.rankings.byLevel({ page, pageSize }),
       pk: () => mu.rankings.byPk({ page, pageSize }),
+      resets: () => mu.rankings.byResets({ page, pageSize }),
+      master: () => mu.rankings.byMasterLevel({ page, pageSize }),
       guilds: () => mu.rankings.byGuilds({ page, pageSize }),
       'devil-square': () => mu.rankings.byDevilSquare({ page, pageSize }),
       devilsquare: () => mu.rankings.byDevilSquare({ page, pageSize }),

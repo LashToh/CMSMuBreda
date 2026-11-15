@@ -14,11 +14,27 @@ import * as authController from '../controllers/authController.js';
 
 const router = Router();
 
+// Public pages read these on their own (the home page asks for the server status every 30 s
+// and for the rankings on every tab), so they get a limit of their own, much higher: the
+// strict one is for logins, accounts and payments.
+const PUBLIC_READS = ['/health', '/server', '/about', '/rankings', '/news', '/downloads', '/shop/categories', '/shop/items', '/vote/sites'];
+const isPublicRead = (req) =>
+  req.method === 'GET' && PUBLIC_READS.some((p) => req.path === p || req.path.startsWith(`${p}/`));
+
+const publicReadLimiter = rateLimit({
+  windowMs: config.rateLimit.windowMs,
+  max: config.rateLimit.publicReadMax,
+  standardHeaders: true,
+  legacyHeaders: false,
+  skip: (req) => !isPublicRead(req),
+});
+
 const apiLimiter = rateLimit({
   windowMs: config.rateLimit.windowMs,
   max: config.rateLimit.max,
   standardHeaders: true,
   legacyHeaders: false,
+  skip: isPublicRead,
 });
 
 const registerLimiter = rateLimit({
@@ -33,6 +49,7 @@ const registerLimiter = rateLimit({
   },
 });
 
+router.use(publicReadLimiter);
 router.use(apiLimiter);
 
 router.get('/health', publicController.health);

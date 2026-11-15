@@ -22,7 +22,7 @@ export default function CmsShell() {
       <header className="cms-shell__header">
         <div className="cms-shell__inner">
           <Link to="/" className="cms-shell__brand" aria-label={t('nav.home')}>
-            <img src="/assets/logo-mubreda.webp" alt={t('common.logoAlt')} width={48} height={48} />
+            <img src="/assets/logo-b-blue.webp" alt={t('common.logoAlt')} width={48} height={48} />
             <span>MU Breda</span>
           </Link>
 

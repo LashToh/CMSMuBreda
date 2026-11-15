@@ -7,7 +7,7 @@
   padding: 0.2rem;
   border-radius: $radius-sm;
   border: 1px solid rgba(240, 208, 138, 0.15);
-  background: rgba(18, 18, 18, 0.6);
+  background: rgba(16, 22, 29, 0.6);
 
   &__btn {
     font-family: $font-display;
@@ -26,7 +26,7 @@
 
     &--active {
       color: $color-gold;
-      background: rgba(198, 23, 23, 0.25);
+      background: rgba(63, 182, 255, 0.25);
       box-shadow: inset 0 0 0 1px rgba(240, 208, 138, 0.2);
     }
   }

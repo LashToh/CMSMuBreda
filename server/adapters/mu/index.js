@@ -1,13 +1,15 @@
 import { config } from '../../config/index.js';
 import * as mock from './mock.js';
 import * as mssqlAdapter from './mssql.js';
+import * as openmuAdapter from './openmu.js';
 
 /**
  * MU Database Adapter facade.
  * Controllers/services talk only to this layer — never raw SQL.
  */
 function pick() {
-  return config.isMock ? mock : mssqlAdapter;
+  if (config.isMock) return mock;
+  return config.muBackend === 'openmu' ? openmuAdapter : mssqlAdapter;
 }
 
 export const mu = {

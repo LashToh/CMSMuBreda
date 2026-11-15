@@ -30,14 +30,27 @@
   }
 
   &--primary {
-    background: linear-gradient(135deg, $color-red-dark, $color-red-bright);
-    color: #fff;
-    border: 1px solid rgba(198, 23, 23, 0.6);
-    @include red-glow;
+    background: linear-gradient(180deg, #ffe08a 0%, $color-gold-strong 45%, #c08a22 100%);
+    color: #1b1206;
+    border: 1px solid #ffe6a3;
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.6), 0 6px 22px rgba(240, 194, 74, 0.25);
 
     &:hover {
       transform: translateY(-2px);
-      box-shadow: 0 0 60px rgba(198, 23, 23, 0.6);
+      box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.6), 0 6px 30px rgba(240, 194, 74, 0.45);
+    }
+  }
+
+  &--steel {
+    background: rgba(11, 15, 20, 0.55);
+    color: $color-steel-light;
+    border: 1px solid $color-red-bright;
+
+    &:hover {
+      color: #fff;
+      border-color: $color-glow;
+      box-shadow: 0 0 18px rgba(63, 182, 255, 0.35);
+      transform: translateY(-2px);
     }
   }
 
@@ -83,7 +96,7 @@
   transition: all $transition-base;
 
   &:hover {
-    border-color: rgba(198, 23, 23, 0.3);
+    border-color: rgba(63, 182, 255, 0.3);
     transform: translateY(-4px);
     box-shadow: 0 16px 48px rgba(0, 0, 0, 0.6), $glow-red;
   }

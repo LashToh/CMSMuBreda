@@ -30,7 +30,7 @@ export default function DownloadsPage() {
       <p className="cms-page__subtitle">
         {server
           ? `${server.name} Season ${server.season} — EXP ${server.exp} · Drop ${server.drop}`
-          : 'Get the Season 21 client and patches.'}
+          : 'Get the Season 6 client and patches.'}
       </p>
 
       {loading && <div className="cms-loading">Loading downloads…</div>}

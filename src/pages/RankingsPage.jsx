@@ -3,13 +3,13 @@ import { ApiError, fetchRankings } from '../services/api';
 
 const TABS = [
   { id: 'level', label: 'Level' },
+  { id: 'resets', label: 'Resets' },
+  { id: 'master', label: 'Master Level' },
   { id: 'pk', label: 'PK' },
   { id: 'guilds', label: 'Guilds' },
   { id: 'devil-square', label: 'Devil Square' },
   { id: 'blood-castle', label: 'Blood Castle' },
-  { id: 'castle-siege', label: 'Castle Siege' },
   { id: 'chaos-castle', label: 'Chaos Castle' },
-  { id: 'duel', label: 'Duel' },
   { id: 'illusion-temple', label: 'Illusion Temple' },
 ];
 
@@ -59,7 +59,7 @@ export default function RankingsPage() {
     <section className="cms-page">
       <p className="cms-page__label">Competition</p>
       <h1 className="cms-page__title">Rankings</h1>
-      <p className="cms-page__subtitle">Top warriors of MU Breda Season 21.</p>
+      <p className="cms-page__subtitle">Top warriors of MU Breda Season 6.</p>
 
       <div className="cms-tabs">
         {TABS.map((tab) => (
@@ -113,6 +113,16 @@ export default function RankingsPage() {
                           <th>ML</th>
                           <th>Total</th>
                         </>
+                      ) : type === 'resets' ? (
+                        <>
+                          <th>Resets</th>
+                          <th>Level</th>
+                        </>
+                      ) : type === 'master' ? (
+                        <>
+                          <th>ML</th>
+                          <th>Level</th>
+                        </>
                       ) : (
                         <th>Level</th>
                       )}
@@ -153,6 +163,16 @@ export default function RankingsPage() {
                               <td>{row.level}</td>
                               <td>{row.masterLevel ?? '—'}</td>
                               <td>{total}</td>
+                            </>
+                          ) : type === 'resets' ? (
+                            <>
+                              <td>{row.resets ?? 0}</td>
+                              <td>{row.level}</td>
+                            </>
+                          ) : type === 'master' ? (
+                            <>
+                              <td>{row.masterLevel ?? 0}</td>
+                              <td>{row.level}</td>
                             </>
                           ) : (
                             <td>{row.level}</td>

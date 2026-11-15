@@ -36,7 +36,7 @@ export default function RegisterPage() {
 
   return (
     <section className="cms-page">
-      <p className="cms-page__label">Join Season 21</p>
+      <p className="cms-page__label">Join Season 6</p>
       <h1 className="cms-page__title">Create Account</h1>
       <p className="cms-page__subtitle">Username 4–10 alphanumeric. Password 4–20 characters.</p>
 

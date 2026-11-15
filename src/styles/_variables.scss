@@ -1,13 +1,22 @@
 // Design tokens
-$color-bg-deep: #090909;
-$color-bg-dark: #121212;
-$color-bg-crimson: #1b0000;
-$color-red-dark: #6d0000;
-$color-red-bright: #c61717;
+$color-bg-deep: #0b0f14;
+$color-bg-dark: #10161d;
+$color-bg-crimson: #121a24; // night blue (the name stays for the old styles)
+$color-red-dark: #1d5566; // steel blue, dark (was red)
+$color-red-bright: #2f7f93; // steel blue (was red)
 $color-gold: #f0d08a;
+$color-gold-strong: #f0c24a;
+$color-steel-light: #6fc3d6;
+$color-glow: #3fb6ff;
+$color-bronze: #b0734a;
+$color-bronze-dim: #6e4a32;
+$color-stone: #16130f;
+$color-stone-2: #1d1914;
+$color-text: #e8e2d6;
+$color-muted: #9a907f;
 
 $font-display: 'Cinzel', serif;
-$font-body: 'Cormorant Garamond', serif;
+$font-body: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
 
 $spacing-xs: 0.5rem;
 $spacing-sm: 1rem;
@@ -28,9 +37,9 @@ $z-navbar: 1000;
 $z-overlay: 900;
 $z-modal: 1100;
 
-$glass-bg: rgba(18, 18, 18, 0.65);
+$glass-bg: rgba(16, 22, 29, 0.7);
 $glass-border: rgba(240, 208, 138, 0.12);
-$glow-red: 0 0 40px rgba(198, 23, 23, 0.45);
+$glow-red: 0 0 40px rgba(63, 182, 255, 0.3); // blue glow (name kept)
 $glow-gold: 0 0 30px rgba(240, 208, 138, 0.25);
 
 $breakpoint-tablet: 1024px;
@@ -46,7 +55,7 @@ $breakpoint-sm: 480px;
 }
 
 @mixin red-glow {
-  box-shadow: $glow-red, inset 0 0 60px rgba(198, 23, 23, 0.08);
+  box-shadow: $glow-red, inset 0 0 60px rgba(63, 182, 255, 0.06);
 }
 
 @mixin gold-text-gradient {
@@ -77,4 +86,12 @@ $breakpoint-sm: 480px;
   @media (max-width: $breakpoint-mobile) {
     padding: 0 $spacing-sm;
   }
+}
+
+// The dark stone panels of the game's windows (dream theme), with a bronze edge
+@mixin stone-panel {
+  background: linear-gradient(180deg, $color-stone-2, $color-stone);
+  border: 1px solid $color-bronze-dim;
+  border-radius: 6px;
+  box-shadow: 0 0 0 1px #000, inset 0 1px 0 rgba(240, 208, 112, 0.07);
 }

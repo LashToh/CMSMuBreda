@@ -4,18 +4,18 @@
   0%,
   100% {
     box-shadow:
-      0 0 28px rgba(198, 23, 23, 0.55),
+      0 0 28px rgba(63, 182, 255, 0.55),
       0 0 48px rgba(240, 208, 138, 0.2),
       0 12px 36px rgba(0, 0, 0, 0.55),
-      inset 0 0 24px rgba(198, 23, 23, 0.12);
+      inset 0 0 24px rgba(63, 182, 255, 0.12);
   }
 
   50% {
     box-shadow:
-      0 0 40px rgba(198, 23, 23, 0.75),
+      0 0 40px rgba(63, 182, 255, 0.75),
       0 0 64px rgba(240, 208, 138, 0.35),
       0 12px 36px rgba(0, 0, 0, 0.55),
-      inset 0 0 32px rgba(198, 23, 23, 0.18);
+      inset 0 0 32px rgba(63, 182, 255, 0.18);
   }
 }
 
@@ -49,7 +49,7 @@
         to bottom,
         transparent 0%,
         rgba(240, 208, 138, 0.18) 12%,
-        rgba(198, 23, 23, 0.45) 50%,
+        rgba(63, 182, 255, 0.45) 50%,
         rgba(240, 208, 138, 0.18) 88%,
         transparent 100%
       );
@@ -76,9 +76,9 @@
     color: rgba(255, 255, 255, 0.65);
     font-size: 1.45rem;
     box-shadow:
-      0 0 24px rgba(198, 23, 23, 0.35),
+      0 0 24px rgba(63, 182, 255, 0.35),
       0 10px 32px rgba(0, 0, 0, 0.55),
-      inset 0 0 20px rgba(198, 23, 23, 0.06);
+      inset 0 0 20px rgba(63, 182, 255, 0.06);
     transition:
       color $transition-fast,
       border-color $transition-fast,
@@ -89,7 +89,7 @@
     &:hover,
     &:focus-visible {
       color: $color-gold;
-      border-color: rgba(198, 23, 23, 0.7);
+      border-color: rgba(63, 182, 255, 0.7);
       transform: scale(1.1);
       outline: none;
       animation: social-float-glow 2.4s ease-in-out infinite;
@@ -97,7 +97,7 @@
 
     &:focus-visible {
       box-shadow:
-        0 0 28px rgba(198, 23, 23, 0.55),
+        0 0 28px rgba(63, 182, 255, 0.55),
         0 0 48px rgba(240, 208, 138, 0.2),
         0 0 0 2px rgba(240, 208, 138, 0.45);
     }

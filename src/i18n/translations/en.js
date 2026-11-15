@@ -17,23 +17,62 @@ export default {
   },
   hero: {
     brand: 'Mu Breda',
-    season: 'Season 21',
+    season: 'Season 6',
     titleAccent: 'Official Server',
-    subtitle:
-      'Enter MU Breda Season 21. Create your account, download the client, and join the continent.',
     download: 'Download',
     scroll: 'Scroll',
     serverChecking: 'Checking server…',
     serverOnline: 'Server Online',
     serverOffline: 'Server Offline',
     playersOnline: '{count} players online',
+    tagline: 'The legend returns to Breda',
+    subtitle:
+      'Season 6 with the classics you love and what you only find here: Arka War, Battle Pass, one-click quests and much more.',
+    createAccount: 'Create account',
+    factExp: 'Exp',
+    factDrop: 'Drop',
+    factMaxLevel: 'Max level',
+    factReset: 'Reset at',
+    statOnline: 'Online',
+    statOffline: 'Offline',
+    statServer: 'Server',
+    statPlaying: 'Playing now',
+    statPlayers: 'players',
+    statAccounts: 'Accounts',
+    statCharacters: 'Characters',
+  },
+  features: {
+    title: 'What Breda has',
+    subtitle: 'Systems of our own you won\'t find on any other Season 6.',
+    items: {
+      arkaWar: { tag: 'War', title: 'Arka War', text: 'Guilds fight over the obelisks. The one that holds out longest takes the glory and the rewards.' },
+      battlePass: { tag: 'Progress', title: 'Battle Pass', text: 'Hunt, finish missions and level up the pass. Silver for everyone, Gold with extra rewards.' },
+      quests: { tag: 'Adventure', title: 'Quests', text: 'One click and your character travels to the safe zone and runs to the NPC or the monsters.' },
+      party: { tag: 'Party', title: 'Party commands', text: 'Ctrl+A and the whole party follows you, even from another map. Ctrl+S starts everyone\'s helper.' },
+      minimap: { tag: 'Comfort', title: 'Interactive mini map', text: 'Right click on the map and your character runs there, with the path marked.' },
+      jewelBank: { tag: 'Economy', title: 'Jewel bank', text: 'The jewels you pick up go straight to the bank. No full inventory, nothing lost.' },
+    },
+  },
+  rankingsPreview: {
+    title: 'Rankings',
+    subtitle: 'The strongest of Breda, live from the server.',
+    tabs: { level: 'Level', resets: 'Resets', guilds: 'Guilds' },
+    colCharacter: 'Character',
+    colGuild: 'Guild',
+    colMaster: 'Master',
+    colLevel: 'Level',
+    colResets: 'Resets',
+    colScore: 'Score',
+    loading: 'Loading…',
+    empty: 'Nobody on this board yet.',
+    more: 'See full rankings',
   },
   download: {
     sectionLabel: 'Join the Battle',
     titleLine1: 'MU Breda',
-    titleLine2: 'Season 21',
+    titleLine2: 'Season 6',
     subtitle:
-      'Download the client, register your account, and start your adventure on the official MU Breda Season 21 server.',
+      'Download the client, register your account, and start your adventure on the official MU Breda Season 6 server.',
     downloadClient: 'Download Client',
     mirrorsLabel: 'Mirrors',
     registerAccount: 'Register Account',
@@ -55,9 +94,9 @@ export default {
     },
   },
   footer: {
-    brandName: 'Mu Breda · Season 21',
+    brandName: 'Mu Breda · Season 6',
     tagline:
-      'Official MU Breda Season 21 player portal. Not affiliated with Webzen Inc.',
+      'Official MU Breda Season 6 player portal. Not affiliated with Webzen Inc.',
     copyright: '© 2026 LashToh. All rights reserved.',
     disclaimer: 'MU Online is a registered trademark of Webzen Inc.',
     groups: {
@@ -83,7 +122,7 @@ export default {
   },
   register: {
     sectionLabel: 'Create Account',
-    title: 'Register for Season 21',
+    title: 'Register for Season 6',
     intro:
       'Create your Mu Breda account. Username: 4–10 alphanumeric. Password: 4–20 characters. Email is required.',
     username: 'Username',
@@ -118,13 +157,13 @@ export default {
     ariaLabel: 'Social media links',
   },
   common: {
-    logoAlt: 'Mu Breda Season 21',
+    logoAlt: 'Mu Breda Season 6',
     selectLanguage: 'Select language',
   },
   about: {
     label: 'Server',
     title: 'Server Info',
-    subtitle: 'Rates, mixes, commands and features of MU Breda Season 21.',
+    subtitle: 'Rates, mixes, commands and features of MU Breda Season 6.',
     loading: 'Loading info…',
     loadError: 'Could not load server info.',
     empty: 'No server info published yet.',
@@ -133,7 +172,7 @@ export default {
     label: 'Support',
     title: 'Donate',
     subtitle:
-      'Support MU Breda Season 21. Custom amount or fixed packages — WCoinC after payment confirms.',
+      'Support MU Breda Season 6. Custom amount or fixed packages — WCoinC after payment confirms.',
     mockBanner:
       'Demo mode is active (DONATIONS_MOCK / mock DB): the Demo button credits WCoinC without a real gateway.',
     loading: 'Loading packages…',
@@ -182,7 +221,7 @@ export default {
   login: {
     label: 'Account',
     title: 'Login',
-    subtitle: 'Enter the realm of Season 21. Demo: demo / demo1234 (mock mode).',
+    subtitle: 'Enter the realm of Season 6. Demo: demo / demo1234 (mock mode).',
     username: 'Username',
     password: 'Password',
     submit: 'Login',

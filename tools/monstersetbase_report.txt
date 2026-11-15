@@ -1,0 +1,385 @@
+﻿====================================================================================================
+COMPARACION MonsterSetBase - BACKUP (13-08-2026) vs CURRENT (29-09-2026)
+BACKUP:  G:\Server Breda\MuDevs Season 21 cracked\MuServer Mudevs 13-08-2026 - Solo backup\Data\Monster\MonsterSetBase
+CURRENT: G:\Server Breda\MuDevs Season 21 cracked\MuServer 29-09-2026\Data\Monster\MonsterSetBase
+====================================================================================================
+
+################################################################################
+## MAPA: Lorencia (000 - Lorencia.xml)
+################################################################################
+
+### 1) Archivos y tama├▒os
+| Versi├│n | Bytes | Ruta |
+|---------|------:|------|
+| BACKUP  | 10,880 | `G:\Server Breda\MuDevs Season 21 cracked\MuServer Mudevs 13-08-2026 - Solo backup\Data\Monster\MonsterSetBase\000 - Lorencia.xml` |
+| CURRENT | 10,880 | `G:\Server Breda\MuDevs Season 21 cracked\MuServer 29-09-2026\Data\Monster\MonsterSetBase\000 - Lorencia.xml` |
+| Delta tamano | +0 bytes | |
+
+### 2) Conteo de entradas Config por secci├│n
+| Seccion | BACKUP | CURRENT | Diff |
+|---------|-------:|--------:|-----:|
+| NPC | 31 | 31 | +0 |
+| SPOT | 35 | 35 | +0 |
+| MONSTER | 0 | 0 | +0 |
+| EVENT | 0 | 0 | +0 |
+| **TOTAL** | **66** | **66** | **+0** |
+| Suma Quantity (SPOT+MONSTER) | 173 | 173 | +0 |
+
+### 3) Conteo por Class (ID monstruo/NPC)
+| Class | BACKUP | CURRENT | Diff |
+|-------:|-------:|--------:|-----:|
+| 0 | 5 | 5 | +0 |
+| 1 | 5 | 5 | +0 |
+| 2 | 2 | 2 | +0 |
+| 3 | 2 | 2 | +0 |
+| 4 | 7 | 7 | +0 |
+| 6 | 4 | 4 | +0 |
+| 7 | 6 | 6 | +0 |
+| 14 | 4 | 4 | +0 |
+| 226 | 1 | 1 | +0 |
+| 230 | 1 | 1 | +0 |
+| 239 | 1 | 1 | +0 |
+| 240 | 2 | 2 | +0 |
+| 249 | 5 | 5 | +0 |
+| 250 | 1 | 1 | +0 |
+| 251 | 1 | 1 | +0 |
+| 253 | 1 | 1 | +0 |
+| 254 | 1 | 1 | +0 |
+| 255 | 1 | 1 | +0 |
+| 257 | 4 | 4 | +0 |
+| 375 | 1 | 1 | +0 |
+| 406 | 1 | 1 | +0 |
+| 492 | 1 | 1 | +0 |
+| 522 | 1 | 1 | +0 |
+| 540 | 1 | 1 | +0 |
+| 543 | 1 | 1 | +0 |
+| 544 | 1 | 1 | +0 |
+| 547 | 1 | 1 | +0 |
+| 568 | 1 | 1 | +0 |
+| 584 | 1 | 1 | +0 |
+| 764 | 1 | 1 | +0 |
+| 891 | 1 | 1 | +0 |
+
+### 4) Diferencias de spots
+- Solo en BACKUP: **2** entradas
+- Solo en CURRENT: **2** entradas
+- Id├®nticos (misma l├¡nea Config): **No**
+
+**Solo BACKUP (m├íx. 15):**
+  - [NPC] Class 543 X=144 Y=125 R=0 "Gens Duprian Steward"
+  - [NPC] Class 544 X=144 Y=129 R=0 "Gens Vanert Steward"
+
+**Solo CURRENT (m├íx. 15):**
+  - [NPC] Class 543 X=136 Y=125 R=0 "Gens Duprian Steward"
+  - [NPC] Class 544 X=136 Y=129 R=0 "Gens Vanert Steward"
+
+**Posibles movimientos (misma Class, coords distintas) ÔÇö muestra:**
+  - [NPC] Class 544: -1 coords / +1 coords
+  - [NPC] Class 543: -1 coords / +1 coords
+
+### 5) Resumen breve
+- **Densidad:** Misma cantidad total; cambios de composici├│n/ubicaci├│n
+- **Mobs clave (╬ö Class):** Ninguna Class cambi├│ de conteo
+
+################################################################################
+## MAPA: Devias (002 - Devias.xml)
+################################################################################
+
+### 1) Archivos y tama├▒os
+| Versi├│n | Bytes | Ruta |
+|---------|------:|------|
+| BACKUP  | 8,351 | `G:\Server Breda\MuDevs Season 21 cracked\MuServer Mudevs 13-08-2026 - Solo backup\Data\Monster\MonsterSetBase\002 - Devias.xml` |
+| CURRENT | 15,928 | `G:\Server Breda\MuDevs Season 21 cracked\MuServer 29-09-2026\Data\Monster\MonsterSetBase\002 - Devias.xml` |
+| Delta tamano | +7,577 bytes | |
+
+### 2) Conteo de entradas Config por secci├│n
+| Seccion | BACKUP | CURRENT | Diff |
+|---------|-------:|--------:|-----:|
+| NPC | 22 | 22 | +0 |
+| SPOT | 27 | 47 | +20 |
+| MONSTER | 0 | 39 | +39 |
+| EVENT | 0 | 0 | +0 |
+| **TOTAL** | **49** | **108** | **+59** |
+| Suma Quantity (SPOT+MONSTER) | 136 | 349 | +213 |
+
+### 3) Conteo por Class (ID monstruo/NPC)
+| Class | BACKUP | CURRENT | Diff |
+|-------:|-------:|--------:|-----:|
+| 19 ** | 4 | 3 | -1 |
+| 20 ** | 9 | 36 | +27 |
+| 21 ** | 3 | 2 | -1 |
+| 22 | 2 | 2 | +0 |
+| 23 ** | 3 | 4 | +1 |
+| 24 ** | 6 | 9 | +3 |
+| 229 | 1 | 1 | +0 |
+| 233 | 2 | 2 | +0 |
+| 235 | 1 | 1 | +0 |
+| 236 | 1 | 1 | +0 |
+| 240 | 1 | 1 | +0 |
+| 241 | 1 | 1 | +0 |
+| 244 | 1 | 1 | +0 |
+| 245 | 1 | 1 | +0 |
+| 246 | 1 | 1 | +0 |
+| 247 | 4 | 4 | +0 |
+| 257 | 2 | 2 | +0 |
+| 379 | 1 | 1 | +0 |
+| 478 | 1 | 1 | +0 |
+| 522 | 1 | 1 | +0 |
+| 566 | 1 | 1 | +0 |
+| 584 | 1 | 1 | +0 |
+| 681 ** | 0 | 30 | +30 |
+| 939 | 1 | 1 | +0 |
+
+### 4) Diferencias de spots
+- Solo en BACKUP: **27** entradas
+- Solo en CURRENT: **86** entradas
+- Id├®nticos (misma l├¡nea Config): **No**
+
+**Solo BACKUP (m├íx. 15):**
+  - [SPOT] Class 24 B=(221,89) E=(225,89) Q=5 R=30 Worm
+  - [SPOT] Class 24 B=(240,84) E=(243,87) Q=5 R=30 Worm
+  - [SPOT] Class 24 B=(202,85) E=(198,85) Q=5 R=30 Worm
+  - [SPOT] Class 24 B=(166,50) E=(163,48) Q=5 R=30 Worm
+  - [SPOT] Class 24 B=(155,37) E=(155,33) Q=5 R=30 Worm
+  - [SPOT] Class 24 B=(168,23) E=(164,19) Q=5 R=30 Worm
+  - [SPOT] Class 23 B=(240,126) E=(233,124) Q=5 R=30 Hommerd
+  - [SPOT] Class 23 B=(187,109) E=(185,105) Q=5 R=30 Hommerd
+  - [SPOT] Class 21 B=(37,11) E=(38,15) Q=5 R=30 Assassin
+  - [SPOT] Class 21 B=(17,43) E=(17,39) Q=5 R=30 Assassin
+  - [SPOT] Class 22 B=(38,40) E=(38,36) Q=5 R=30 Ice Monster
+  - [SPOT] Class 22 B=(16,14) E=(16,10) Q=5 R=30 Ice Monster
+  - [SPOT] Class 19 B=(55,18) E=(54,14) Q=5 R=30 Yeti
+  - [SPOT] Class 19 B=(77,17) E=(74,13) Q=5 R=30 Yeti
+  - [SPOT] Class 19 B=(74,45) E=(72,42) Q=5 R=30 Yeti
+  ... +12 m├ís
+
+**Solo CURRENT (m├íx. 15):**
+  - [SPOT] Class 19 B=(51,6) E=(113,244) Q=40 R=30 "Yeti"
+  - [SPOT] Class 19 B=(114,72) E=(115,72) Q=5 R=5 "Yeti"
+  - [SPOT] Class 19 B=(102,164) E=(102,164) Q=5 R=5 "Yeti"
+  - [SPOT] Class 20 B=(50,6) E=(166,244) Q=20 R=30 "Elite Yeti"
+  - [SPOT] Class 20 B=(5,50) E=(50,155) Q=20 R=30 "Elite Yeti"
+  - [SPOT] Class 20 B=(6,184) E=(80,244) Q=10 R=30 "Elite Yeti"
+  - [SPOT] Class 20 B=(53,62) E=(54,65) Q=5 R=5 "Elite Yeti"
+  - [SPOT] Class 21 B=(50,6) E=(166,244) Q=40 R=30 "Assassin"
+  - [SPOT] Class 21 B=(123,27) E=(123,27) Q=5 R=5 "Assassin"
+  - [SPOT] Class 22 B=(50,6) E=(166,244) Q=40 R=30 "Ice Monster"
+  - [SPOT] Class 22 B=(166,118) E=(166,118) Q=5 R=5 "Ice Monster"
+  - [SPOT] Class 23 B=(171,101) E=(245,200) Q=10 R=30 "Hommerd"
+  - [SPOT] Class 23 B=(50,6) E=(166,244) Q=30 R=30 "Hommerd"
+  - [SPOT] Class 23 B=(208,118) E=(208,118) Q=5 R=5 "Hommerd"
+  - [SPOT] Class 23 B=(47,209) E=(48,210) Q=5 R=5 "Hommerd"
+  ... +71 m├ís
+
+**Posibles movimientos (misma Class, coords distintas) ÔÇö muestra:**
+  - [SPOT] Class 20: -9 coords / +4 coords
+  - [SPOT] Class 22: -2 coords / +2 coords
+  - [SPOT] Class 24: -6 coords / +2 coords
+  - [SPOT] Class 23: -3 coords / +4 coords
+  - [SPOT] Class 21: -3 coords / +2 coords
+  - [SPOT] Class 19: -4 coords / +3 coords
+
+### 5) Resumen breve
+- **Densidad:** M├ís denso (+59 spots, +213 mobs en Quantity)
+- **Mobs clave (╬ö Class):** Class 19 (4->3, diff -1), Class 20 (9->36, diff +27), Class 21 (3->2, diff -1), Class 23 (3->4, diff +1), Class 24 (6->9, diff +3), Class 681 (0->30, diff +30)
+
+################################################################################
+## MAPA: Noria (003 - Noria.xml)
+################################################################################
+
+### 1) Archivos y tama├▒os
+| Versi├│n | Bytes | Ruta |
+|---------|------:|------|
+| BACKUP  | 6,799 | `G:\Server Breda\MuDevs Season 21 cracked\MuServer Mudevs 13-08-2026 - Solo backup\Data\Monster\MonsterSetBase\003 - Noria.xml` |
+| CURRENT | 7,476 | `G:\Server Breda\MuDevs Season 21 cracked\MuServer 29-09-2026\Data\Monster\MonsterSetBase\003 - Noria.xml` |
+| Delta tamano | +677 bytes | |
+
+### 2) Conteo de entradas Config por secci├│n
+| Seccion | BACKUP | CURRENT | Diff |
+|---------|-------:|--------:|-----:|
+| NPC | 13 | 13 | +0 |
+| SPOT | 22 | 27 | +5 |
+| MONSTER | 0 | 0 | +0 |
+| EVENT | 0 | 0 | +0 |
+| **TOTAL** | **35** | **40** | **+5** |
+| Suma Quantity (SPOT+MONSTER) | 140 | 435 | +295 |
+
+### 3) Conteo por Class (ID monstruo/NPC)
+| Class | BACKUP | CURRENT | Diff |
+|-------:|-------:|--------:|-----:|
+| 3 ** | 0 | 2 | +2 |
+| 26 ** | 2 | 3 | +1 |
+| 27 | 4 | 4 | +0 |
+| 28 | 3 | 3 | +0 |
+| 29 ** | 2 | 3 | +1 |
+| 30 ** | 2 | 4 | +2 |
+| 31 ** | 3 | 4 | +1 |
+| 32 ** | 4 | 1 | -3 |
+| 33 ** | 2 | 3 | +1 |
+| 237 | 1 | 1 | +0 |
+| 238 | 1 | 1 | +0 |
+| 240 | 1 | 1 | +0 |
+| 242 | 1 | 1 | +0 |
+| 243 | 1 | 1 | +0 |
+| 257 | 3 | 3 | +0 |
+| 544 | 1 | 1 | +0 |
+| 580 | 1 | 1 | +0 |
+| 584 | 1 | 1 | +0 |
+| 873 | 1 | 1 | +0 |
+| 874 | 1 | 1 | +0 |
+
+### 4) Diferencias de spots
+- Solo en BACKUP: **20** entradas
+- Solo en CURRENT: **25** entradas
+- Id├®nticos (misma l├¡nea Config): **No**
+
+**Solo BACKUP (m├íx. 15):**
+  - [SPOT] Class 26 B=(156,113) E=(157,117) Q=5 R=30 Goblin
+  - [SPOT] Class 26 B=(160,126) E=(163,131) Q=5 R=30 Goblin
+  - [SPOT] Class 27 B=(153,127) E=(147,126) Q=5 R=30 Chain Scorpion
+  - [SPOT] Class 27 B=(147,111) E=(144,106) Q=5 R=30 Chain Scorpion
+  - [SPOT] Class 27 B=(169,74) E=(173,75) Q=5 R=30 Chain Scorpion
+  - [SPOT] Class 27 B=(156,70) E=(152,66) Q=5 R=30 Chain Scorpion
+  - [SPOT] Class 28 B=(162,64) E=(157,62) Q=5 R=30 Beetle Monster
+  - [SPOT] Class 28 B=(177,67) E=(180,71) Q=5 R=30 Beetle Monster
+  - [SPOT] Class 28 B=(189,81) E=(193,84) Q=5 R=30 Beetle Monster
+  - [SPOT] Class 29 B=(198,68) E=(195,64) Q=5 R=30 Hunter
+  - [SPOT] Class 29 B=(165,53) E=(158,53) Q=5 R=30 Hunter
+  - [SPOT] Class 30 B=(214,133) E=(118,134) Q=5 R=30 Forest Monster
+  - [SPOT] Class 30 B=(202,146) E=(199,150) Q=5 R=30 Forest Monster
+  - [SPOT] Class 31 B=(211,156) E=(207,158) Q=5 R=30 Agon
+  - [SPOT] Class 31 B=(222,148) E=(224,143) Q=5 R=30 Agon
+  ... +5 m├ís
+
+**Solo CURRENT (m├íx. 15):**
+  - [SPOT] Class 3 B=(139,63) E=(247,164) Q=60 R=30 "Spider"
+  - [SPOT] Class 3 B=(164,80) E=(164,80) Q=5 R=5 "Spider"
+  - [SPOT] Class 26 B=(109,46) E=(154,181) Q=10 R=30 "Goblin"
+  - [SPOT] Class 26 B=(136,156) E=(247,204) Q=10 R=30 "Goblin"
+  - [SPOT] Class 26 B=(135,42) E=(247,73) Q=10 R=30 "Goblin"
+  - [SPOT] Class 27 B=(109,46) E=(154,181) Q=20 R=30 "Chain Scorpion"
+  - [SPOT] Class 27 B=(135,42) E=(247,73) Q=20 R=30 "Chain Scorpion"
+  - [SPOT] Class 27 B=(136,156) E=(247,204) Q=20 R=30 "Chain Scorpion"
+  - [SPOT] Class 27 B=(136,79) E=(136,79) Q=5 R=5 "Chain Scorpion"
+  - [SPOT] Class 28 B=(106,3) E=(247,40) Q=20 R=30 "Beetle Monster"
+  - [SPOT] Class 28 B=(59,6) E=(128,106) Q=20 R=30 "Beetle Monster"
+  - [SPOT] Class 28 B=(102,83) E=(102,83) Q=5 R=5 "Beetle Monster"
+  - [SPOT] Class 29 B=(106,3) E=(247,40) Q=20 R=30 "Hunter"
+  - [SPOT] Class 29 B=(59,6) E=(128,106) Q=20 R=30 "Hunter"
+  - [SPOT] Class 29 B=(106,37) E=(106,37) Q=5 R=5 "Hunter"
+  ... +10 m├ís
+
+**Posibles movimientos (misma Class, coords distintas) ÔÇö muestra:**
+  - [SPOT] Class 26: -2 coords / +3 coords
+  - [SPOT] Class 27: -4 coords / +4 coords
+  - [SPOT] Class 32: -4 coords / +1 coords
+  - [SPOT] Class 31: -3 coords / +4 coords
+  - [SPOT] Class 28: -3 coords / +3 coords
+  - [SPOT] Class 29: -2 coords / +3 coords
+  - [SPOT] Class 30: -2 coords / +4 coords
+
+### 5) Resumen breve
+- **Densidad:** M├ís denso (+5 spots, +295 mobs en Quantity)
+- **Mobs clave (╬ö Class):** Class 3 (0->2, diff +2), Class 26 (2->3, diff +1), Class 29 (2->3, diff +1), Class 30 (2->4, diff +2), Class 31 (3->4, diff +1), Class 32 (4->1, diff -3), Class 33 (2->3, diff +1)
+
+################################################################################
+## MAPA: Elbeland (051 - Elbeland.xml)
+################################################################################
+
+### 1) Archivos y tama├▒os
+| Versi├│n | Bytes | Ruta |
+|---------|------:|------|
+| BACKUP  | 7,583 | `G:\Server Breda\MuDevs Season 21 cracked\MuServer Mudevs 13-08-2026 - Solo backup\Data\Monster\MonsterSetBase\051 - Elbeland.xml` |
+| CURRENT | 24,151 | `G:\Server Breda\MuDevs Season 21 cracked\MuServer 29-09-2026\Data\Monster\MonsterSetBase\051 - Elbeland.xml` |
+| Delta tamano | +16,568 bytes | |
+
+### 2) Conteo de entradas Config por secci├│n
+| Seccion | BACKUP | CURRENT | Diff |
+|---------|-------:|--------:|-----:|
+| NPC | 15 | 16 | +1 |
+| SPOT | 24 | 17 | -7 |
+| MONSTER | 0 | 153 | +153 |
+| EVENT | 0 | 0 | +0 |
+| **TOTAL** | **39** | **186** | **+147** |
+| Suma Quantity (SPOT+MONSTER) | 86 | 291 | +205 |
+
+### 3) Conteo por Class (ID monstruo/NPC)
+| Class | BACKUP | CURRENT | Diff |
+|-------:|-------:|--------:|-----:|
+| 3 ** | 4 | 3 | -1 |
+| 240 | 1 | 1 | +0 |
+| 256 | 1 | 1 | +0 |
+| 257 | 3 | 3 | +0 |
+| 313 | 1 | 1 | +0 |
+| 385 | 1 | 1 | +0 |
+| 415 | 1 | 1 | +0 |
+| 416 | 1 | 1 | +0 |
+| 417 | 1 | 1 | +0 |
+| 418 ** | 4 | 18 | +14 |
+| 419 ** | 2 | 22 | +20 |
+| 420 ** | 0 | 18 | +18 |
+| 421 ** | 4 | 17 | +13 |
+| 422 ** | 0 | 18 | +18 |
+| 423 ** | 2 | 23 | +21 |
+| 424 ** | 3 | 22 | +19 |
+| 425 ** | 4 | 28 | +24 |
+| 452 | 1 | 1 | +0 |
+| 492 ** | 0 | 1 | +1 |
+| 540 | 1 | 1 | +0 |
+| 568 | 1 | 1 | +0 |
+| 579 | 1 | 1 | +0 |
+| 682 | 1 | 1 | +0 |
+| 725 | 1 | 1 | +0 |
+
+### 4) Diferencias de spots
+- Solo en BACKUP: **23** entradas
+- Solo en CURRENT: **170** entradas
+- Id├®nticos (misma l├¡nea Config): **No**
+
+**Solo BACKUP (m├íx. 15):**
+  - [SPOT] Class 418 B=(131,208) E=(134,211) Q=2 R=3 "Strange Rabbit" | Guia Hot Spot
+  - [SPOT] Class 421 B=(131,208) E=(134,211) Q=2 R=3 "Polluted Butterfly" | Guia Hot Spot
+  - [SPOT] Class 3 B=(131,208) E=(134,211) Q=2 R=3 "Spider" | Guia Hot Spot
+  - [SPOT] Class 418 B=(132,194) E=(135,197) Q=2 R=3 "Strange Rabbit" | Guia Hot Spot
+  - [SPOT] Class 421 B=(132,194) E=(135,197) Q=2 R=3 "Polluted Butterfly" | Guia Hot Spot
+  - [SPOT] Class 3 B=(132,194) E=(135,197) Q=2 R=3 "Spider" | Guia Hot Spot
+  - [SPOT] Class 418 B=(107,204) E=(110,207) Q=3 R=3 "Strange Rabbit" | Guia Hot Spot
+  - [SPOT] Class 3 B=(107,204) E=(110,207) Q=3 R=3 "Spider" | Guia Hot Spot
+  - [SPOT] Class 418 B=(27,153) E=(30,156) Q=3 R=3 "Strange Rabbit" | Guia Hot Spot
+  - [SPOT] Class 3 B=(27,153) E=(30,156) Q=3 R=3 "Spider" | Guia Hot Spot
+  - [SPOT] Class 421 B=(116,107) E=(119,110) Q=3 R=3 "Polluted Butterfly" | Guia Low Spot
+  - [SPOT] Class 419 B=(116,107) E=(119,110) Q=2 R=3 "Hideous Rabbit" | Guia Low Spot
+  - [SPOT] Class 421 B=(137,141) E=(140,144) Q=3 R=3 "Polluted Butterfly" | Guia Medium Spot
+  - [SPOT] Class 419 B=(137,141) E=(140,144) Q=2 R=3 "Hideous Rabbit" | Guia Medium Spot
+  - [SPOT] Class 423 B=(173,172) E=(176,175) Q=5 R=3 "Totem Golem" | Guia Low Spot
+  ... +8 m├ís
+
+**Solo CURRENT (m├íx. 15):**
+  - [NPC] Class 492 X=20 Y=219 R=0 "Moss Merchant"
+  - [SPOT] Class 3 B=(13,125) E=(56,168) Q=15 R=30 "Spider"
+  - [SPOT] Class 3 B=(102,194) E=(142,238) Q=15 R=30 "Spider"
+  - [SPOT] Class 3 B=(29,155) E=(29,155) Q=3 R=5 "Spider"
+  - [SPOT] Class 418 B=(54,131) E=(88,180) Q=10 R=30 "Strange Rabbit"
+  - [SPOT] Class 418 B=(84,178) E=(142,212) Q=10 R=30 "Strange Rabbit"
+  - [SPOT] Class 418 B=(29,155) E=(29,155) Q=5 R=5 "Strange Rabbit"
+  - [SPOT] Class 418 B=(126,192) E=(126,192) Q=5 R=5 "Strange Rabbit"
+  - [SPOT] Class 419 B=(118,87) E=(160,141) Q=20 R=30 "Hideous Rabbit"
+  - [SPOT] Class 419 B=(142,144) E=(142,144) Q=5 R=5 "Hideous Rabbit"
+  - [SPOT] Class 420 B=(78,58) E=(78,58) Q=5 R=5 "Werewolf"
+  - [SPOT] Class 421 B=(87,90) E=(125,170) Q=10 R=30 "Polluted Butterfly"
+  - [SPOT] Class 421 B=(118,130) E=(164,172) Q=10 R=30 "Polluted Butterfly"
+  - [SPOT] Class 421 B=(132,212) E=(132,212) Q=5 R=5 "Polluted Butterfly"
+  - [SPOT] Class 422 B=(79,58) E=(79,58) Q=5 R=5 "Cursed Lich"
+  ... +155 m├ís
+
+**Posibles movimientos (misma Class, coords distintas) ÔÇö muestra:**
+  - [SPOT] Class 418: -4 coords / +4 coords
+  - [SPOT] Class 421: -4 coords / +3 coords
+  - [SPOT] Class 419: -2 coords / +2 coords
+  - [SPOT] Class 3: -4 coords / +3 coords
+  - [SPOT] Class 423: -2 coords / +1 coords
+  - [SPOT] Class 425: -4 coords / +1 coords
+
+### 5) Resumen breve
+- **Densidad:** M├ís denso (+147 spots, +205 mobs en Quantity)
+- **Mobs clave (╬ö Class):** Class 3 (4->3, diff -1), Class 418 (4->18, diff +14), Class 419 (2->22, diff +20), Class 420 (0->18, diff +18), Class 421 (4->17, diff +13), Class 422 (0->18, diff +18), Class 423 (2->23, diff +21), Class 424 (3->22, diff +19), ... (+2 classes m├ís)

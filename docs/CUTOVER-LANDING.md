@@ -147,7 +147,10 @@ No borres el proceso hasta confirmar todo. **No** hagas `pm2 stop cms-mubreda-ap
 ```powershell
 cd C:\Users\Neo\CMSMuBreda
 npm run build
-scp -r dist\* ubuntu@51.79.51.175:/var/www/mubreda-web/dist/
+ssh ubuntu@51.79.51.175 "rm -rf /tmp/mubreda-dist"
+scp -r dist ubuntu@51.79.51.175:/tmp/mubreda-dist
+ssh ubuntu@51.79.51.175 "cd /var/www/mubreda-web && sudo rm -rf dist.old && sudo mv dist dist.old && sudo mv /tmp/mubreda-dist dist && sudo find dist -type d -exec chmod 755 {} + && sudo find dist -type f -exec chmod 644 {} +"
 ```
 
-(o `scp -r dist ubuntu@...:/var/www/mubreda-web/` reemplazando la carpeta)
+El `chmod` es obligatorio: el scp desde Windows deja los archivos sin permiso de lectura para nginx y el sitio da **403 Forbidden**.
+Volver atrás: `ssh ubuntu@51.79.51.175 "cd /var/www/mubreda-web && sudo rm -rf dist && sudo mv dist.old dist"`

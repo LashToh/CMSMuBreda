@@ -38,7 +38,7 @@ export default function NewsPage() {
             <p style={{ opacity: 0.6, marginBottom: '1rem' }}>
               {item.author} · {new Date(item.createdAt).toLocaleDateString()}
             </p>
-            <p style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: '1.15rem', lineHeight: 1.6 }}>
+            <p style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: '1.15rem', lineHeight: 1.6, whiteSpace: 'pre-line' }}>
               {item.content}
             </p>
           </article>

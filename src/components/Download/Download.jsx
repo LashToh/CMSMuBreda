@@ -7,10 +7,10 @@ import { useRegister } from '../../context/RegisterContext';
 import { useTranslation } from '../../context/LanguageContext';
 import { fetchDownloads } from '../../services/api';
 import { mirrorsWithUrls } from '../../data/downloadMirrors';
+import { useSocialLinks } from '../../hooks/useSocialLinks';
 import './Download.scss';
 
 const FALLBACK_URL = import.meta.env.VITE_DOWNLOAD_URL || '';
-const DISCORD_URL = import.meta.env.VITE_DISCORD_URL || '#';
 
 export default function Download() {
   const { openRegister } = useRegister();
@@ -18,6 +18,8 @@ export default function Download() {
   const contentRef = useRef(null);
   useGsapReveal(contentRef, { y: 80, duration: 1 });
   const { t } = useTranslation();
+  const socialLinks = useSocialLinks();
+  const discordUrl = socialLinks.find((l) => l.id === 'discord')?.href || '#';
   const [mirrors, setMirrors] = useState(() =>
     FALLBACK_URL ? [{ id: 'direct', label: 'Direct Download', url: FALLBACK_URL }] : [],
   );
@@ -108,10 +110,10 @@ export default function Download() {
               <FaUserPlus /> {t('download.registerAccount')}
             </button>
             <a
-              href={DISCORD_URL}
+              href={discordUrl}
               className="btn btn--ghost"
-              target={DISCORD_URL.startsWith('http') ? '_blank' : undefined}
-              rel={DISCORD_URL.startsWith('http') ? 'noopener noreferrer' : undefined}
+              target={discordUrl.startsWith('http') ? '_blank' : undefined}
+              rel={discordUrl.startsWith('http') ? 'noopener noreferrer' : undefined}
             >
               <FaDiscord /> {t('download.joinDiscord')}
             </a>

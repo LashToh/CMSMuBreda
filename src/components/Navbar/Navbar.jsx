@@ -55,17 +55,17 @@ export default function Navbar() {
             }}
             aria-label={t('nav.home')}
           >
-            <picture>
-              <source srcSet="/assets/logo-mubreda.webp" type="image/webp" />
-              <img
-                src="/assets/logo-mubreda.png"
-                alt={t('common.logoAlt')}
-                className="navbar__logo-img"
-                width={224}
-                height={224}
-                decoding="async"
-              />
-            </picture>
+            <img
+              src="/assets/logo-b-blue.webp"
+              alt={t('common.logoAlt')}
+              className="navbar__logo-img"
+              width={40}
+              height={40}
+              decoding="async"
+            />
+            <span className="navbar__logo-text">
+              <span>MU</span> BREDA
+            </span>
           </Link>
         </div>
 

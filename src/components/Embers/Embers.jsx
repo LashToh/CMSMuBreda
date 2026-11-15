@@ -27,7 +27,8 @@ export default function Embers({ className = '', intensity = 1 }) {
       speedY: Math.random() * 1.5 + 0.5,
       speedX: (Math.random() - 0.5) * 0.8,
       opacity: Math.random() * 0.6 + 0.2,
-      hue: Math.random() * 30 + 0,
+      // Season 6: mostly electric blue sparks, some gold ones
+      hue: Math.random() < 0.7 ? 195 + Math.random() * 15 : 38 + Math.random() * 10,
       life: Math.random() * 200 + 100,
       age: 0,
     });

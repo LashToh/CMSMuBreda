@@ -178,8 +178,16 @@ export default {
     loading: 'Loading guides…',
     loadError: 'Could not load the guides.',
     empty: 'No guides published yet.',
-    expandAll: 'Expand all',
-    collapseAll: 'Collapse all',
+    menuLabel: 'Guides menu',
+    pickHint: 'Pick a guide from the menu.',
+  },
+  news: {
+    label: 'Chronicles',
+    title: 'News & Updates',
+    subtitle: 'Announcements, events, and maintenance notices.',
+    loading: 'Loading news…',
+    error: 'News temporarily unavailable.',
+    empty: 'No news published yet.',
   },
   donate: {
     label: 'Support',

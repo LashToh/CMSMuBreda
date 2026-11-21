@@ -136,7 +136,7 @@ export async function rankings(req, res, next) {
 export async function newsList(req, res, next) {
   try {
     if (!config.features.news) return ok(res, { items: [] });
-    return ok(res, { items: newsService.listNews({ type: req.query.type }) });
+    return ok(res, { items: await newsService.listNews({ type: req.query.type, lang: req.query.lang }) });
   } catch (err) {
     return next(err);
   }
@@ -144,7 +144,7 @@ export async function newsList(req, res, next) {
 
 export async function newsOne(req, res, next) {
   try {
-    return ok(res, { item: newsService.getNews(req.params.id) });
+    return ok(res, { item: await newsService.getNews(req.params.id, req.query.lang) });
   } catch (err) {
     return next(err);
   }

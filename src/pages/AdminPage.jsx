@@ -163,7 +163,7 @@ export default function AdminPage() {
   const [msg, setMsg] = useState('');
 
   const [newsList, setNewsList] = useState([]);
-  const [news, setNews] = useState({ title: '', content: '', type: 'announcement' });
+  const [news, setNews] = useState({ title: '', content: '', type: 'announcement', lang: 'es' });
   const [downloads, setDownloads] = useState([]);
   const [downloadForm, setDownloadForm] = useState({
     id: '',
@@ -305,7 +305,7 @@ export default function AdminPage() {
     try {
       await createNewsAdmin(news);
       flash('News published.');
-      setNews({ title: '', content: '', type: 'announcement' });
+      setNews({ title: '', content: '', type: 'announcement', lang: 'es' });
       const res = await fetchAdminNews();
       setNewsList(res.data?.items || []);
     } catch (err) {
@@ -733,6 +733,18 @@ export default function AdminPage() {
                   <option value="event">Event</option>
                   <option value="maintenance">Maintenance</option>
                 </select>
+              </label>
+              <label>
+                Original language
+                <select
+                  value={news.lang}
+                  onChange={(e) => setNews((n) => ({ ...n, lang: e.target.value }))}
+                >
+                  <option value="es">Español</option>
+                  <option value="en">English</option>
+                  <option value="pt">Português</option>
+                </select>
+                <small>The other translations are made automatically.</small>
               </label>
               <label>
                 Title

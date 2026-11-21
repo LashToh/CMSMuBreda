@@ -48,6 +48,8 @@ function setHash(id) {
   }
 }
 
+const DESKTOP_QUERY = '(min-width: 1025px)';
+
 export default function GuidesPage() {
   const { t, locale } = useTranslation();
   const lang = locale || 'es';
@@ -55,33 +57,39 @@ export default function GuidesPage() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
   const [openCats, setOpenCats] = useState(() => new Set());
-  const [openItems, setOpenItems] = useState(() => new Set());
-  const rootRef = useRef(null);
-  const scrollTarget = useRef('');
+  // Id of the guide shown on the right; '' = the introduction (data.intro).
+  const [activeId, setActiveId] = useState('');
+  const menuRef = useRef(null);
+  const contentRef = useRef(null);
 
   const categories = useMemo(() => data?.categories || [], [data]);
+  const intro = pickText(data?.intro, lang);
 
-  // Open the category/item named by the URL hash and schedule a scroll to it.
-  const applyHash = useCallback(
-    (cats) => {
-      const hash = readHash();
-      if (!hash) return;
-      for (const cat of cats) {
-        if (cat.id === hash) {
-          setOpenCats((prev) => new Set(prev).add(cat.id));
-          scrollTarget.current = `guide-cat-${cat.id}`;
-          return;
-        }
-        if ((cat.items || []).some((item) => item.id === hash)) {
-          setOpenCats((prev) => new Set(prev).add(cat.id));
-          setOpenItems((prev) => new Set(prev).add(hash));
-          scrollTarget.current = `guide-item-${hash}`;
-          return;
-        }
+  const active = useMemo(() => {
+    for (const cat of categories) {
+      const item = (cat.items || []).find((i) => i.id === activeId);
+      if (item) return { cat, item };
+    }
+    return null;
+  }, [categories, activeId]);
+
+  // Opens the category/guide named by the URL hash. Returns true if the hash matched something.
+  const applyHash = useCallback((cats) => {
+    const hash = readHash();
+    if (!hash) return false;
+    for (const cat of cats) {
+      if (cat.id === hash) {
+        setOpenCats((prev) => new Set(prev).add(cat.id));
+        return true;
       }
-    },
-    [],
-  );
+      if ((cat.items || []).some((item) => item.id === hash)) {
+        setOpenCats((prev) => new Set(prev).add(cat.id));
+        setActiveId(hash);
+        return true;
+      }
+    }
+    return false;
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -90,9 +98,15 @@ export default function GuidesPage() {
       setError('');
       try {
         const res = await fetchGuides();
-        if (!cancelled) {
-          setData(res.data);
-          applyHash(res.data?.categories || []);
+        if (cancelled) return;
+        const cats = res.data?.categories || [];
+        setData(res.data);
+        if (!applyHash(cats) && cats.length > 0) {
+          // Default: first section open; intro on the right, or else its first guide.
+          const first = cats[0];
+          setOpenCats(new Set([first.id]));
+          const hasIntro = Boolean(pickText(res.data?.intro, lang));
+          if (!hasIntro && (first.items || []).length > 0) setActiveId(first.items[0].id);
         }
       } catch (err) {
         if (!cancelled) {
@@ -106,6 +120,8 @@ export default function GuidesPage() {
     return () => {
       cancelled = true;
     };
+    // The guides are fetched once; the language only picks which text is shown.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [applyHash]);
 
   // Follow manual hash changes (pasted links, back/forward).
@@ -114,20 +130,6 @@ export default function GuidesPage() {
     window.addEventListener('hashchange', onHash);
     return () => window.removeEventListener('hashchange', onHash);
   }, [applyHash, categories]);
-
-  // Scroll once the DOM reflects the opened state.
-  useEffect(() => {
-    if (!scrollTarget.current || loading) return undefined;
-    const id = scrollTarget.current;
-    scrollTarget.current = '';
-    const timer = window.setTimeout(() => {
-      const el = document.getElementById(id);
-      if (!el) return;
-      const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
-      el.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
-    }, 60);
-    return () => window.clearTimeout(timer);
-  }, [openCats, openItems, loading]);
 
   const toggleCat = (id) => {
     setOpenCats((prev) => {
@@ -138,37 +140,27 @@ export default function GuidesPage() {
     });
   };
 
-  const toggleItem = (id) => {
-    const opening = !openItems.has(id);
-    setOpenItems((prev) => {
-      const next = new Set(prev);
-      if (opening) next.add(id);
-      else next.delete(id);
-      return next;
-    });
-    if (opening) setHash(id);
-    else if (readHash() === id) setHash('');
-  };
-
-  const allOpen = categories.length > 0 && categories.every((c) => openCats.has(c.id));
-
-  const toggleAll = () => {
-    if (allOpen) {
-      setOpenCats(new Set());
-      setOpenItems(new Set());
-      setHash('');
-    } else {
-      setOpenCats(new Set(categories.map((c) => c.id)));
-      setOpenItems(new Set(categories.flatMap((c) => (c.items || []).map((i) => i.id))));
+  const selectItem = (id) => {
+    setActiveId(id);
+    setHash(id);
+    // On narrow screens the content sits below the menu: bring it into view.
+    const wide = window.matchMedia?.(DESKTOP_QUERY).matches;
+    if (!wide) {
+      window.setTimeout(() => {
+        const el = contentRef.current;
+        if (!el) return;
+        const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+        el.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
+      }, 60);
     }
   };
 
-  // Arrow / Home / End move focus between headers of the same level.
+  // Arrow / Home / End move focus between buttons of the same level.
   const onKeyDown = (event) => {
     const el = event.target;
     const group = el?.dataset?.nav;
     if (!group || !['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(event.key)) return;
-    const list = Array.from(rootRef.current?.querySelectorAll(`[data-nav="${group}"]`) || []);
+    const list = Array.from(menuRef.current?.querySelectorAll(`[data-nav="${group}"]`) || []);
     const idx = list.indexOf(el);
     if (idx < 0) return;
     let target = null;
@@ -194,24 +186,24 @@ export default function GuidesPage() {
       )}
 
       {!loading && !error && categories.length > 0 && (
-        <>
-          {pickText(data?.intro, lang) && (
-            <RichContent source={pickText(data.intro, lang)} className="guides-page__intro" />
-          )}
-          <div className="guides-page__toolbar">
-            <button type="button" className="btn btn--secondary guides-page__toggle-all" onClick={toggleAll}>
-              {allOpen ? t('guides.collapseAll') : t('guides.expandAll')}
-            </button>
-          </div>
-
-          <div className="cms-panel guides-page__panel" ref={rootRef} onKeyDown={onKeyDown}>
+        <div className="guides-layout">
+          <nav
+            className="cms-panel guides-page__menu"
+            aria-label={t('guides.menuLabel')}
+            ref={menuRef}
+            onKeyDown={onKeyDown}
+          >
             {categories.map((cat) => {
               const catOpen = openCats.has(cat.id);
+              const hasActive = active?.cat.id === cat.id;
               const Icon = GUIDE_ICON_COMPONENTS[cat.icon] || FaBook;
               const panelId = `guide-cat-panel-${cat.id}`;
               const headId = `guide-cat-${cat.id}`;
               return (
-                <div key={cat.id} className={`guides-cat${catOpen ? ' is-open' : ''}`}>
+                <div
+                  key={cat.id}
+                  className={`guides-cat${catOpen ? ' is-open' : ''}${hasActive ? ' has-active' : ''}`}
+                >
                   <h2 className="guides-cat__heading">
                     <button
                       type="button"
@@ -236,41 +228,20 @@ export default function GuidesPage() {
                     <div className="guides-collapse__inner">
                       <ul className="guides-items">
                         {(cat.items || []).map((item) => {
-                          const itemOpen = openItems.has(item.id);
-                          const bodyId = `guide-item-panel-${item.id}`;
-                          const itemHeadId = `guide-item-btn-${item.id}`;
+                          const isActive = item.id === activeId;
                           return (
-                            <li
-                              key={item.id}
-                              id={`guide-item-${item.id}`}
-                              className={`guides-item${itemOpen ? ' is-open' : ''}`}
-                            >
-                              <h3 className="guides-item__heading">
-                                <button
-                                  type="button"
-                                  id={itemHeadId}
-                                  className="guides-item__button"
-                                  data-nav={`item-${cat.id}`}
-                                  aria-expanded={itemOpen}
-                                  aria-controls={bodyId}
-                                  onClick={() => toggleItem(item.id)}
-                                >
-                                  <span className="guides-item__title">{pickText(item.title, lang)}</span>
-                                  <span className="guides-item__badge" aria-hidden="true">
-                                    <FaChevronDown className="guides-chevron guides-chevron--sm" />
-                                  </span>
-                                </button>
-                              </h3>
-                              <div
-                                id={bodyId}
-                                role="region"
-                                aria-labelledby={itemHeadId}
-                                className={`guides-collapse${itemOpen ? ' is-open' : ''}`}
+                            <li key={item.id} className={`guides-item${isActive ? ' is-active' : ''}`}>
+                              <button
+                                type="button"
+                                id={`guide-item-btn-${item.id}`}
+                                className="guides-item__button"
+                                data-nav={`item-${cat.id}`}
+                                aria-current={isActive ? 'true' : undefined}
+                                aria-controls="guide-content"
+                                onClick={() => selectItem(item.id)}
                               >
-                                <div className="guides-collapse__inner">
-                                  <RichContent source={pickText(item.body, lang)} />
-                                </div>
-                              </div>
+                                <span className="guides-item__title">{pickText(item.title, lang)}</span>
+                              </button>
                             </li>
                           );
                         })}
@@ -280,8 +251,27 @@ export default function GuidesPage() {
                 </div>
               );
             })}
-          </div>
-        </>
+          </nav>
+
+          <article
+            id="guide-content"
+            className="cms-panel guides-page__content"
+            ref={contentRef}
+            aria-live="polite"
+          >
+            {active ? (
+              <>
+                <p className="guides-page__crumb">{pickText(active.cat.title, lang)}</p>
+                <h2 className="guides-page__guide-title">{pickText(active.item.title, lang)}</h2>
+                <RichContent source={pickText(active.item.body, lang)} />
+              </>
+            ) : intro ? (
+              <RichContent source={intro} className="guides-page__intro" />
+            ) : (
+              <p className="guides-page__hint">{t('guides.pickHint')}</p>
+            )}
+          </article>
+        </div>
       )}
 
       {!loading && !error && categories.length === 0 && (

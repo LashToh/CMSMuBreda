@@ -178,8 +178,16 @@ export default {
     loading: 'Carregando guias…',
     loadError: 'Não foi possível carregar os guias.',
     empty: 'Ainda não há guias publicados.',
-    expandAll: 'Expandir tudo',
-    collapseAll: 'Recolher tudo',
+    menuLabel: 'Menu de guias',
+    pickHint: 'Escolha um guia no menu.',
+  },
+  news: {
+    label: 'Crônicas',
+    title: 'Notícias e novidades',
+    subtitle: 'Anúncios, eventos e avisos de manutenção.',
+    loading: 'Carregando notícias…',
+    error: 'As notícias estão indisponíveis no momento.',
+    empty: 'Ainda não há notícias publicadas.',
   },
   donate: {
     label: 'Apoio',

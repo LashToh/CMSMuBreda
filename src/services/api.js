@@ -147,8 +147,8 @@ export async function fetchRankings(type = 'level', { page = 1, pageSize = 20 } 
   return request(`/api/rankings/${type}?page=${page}&pageSize=${pageSize}`);
 }
 
-export async function fetchNews() {
-  return request('/api/news');
+export async function fetchNews(lang = 'es') {
+  return request(`/api/news?lang=${encodeURIComponent(lang)}`);
 }
 
 export async function fetchDownloads() {

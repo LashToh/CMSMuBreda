@@ -3,32 +3,64 @@
 
 .guides-page {
   &__intro.guides-md {
-    max-width: 760px;
-    margin: 0 0 1.25rem;
-    padding: 0;
+    max-width: none;
+    margin: 0;
+    padding: 0.35rem 0.85rem 1.1rem;
     font-size: 1rem;
-    color: rgba(245, 230, 200, 0.75);
   }
 
-  &__toolbar {
-    display: flex;
-    justify-content: flex-end;
-    margin-bottom: 0.75rem;
+  &__menu {
+    position: sticky;
+    top: 96px;
+    max-height: calc(100vh - 120px);
+    overflow-y: auto;
+    padding: 0.85rem;
   }
 
-  &__toggle-all {
-    padding: 0.55rem 1rem;
-    font-size: 0.6875rem;
+  &__content {
+    min-width: 0;
+    min-height: 16rem;
+    padding: 1.5rem 1.5rem 1.25rem;
+    scroll-margin-top: 96px;
   }
 
-  &__panel {
-    padding: 1.1rem 1.1rem 0.5rem;
+  &__crumb {
+    margin: 0 0.85rem 0.35rem;
+    font-family: $font-display;
+    font-size: 0.7rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: rgba(240, 208, 138, 0.7);
   }
+
+  &__guide-title {
+    margin: 0 0.85rem 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid rgba(240, 208, 138, 0.22);
+    font-family: $font-display;
+    font-size: clamp(1.4rem, 2.6vw, 2rem);
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    color: $color-gold;
+  }
+
+  &__hint {
+    margin: 0;
+    padding: 0.5rem 0.85rem;
+    color: rgba(245, 230, 200, 0.65);
+  }
+}
+
+.guides-layout {
+  display: grid;
+  grid-template-columns: 300px minmax(0, 1fr);
+  gap: 1.5rem;
+  align-items: start;
 }
 
 // ---- Category ----------------------------------------------------------
 .guides-cat {
-  margin-bottom: 0.85rem;
+  margin-bottom: 0.6rem;
   border: 1px solid rgba(240, 208, 138, 0.14);
   border-radius: $radius-md;
   background: rgba(11, 15, 20, 0.35);
@@ -52,16 +84,16 @@
     align-items: center;
     gap: 0.85rem;
     width: 100%;
-    padding: 0.95rem 1rem;
+    padding: 0.8rem 0.85rem;
     text-align: left;
     background: none;
     border: 0;
     border-radius: $radius-md;
     cursor: pointer;
     font-family: $font-display;
-    font-size: 1rem;
+    font-size: 0.85rem;
     font-weight: 600;
-    letter-spacing: 0.08em;
+    letter-spacing: 0.07em;
     text-transform: uppercase;
     color: rgba(245, 230, 200, 0.9);
     transition: color $transition-fast, background $transition-fast;
@@ -72,7 +104,8 @@
     }
   }
 
-  &.is-open > &__heading > &__button {
+  &.is-open > &__heading > &__button,
+  &.has-active > &__heading > &__button {
     color: $color-gold;
   }
 
@@ -107,8 +140,7 @@
   }
 }
 
-button[aria-expanded='true'] > .guides-chevron,
-button[aria-expanded='true'] > .guides-item__badge > .guides-chevron {
+button[aria-expanded='true'] > .guides-chevron {
   transform: rotate(180deg);
 }
 
@@ -133,7 +165,7 @@ button[aria-expanded='true'] > .guides-item__badge > .guides-chevron {
 
 // ---- Items (hang from a thin vertical line) ----------------------------
 .guides-items {
-  margin: 0 0 0.6rem 1.6rem;
+  margin: 0 0 0.6rem 1.35rem;
   padding: 0 0 0 0.75rem;
   list-style: none;
   border-left: 1px solid rgba(240, 208, 138, 0.22);
@@ -141,25 +173,21 @@ button[aria-expanded='true'] > .guides-item__badge > .guides-chevron {
 
 .guides-item {
   position: relative;
-  scroll-margin-top: 96px;
 
   &__button {
     position: relative;
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
+    display: block;
     width: 100%;
-    padding: 0.7rem 0.85rem;
+    padding: 0.55rem 0.75rem;
     text-align: left;
-    // A row of its own, so it reads as something that opens (not as text that follows the one above).
-    background: rgba(255, 255, 255, 0.025);
-    border: 1px solid rgba(240, 208, 138, 0.14);
+    background: transparent;
+    border: 1px solid transparent;
     border-radius: $radius-sm;
     cursor: pointer;
     font-family: $font-body;
-    font-size: 1rem;
+    font-size: 0.95rem;
     font-weight: 500;
-    color: rgba(245, 230, 200, 0.82);
+    color: rgba(245, 230, 200, 0.8);
     transition: color $transition-fast, background $transition-fast, border-color $transition-fast;
 
     // Accent indicator on the vertical line.
@@ -167,8 +195,8 @@ button[aria-expanded='true'] > .guides-item__badge > .guides-chevron {
       content: '';
       position: absolute;
       left: calc(-0.75rem - 1px);
-      top: 0.35rem;
-      bottom: 0.35rem;
+      top: 0.3rem;
+      bottom: 0.3rem;
       width: 3px;
       border-radius: 2px;
       background: $color-gold;
@@ -180,49 +208,18 @@ button[aria-expanded='true'] > .guides-item__badge > .guides-chevron {
     &:hover {
       color: #fff8e7;
       background: rgba(63, 182, 255, 0.07);
-      border-color: rgba(240, 208, 138, 0.32);
-    }
-
-    // The chevron in a small round badge: a clear "open" affordance.
-    .guides-item__badge {
-      flex-shrink: 0;
-      margin-left: auto;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 1.6rem;
-      height: 1.6rem;
-      border-radius: 50%;
-      border: 1px solid rgba(240, 208, 138, 0.3);
-      background: rgba(240, 208, 138, 0.06);
-      font-size: 0.7rem;
-
-      .guides-chevron {
-        margin-left: 0;
-      }
+      border-color: rgba(240, 208, 138, 0.2);
     }
   }
 
   & + & {
-    margin-top: 0.45rem;
+    margin-top: 0.2rem;
   }
 
-  // The open item's text hangs under its row, inside the same frame.
-  &.is-open > .guides-collapse > .guides-collapse__inner {
-    margin-top: -1px;
-    padding: 0.25rem 0.85rem 0.5rem;
-    border: 1px solid rgba(240, 208, 138, 0.22);
-    border-top: 0;
-    border-radius: 0 0 $radius-sm $radius-sm;
-    background: rgba(0, 0, 0, 0.18);
-  }
-
-  &.is-open > &__heading > &__button {
+  &.is-active > &__button {
     color: $color-gold;
     background: rgba(240, 208, 138, 0.07);
     border-color: rgba(240, 208, 138, 0.4);
-    border-bottom-left-radius: 0;
-    border-bottom-right-radius: 0;
 
     &::before {
       transform: scaleY(1);
@@ -230,7 +227,7 @@ button[aria-expanded='true'] > .guides-item__badge > .guides-chevron {
   }
 
   &__title {
-    flex: 1;
+    display: block;
     min-width: 0;
   }
 }
@@ -324,14 +321,31 @@ button[aria-expanded='true'] > .guides-item__badge > .guides-chevron {
   }
 }
 
+@media (max-width: $breakpoint-tablet) {
+  .guides-layout {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1rem;
+  }
+
+  .guides-page__menu {
+    position: static;
+    max-height: none;
+    overflow-y: visible;
+  }
+}
+
 @media (max-width: 640px) {
-  .guides-page__panel {
-    padding: 0.75rem 0.6rem 0.25rem;
+  .guides-page__menu {
+    padding: 0.6rem;
+  }
+
+  .guides-page__content {
+    padding: 1rem 0.6rem 0.9rem;
   }
 
   .guides-cat__button {
-    padding: 0.85rem 0.75rem;
-    font-size: 0.9rem;
+    padding: 0.75rem 0.65rem;
+    font-size: 0.85rem;
     letter-spacing: 0.05em;
   }
 
@@ -341,7 +355,7 @@ button[aria-expanded='true'] > .guides-item__badge > .guides-chevron {
   }
 
   .guides-item__button {
-    padding: 0.65rem 0.5rem;
+    padding: 0.55rem 0.5rem;
 
     &::before {
       left: calc(-0.5rem - 1px);
@@ -350,14 +364,6 @@ button[aria-expanded='true'] > .guides-item__badge > .guides-chevron {
 
   .guides-md {
     padding: 0.35rem 0.5rem 1rem;
-  }
-
-  .guides-page__toolbar {
-    justify-content: stretch;
-  }
-
-  .guides-page__toggle-all {
-    width: 100%;
   }
 }
 

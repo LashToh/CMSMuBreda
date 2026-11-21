@@ -9,9 +9,15 @@ import './Hero.scss';
 
 // Season 6 portada: the logo and the call to play on the left, the mage of header art on the
 // right, and right under it the live status of the server (the web bridge of the game server).
+// The mage is a short video that loops seamlessly (the end fades into the start); with "reduce
+// motion" it stays still on its first frame (the poster).
+const prefersReducedMotion = () =>
+  typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+
 export default function Hero() {
   const sectionRef = useRef(null);
   useGsapHero(sectionRef);
+  const [reducedMotion] = useState(prefersReducedMotion);
   const { t } = useTranslation();
   const { openRegister } = useRegister();
   const [info, setInfo] = useState(null);
@@ -55,7 +61,20 @@ export default function Hero() {
 
   return (
     <section id="hero" className="hero" ref={sectionRef}>
-      <div className="hero__bg" aria-hidden="true" />
+      <div className="hero__bg" aria-hidden="true">
+        <video
+          className="hero__video"
+          src="/assets/hero-mage.mp4"
+          poster="/assets/hero-mage-poster.webp"
+          autoPlay={!reducedMotion}
+          muted
+          loop
+          playsInline
+          preload={reducedMotion ? 'none' : 'auto'}
+          disablePictureInPicture
+          tabIndex={-1}
+        />
+      </div>
       <Embers className="hero__embers" intensity={0.8} />
 
       <div className="hero__content">

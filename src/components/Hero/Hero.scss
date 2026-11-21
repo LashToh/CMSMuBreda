@@ -16,7 +16,21 @@
     position: absolute;
     inset: 0;
     overflow: hidden;
-    background: #0e141b url('/assets/hero-bg.webp') right 12% / cover no-repeat;
+    background: #0e141b;
+
+    // the mage video on the right ~65%, fading into the dark side of the logo and the text
+    .hero__video {
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 65%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center;
+      pointer-events: none;
+      -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 32%);
+      mask-image: linear-gradient(90deg, transparent 0%, #000 32%);
+    }
 
     // darker on the left for the logo and the text, fading into the page at the bottom
     &::after {
@@ -205,7 +219,11 @@
     min-height: 0;
 
     &__bg {
-      background-position: 76% center;
+      .hero__video {
+        width: 100%;
+        -webkit-mask-image: none;
+        mask-image: none;
+      }
 
       &::after {
         background: linear-gradient(180deg, rgba(11, 15, 20, 0.55) 0%, rgba(11, 15, 20, 0.85) 55%, $color-bg-deep 100%);

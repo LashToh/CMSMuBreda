@@ -33,7 +33,7 @@
       width: 64px;
       height: 2px;
       margin-top: 0.6rem;
-      background: linear-gradient(90deg, $color-bronze, transparent);
+      background: linear-gradient(90deg, $color-frost, transparent);
     }
   }
 
@@ -63,7 +63,7 @@
 
     &:hover {
       transform: translateY(-3px);
-      border-color: $color-bronze;
+      border-color: $color-frost;
       box-shadow: 0 0 0 1px #000, 0 12px 30px rgba(0, 0, 0, 0.5), 0 0 22px rgba(63, 182, 255, 0.12);
     }
   }
@@ -78,7 +78,7 @@
       content: '';
       position: absolute;
       inset: 0;
-      background: linear-gradient(180deg, rgba(22, 19, 15, 0) 30%, $color-stone-2 100%);
+      background: linear-gradient(180deg, rgba(13, 20, 28, 0) 30%, $color-stone-2 100%);
     }
   }
 

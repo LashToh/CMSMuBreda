@@ -33,7 +33,7 @@
       width: 64px;
       height: 2px;
       margin-top: 0.6rem;
-      background: linear-gradient(90deg, $color-bronze, transparent);
+      background: linear-gradient(90deg, $color-frost, transparent);
     }
   }
 
@@ -67,7 +67,7 @@
     &.is-on {
       color: $color-gold;
       background: rgba(240, 194, 74, 0.06);
-      border-color: rgba(176, 115, 74, 0.4);
+      border-color: rgba(90, 143, 168, 0.4);
     }
   }
 
@@ -84,8 +84,8 @@
       color: $color-muted;
       font-weight: 600;
       padding: 10px 16px;
-      border-top: 1px solid rgba(176, 115, 74, 0.3);
-      border-bottom: 1px solid rgba(176, 115, 74, 0.2);
+      border-top: 1px solid rgba(90, 143, 168, 0.3);
+      border-bottom: 1px solid rgba(90, 143, 168, 0.2);
     }
 
     td {
@@ -117,7 +117,7 @@
 
     &--1 { background: radial-gradient(circle at 30% 30%, #fff1b8, $color-gold-strong 60%, #a8781b); box-shadow: 0 0 10px rgba(240, 194, 74, 0.5); }
     &--2 { background: radial-gradient(circle at 30% 30%, #fff, #c9d2d8 60%, #7f8b93); }
-    &--3 { background: radial-gradient(circle at 30% 30%, #ffd2b0, $color-bronze 60%, $color-bronze-dim); }
+    &--3 { background: radial-gradient(circle at 30% 30%, #ffd2b0, $color-bronze 60%, #6e4a32); }
   }
 
   &__cls {
@@ -166,7 +166,7 @@
     letter-spacing: 0.1em;
     text-transform: uppercase;
     color: $color-steel-light;
-    border-top: 1px solid rgba(176, 115, 74, 0.2);
+    border-top: 1px solid rgba(90, 143, 168, 0.2);
     text-decoration: none;
 
     &:hover {

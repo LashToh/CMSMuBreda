@@ -11,6 +11,8 @@ function flag(name, fallback = false) {
 export const featureFlags = {
   webshop: flag('ENABLE_WEBSHOP', true),
   webshopDelivery: flag('ENABLE_WEBSHOP_DELIVERY', false),
+  /** The player market requires a GameServer bridge and stays disabled until one is installed. */
+  playerMarket: flag('ENABLE_PLAYER_MARKET', false),
   reset: flag('ENABLE_RESET', false),
   grandReset: flag('ENABLE_GRAND_RESET', false),
   clearPk: flag('ENABLE_CLEAR_PK', false),

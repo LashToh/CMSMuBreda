@@ -15,6 +15,7 @@ import RegisterPage from './pages/RegisterPage';
 import AccountPage from './pages/AccountPage';
 import RankingsPage from './pages/RankingsPage';
 import ShopPage from './pages/ShopPage';
+import MarketPage from './pages/MarketPage';
 import NewsPage from './pages/NewsPage';
 import DownloadsPage from './pages/DownloadsPage';
 import AboutPage from './pages/AboutPage';
@@ -56,6 +57,7 @@ export default function App() {
                   <Route path="/account" element={<AccountPage />} />
                   <Route path="/rankings" element={<RankingsPage />} />
                   <Route path="/donate" element={<ShopPage />} />
+                  <Route path="/market" element={<MarketPage />} />
                   <Route path="/shop" element={<Navigate to="/donate" replace />} />
                   <Route path="/news" element={<NewsPage />} />
                   <Route path="/downloads" element={<DownloadsPage />} />

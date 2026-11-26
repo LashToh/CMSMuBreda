@@ -2,6 +2,8 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   FaBoxOpen,
+  FaArrowLeft,
+  FaArrowRight,
   FaChevronDown,
   FaClock,
   FaCoins,
@@ -9,6 +11,8 @@ import {
   FaHeart,
   FaHistory,
   FaList,
+  FaMinus,
+  FaPlus,
   FaSearch,
   FaShieldAlt,
   FaStore,
@@ -49,6 +53,14 @@ const SAMPLE_LISTINGS = [
   { id: 10, name: 'Jewel of Chaos', category: 'jewel', className: 'Todos', level: 'x30', options: 'Paquete de joyas', price: 3, currency: 'WCoinC', seller: 'Maga', age: 'hace 3 h', mark: '30', tone: 'azure' },
   { id: 11, name: 'Scale Shield', category: 'armor', className: 'Dark Knight', level: '+ luck', options: 'Excellent · Reflect · 4%', price: 7800000, currency: 'Zen', seller: 'Berserk', age: 'hace 4 h', mark: 'S', tone: 'steel', qualities: ['excellent'] },
   { id: 12, name: 'Wings of Heaven', category: 'wings', className: 'Fairy Elf', level: '+13', options: 'Luck · Ignore · 7%', price: 185, currency: 'WCoinC', seller: 'Sylph', age: 'hace 5 h', mark: 'III', tone: 'azure', qualities: ['socket'] },
+];
+
+const SAMPLE_VAULT_INVENTORY = [
+  { gameItemId: 'preview-market-item-1', name: 'Bone Blade +13', character: 'Dark Knight', source: 'game', slot: 1, width: 2, height: 4, icon: '⚔️' },
+  { gameItemId: 'preview-market-item-2', name: 'Great Dragon Helm +9', character: 'Dark Knight', source: 'game', slot: 4, width: 2, height: 2, icon: '🪖' },
+  { gameItemId: 'preview-market-item-3', name: 'Wings of Soul +11', character: 'Dark Wizard', source: 'game', slot: 20, width: 4, height: 4, icon: '🪽' },
+  { gameItemId: 'preview-market-item-4', name: 'Ring of Earth', character: 'Fairy Elf', source: 'site', slot: 39, width: 1, height: 1, icon: '💍' },
+  { gameItemId: 'preview-market-item-5', name: 'Crystal Staff +12', character: 'Dark Wizard', source: 'game', slot: 49, width: 2, height: 4, icon: '🪄' },
 ];
 
 const CATEGORY_ICONS = {
@@ -192,9 +204,24 @@ function CurrencyBasket({ value, onChange, allowedCurrencies, t }) {
       {components.map((part) => (
         <label className="market-price-basket__field" key={part.key}>
           <span><CurrencyIcon currency={part.currency} />{part.currency === 'wcoinc' ? t('market.credits') : part.name}</span>
-          <input type="number" min="0" step="1" inputMode="numeric" placeholder="0" value={value[part.key] || ''} onChange={(event) => onChange((current) => ({ ...current, [part.key]: event.target.value }))} />
+          <div className="market-amount-control"><button type="button" aria-label={`Restar ${part.name}`} onClick={() => onChange((current) => ({ ...current, [part.key]: String(Math.max(0, Number(current[part.key] || 0) - 1) || '') }))}><FaMinus /></button><input type="text" inputMode="numeric" pattern="[0-9]*" placeholder="0" value={value[part.key] || ''} onChange={(event) => onChange((current) => ({ ...current, [part.key]: event.target.value.replace(/[^0-9]/g, '') }))} /><button type="button" aria-label={`Sumar ${part.name}`} onClick={() => onChange((current) => ({ ...current, [part.key]: String(Number(current[part.key] || 0) + 1) }))}><FaPlus /></button></div>
         </label>
       ))}
+    </div>
+  );
+}
+
+function VaultGrid({ items, bank, selectedId, onSelect }) {
+  const starts = [1, 4, 20, 39, 49];
+  return (
+    <div className="market-vault-panel">
+      <header><strong>{bank === 'game' ? 'Baúl del juego' : 'Baúl web'}</strong><span>{items.length} objetos</span></header>
+      <div className="market-vault-grid" role="listbox" aria-label={bank === 'game' ? 'Objetos del juego' : 'Objetos del baúl web'}>
+        {Array.from({ length: 120 }, (_, slot) => {
+          const item = items.find((entry, index) => (entry.slot ?? starts[index] ?? (index * 7) % 118) === slot);
+          return item ? <button type="button" role="option" aria-selected={selectedId === item.gameItemId} key={item.gameItemId} className={`market-vault-item${selectedId === item.gameItemId ? ' is-selected' : ''}`} style={{ gridColumn: `${slot % 8 + 1} / span ${Math.min(4, item.width || 1)}`, gridRow: `${Math.floor(slot / 8) + 1} / span ${Math.min(4, item.height || 1)}` }} onClick={() => onSelect(item.gameItemId)} title={`${item.name} · ${item.character}`}><span>{item.icon || '✦'}</span><strong>{item.name}</strong><small>{item.character || ''}</small></button> : <span key={`slot-${slot}`} className="market-vault-cell" style={{ gridColumn: slot % 8 + 1, gridRow: Math.floor(slot / 8) + 1 }} aria-hidden="true" />;
+        })}
+      </div>
     </div>
   );
 }
@@ -220,8 +247,8 @@ export default function MarketPage() {
   const [marketStatus, setMarketStatus] = useState(null);
   const [serverListings, setServerListings] = useState([]);
   const [inventory, setInventory] = useState([]);
-  const [inventoryBank, setInventoryBank] = useState('all');
   const [publishOpen, setPublishOpen] = useState(false);
+  const [vaultOpen, setVaultOpen] = useState(false);
   const [selectedInventoryItem, setSelectedInventoryItem] = useState('');
   const [publishPriceParts, setPublishPriceParts] = useState({ ...EMPTY_PRICE_PARTS });
   const [marketCurrency, setMarketCurrency] = useState('zen');
@@ -234,22 +261,36 @@ export default function MarketPage() {
   const [withdrawOpen, setWithdrawOpen] = useState(false);
   const [withdrawAmount, setWithdrawAmount] = useState('');
   const [withdrawCharacter, setWithdrawCharacter] = useState('');
-  const vaultInventory = inventory.filter((item) => inventoryBank === 'all' || (inventoryBank === 'site' ? item.source === 'site' : item.source !== 'site'));
+  const gameVaultItems = inventory.filter((item) => item.source !== 'site');
+  const siteVaultItems = inventory.filter((item) => item.source === 'site');
+  const selectedVaultItem = inventory.find((item) => item.gameItemId === selectedInventoryItem);
+
+  const transferSelectedItem = (target) => {
+    if (!selectedVaultItem) return;
+    if (marketStatus?.connected) {
+      setNotice('La transferencia entre baúles queda pendiente de conectar al servicio del mercado.');
+      return;
+    }
+    setInventory((current) => current.map((item) => item.gameItemId === selectedInventoryItem ? { ...item, source: target } : item));
+    setSelectedInventoryItem('');
+    setNotice(target === 'site' ? 'Objeto trasladado al baúl web de demostración.' : 'Objeto devuelto al baúl del juego de demostración.');
+  };
 
   useEffect(() => {
-    if (!selected && !purchaseListing && !publishOpen && !offerListing && !withdrawOpen) return undefined;
+    if (!selected && !purchaseListing && !publishOpen && !vaultOpen && !offerListing && !withdrawOpen) return undefined;
     const closeOnEscape = (event) => {
       if (event.key === 'Escape') {
         setSelected(null);
         setPurchaseListing(null);
         setPublishOpen(false);
+        setVaultOpen(false);
         setOfferListing(null);
         setWithdrawOpen(false);
       }
     };
     window.addEventListener('keydown', closeOnEscape);
     return () => window.removeEventListener('keydown', closeOnEscape);
-  }, [offerListing, publishOpen, purchaseListing, selected, withdrawOpen]);
+  }, [offerListing, publishOpen, purchaseListing, selected, vaultOpen, withdrawOpen]);
 
   useEffect(() => {
     try {
@@ -391,13 +432,7 @@ export default function MarketPage() {
 
   const openPublish = async () => {
     if (!marketStatus?.connected) {
-      const previewInventory = [
-        { gameItemId: 'preview-market-item-1', name: 'Bone Blade +13', character: 'Dark Knight', source: 'game', width: 2, height: 4, icon: '⚔️' },
-        { gameItemId: 'preview-market-item-2', name: 'Great Dragon Helm +9', character: 'Dark Knight', source: 'game', width: 2, height: 2, icon: '🪖' },
-        { gameItemId: 'preview-market-item-3', name: 'Wings of Soul +11', character: 'Dark Wizard', source: 'game', width: 4, height: 4, icon: '🪽' },
-        { gameItemId: 'preview-market-item-4', name: 'Ring of Earth', character: 'Fairy Elf', source: 'site', width: 1, height: 1, icon: '💍' },
-        { gameItemId: 'preview-market-item-5', name: 'Crystal Staff +12', character: 'Dark Wizard', source: 'game', width: 2, height: 4, icon: '🪄' },
-      ];
+      const previewInventory = inventory.length ? inventory : SAMPLE_VAULT_INVENTORY.map((item) => ({ ...item }));
       setInventory(previewInventory);
       setInventoryBank('all');
       setSelectedInventoryItem('');
@@ -423,11 +458,33 @@ export default function MarketPage() {
     }
   };
 
+  const openVault = async () => {
+    if (!marketStatus?.connected) {
+      setInventory((current) => current.length ? current : SAMPLE_VAULT_INVENTORY.map((item) => ({ ...item })));
+      setSelectedInventoryItem('');
+      setVaultOpen(true);
+      return;
+    }
+    if (!requireMarketAccount()) return;
+    try {
+      const response = await fetchMarketInventory();
+      setInventory(response.data?.items || []);
+      setSelectedInventoryItem('');
+      setVaultOpen(true);
+    } catch (error) {
+      setNotice(error.message || t('market.connectionError'));
+    }
+  };
+
   const submitPublish = async (event) => {
     event.preventDefault();
     const item = inventory.find((entry) => entry.gameItemId === selectedInventoryItem);
     const priceComponents = buildPriceComponents(publishPriceParts);
     if (!item || !priceComponents.length || (acceptOffers && !publishOfferCurrencies.length)) return;
+    if (item.source !== 'site') {
+      setNotice('Primero trasladá el objeto al baúl web para publicarlo.');
+      return;
+    }
     if (!marketStatus?.connected) {
       setPublishOpen(false);
       showIntegrationNotice(t('market.actionPublish'));
@@ -475,15 +532,29 @@ export default function MarketPage() {
 
   const onBuy = async (item) => {
     if (!marketStatus?.connected || item.preview) {
-      showIntegrationNotice(t('market.actionBuy'));
+      const boughtItem = {
+        gameItemId: `preview-purchase-${item.id}-${Date.now()}`,
+        name: `${item.name}${item.level ? ` ${item.level}` : ''}`,
+        character: item.className || 'Todos',
+        source: 'site',
+        width: 1,
+        height: 1,
+        icon: item.category === 'weapon' ? '⚔️' : item.category === 'wings' ? '🪽' : item.category === 'jewel' ? '💎' : '✦',
+      };
+      setInventory((current) => [...(current.length ? current : SAMPLE_VAULT_INVENTORY.map((entry) => ({ ...entry }))), { ...boughtItem, slot: 60 + current.length }]);
+      setNotice('Compra de muestra: el objeto quedó en el baúl web. No se debitó ningún saldo real.');
       return;
     }
     if (!requireMarketAccount()) return;
     try {
       await buyMarketListing(item.id);
       setNotice(t('market.purchaseSubmitted'));
-      const response = await fetchMarketListings({ page: 1, pageSize: 60 });
-      setServerListings(response.data?.items || []);
+      const [listingResponse, inventoryResponse] = await Promise.all([
+        fetchMarketListings({ page: 1, pageSize: 60 }),
+        fetchMarketInventory(),
+      ]);
+      setServerListings(listingResponse.data?.items || []);
+      setInventory(inventoryResponse.data?.items || []);
     } catch (error) {
       setNotice(error.message || t('market.connectionError'));
     }
@@ -558,12 +629,14 @@ export default function MarketPage() {
             </button>
           ))}
         </div>
-        <button type="button" className="market-primary" onClick={openPublish}><FaBoxOpen /> {t('market.publish')}</button>
+        <div className="market-mainbar__actions"><button type="button" className="market-vault-shortcut" onClick={openVault}><img src="/assets/market-icons/open-chest.svg" alt="" aria-hidden="true" />Baúles</button><button type="button" className="market-primary" onClick={openPublish}><FaBoxOpen /> {t('market.publish')}</button></div>
       </div>
 
       {!marketStatus?.connected && <div className="market-preview-note" role="status"><FaShieldAlt /><span><strong>{t('market.previewTitle')}</strong> {t('market.previewText')}</span></div>}
 
       {notice && <div className="market-notice" role="status">{notice}</div>}
+
+      {vaultOpen && <div className="market-modal-backdrop" role="presentation" onMouseDown={(event) => event.target === event.currentTarget && setVaultOpen(false)}><section className="market-vault-dialog" role="dialog" aria-modal="true" aria-labelledby="market-vault-title"><button type="button" className="market-modal__close" onClick={() => setVaultOpen(false)} aria-label={t('market.close')}><FaTimes /></button><p className="market-kicker">MU BREDA · BAÚLES</p><h2 id="market-vault-title">Inventario y transferencias</h2><p className="market-vault-dialog__intro">Pasá objetos del juego al baúl web para publicarlos. Los objetos comprados quedan en el baúl web hasta que los transfieras al personaje.</p><div className="market-vault-dual"><VaultGrid items={gameVaultItems} bank="game" selectedId={selectedInventoryItem} onSelect={setSelectedInventoryItem} /><div className="market-vault-transfer"><button type="button" aria-label="Pasar del juego al baúl web" title="Pasar al baúl web" disabled={!selectedVaultItem || selectedVaultItem.source === 'site'} onClick={() => transferSelectedItem('site')}><FaArrowRight /></button><button type="button" aria-label="Devolver al juego" title="Devolver al baúl del juego" disabled={!selectedVaultItem || selectedVaultItem.source !== 'site'} onClick={() => transferSelectedItem('game')}><FaArrowLeft /></button></div><VaultGrid items={siteVaultItems} bank="site" selectedId={selectedInventoryItem} onSelect={setSelectedInventoryItem} /></div><div className="market-vault-dialog__footer"><span>{selectedVaultItem ? `${selectedVaultItem.name} · ${selectedVaultItem.source === 'site' ? 'Baúl web' : 'Baúl del juego'}` : 'Seleccioná un objeto para ver las acciones disponibles.'}</span><button type="button" className="market-primary" disabled={selectedVaultItem?.source !== 'site'} onClick={() => { setVaultOpen(false); setPublishOpen(true); }}><FaBoxOpen />Publicar desde baúl web</button></div><small className="market-vault-dialog__note">Vista previa: las transferencias y compras todavía no se guardan en el servidor.</small></section></div>}
 
       {tab === 'market' ? (
         <>
@@ -678,19 +751,15 @@ export default function MarketPage() {
               <p className="market-kicker">{publishOpen ? t('market.kicker') : t('market.makeOffer')}</p>
               <h2 id="market-action-title">{publishOpen ? t('market.publish') : t('market.makeOffer')}</h2>
             <form className="market-action-form" onSubmit={publishOpen ? submitPublish : submitOffer}>
-              {publishOpen ? inventory.length ? <section className="market-vault-picker" aria-label="Inventario del personaje">
-                <header className="market-vault-picker__heading"><div><strong>Inventario del personaje</strong><small>Baúl de muestra · cuadrícula 8 × 15</small></div><span>{vaultInventory.length} objetos</span></header>
-                <div className="market-vault-picker__banks"><button type="button" className={inventoryBank === 'all' ? 'is-selected' : ''} onClick={() => { setInventoryBank('all'); setSelectedInventoryItem(''); }}>Todos</button><button type="button" className={inventoryBank === 'game' ? 'is-selected' : ''} onClick={() => { setInventoryBank('game'); setSelectedInventoryItem(''); }}>Baúl del juego</button><button type="button" className={inventoryBank === 'site' ? 'is-selected' : ''} onClick={() => { setInventoryBank('site'); setSelectedInventoryItem(''); }}>Baúl web</button></div>
-                <div className="market-vault-grid" role="listbox" aria-label="Seleccionar objeto">
-                  {Array.from({ length: 120 }, (_, slot) => {
-                    const item = vaultInventory.find((entry, index) => {
-                      const starts = [1, 4, 20, 39, 49];
-                      return starts[index] === slot;
-                    });
-                    return item ? <button type="button" role="option" aria-selected={selectedInventoryItem === item.gameItemId} key={item.gameItemId} className={`market-vault-item${selectedInventoryItem === item.gameItemId ? ' is-selected' : ''}`} style={{ gridColumn: `${slot % 8 + 1} / span ${Math.min(4, item.width || 1)}`, gridRow: `${Math.floor(slot / 8) + 1} / span ${Math.min(4, item.height || 1)}` }} onClick={() => setSelectedInventoryItem(item.gameItemId)}><span>{item.icon || '✦'}</span><strong>{item.name}</strong><small>{item.source === 'site' ? 'Baúl web' : 'Baúl del juego'}</small></button> : <span key={`slot-${slot}`} className="market-vault-cell" style={{ gridColumn: slot % 8 + 1, gridRow: Math.floor(slot / 8) + 1 }} aria-hidden="true" />;
-                  })}
+              {publishOpen ? inventory.length ? <section className="market-vault-picker" aria-label="Baúles del personaje y del mercado">
+                <header className="market-vault-picker__heading"><div><strong>Inventario y transferencias</strong><small>Seleccioná un objeto y pasalo entre baúles · 8 × 15</small></div></header>
+                <div className="market-vault-dual">
+                  <VaultGrid items={gameVaultItems} bank="game" selectedId={selectedInventoryItem} onSelect={setSelectedInventoryItem} />
+                  <div className="market-vault-transfer"><button type="button" aria-label="Pasar del juego al baúl web" title="Pasar al baúl web" disabled={!selectedVaultItem || selectedVaultItem.source === 'site'} onClick={() => transferSelectedItem('site')}><FaArrowRight /></button><button type="button" aria-label="Devolver al juego" title="Devolver al baúl del juego" disabled={!selectedVaultItem || selectedVaultItem.source !== 'site'} onClick={() => transferSelectedItem('game')}><FaArrowLeft /></button></div>
+                  <VaultGrid items={siteVaultItems} bank="site" selectedId={selectedInventoryItem} onSelect={setSelectedInventoryItem} />
                 </div>
-                {selectedInventoryItem && <p className="market-vault-picker__selection">Seleccionado: <strong>{inventory.find((item) => item.gameItemId === selectedInventoryItem)?.name}</strong></p>}
+                <p className="market-vault-flow">Los objetos comprados van al baúl web. Desde ahí se pueden publicar o transferir al juego.</p>
+                {selectedVaultItem && <p className="market-vault-picker__selection">Seleccionado: <strong>{selectedVaultItem.name}</strong> · {selectedVaultItem.source === 'site' ? 'Listo para publicar' : 'Pasalo al baúl web para publicarlo'}</p>}
               </section> : <p className="market-action-form__item">{t('market.emptyInventory')}</p> : <p className="market-action-form__item">{offerListing?.name}<small>{t('market.askingPrice')}: {offerListing ? displayPrice(offerListing) : ''}</small></p>}
               {offerListing && <div className="market-offer-price"><span>{t('market.sellerPrice')}</span><strong>{displayPrice(offerListing)}</strong></div>}
               {publishOpen ? <>
@@ -704,7 +773,7 @@ export default function MarketPage() {
                 <div className="market-offer-reserve"><strong>{t('market.yourOffer')}</strong><span>{buildPriceComponents(offerPriceParts, offerPriceCurrencies).length ? displayPrice({ priceComponents: buildPriceComponents(offerPriceParts, offerPriceCurrencies) }) : '—'}</span></div>
                 <div className="market-offer-info"><FaShieldAlt />{t('market.offerReserveHelp')}</div>
               </>}
-              <button type="submit" className="market-primary" disabled={(publishOpen && (!inventory.length || !selectedInventoryItem || !buildPriceComponents(publishPriceParts).length || (acceptOffers && !publishOfferCurrencies.length))) || (offerListing && !buildPriceComponents(offerPriceParts, offerPriceCurrencies).length)}>{publishOpen ? t('market.confirmPublish') : t('market.sendOffer')}</button>
+              <button type="submit" className="market-primary" disabled={(publishOpen && (!inventory.length || !selectedInventoryItem || selectedVaultItem?.source !== 'site' || !buildPriceComponents(publishPriceParts).length || (acceptOffers && !publishOfferCurrencies.length))) || (offerListing && !buildPriceComponents(offerPriceParts, offerPriceCurrencies).length)}>{publishOpen ? t('market.confirmPublish') : t('market.sendOffer')}</button>
             </form>
             </div>
           </section>

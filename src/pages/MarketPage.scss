@@ -391,3 +391,63 @@
   .market-vault-item > strong { font-size: 0.48rem; }
   .market-vault-item > small { display: none; }
 }
+/* Custom quantity controls replace browser-native number spinners. */
+.market-amount-control { display: grid; grid-template-columns: 30px minmax(44px, 1fr) 30px; align-items: center; gap: 0.25rem; width: min(100%, 155px); }
+.market-amount-control input { width: 100% !important; min-width: 0 !important; text-align: center !important; font-variant-numeric: tabular-nums; }
+.market-amount-control button { width: 28px; height: 28px; display: grid; place-items: center; padding: 0; border: 1px solid rgba(215, 179, 92, .42); border-radius: 7px; background: linear-gradient(145deg, #29485a, #172e40); color: #f2d98f; cursor: pointer; }
+.market-amount-control button:hover { border-color: #e4c16a; background: #3a5260; color: #fff0bd; }
+.market-amount-control button svg { font-size: 0.62rem; }
+.market-vault-dual { display: grid; grid-template-columns: minmax(0, 1fr) 42px minmax(0, 1fr); align-items: center; gap: 0.45rem; }
+.market-vault-panel { min-width: 0; }
+.market-vault-panel > header { display: flex; align-items: center; justify-content: space-between; gap: 0.25rem; margin: 0 0 0.45rem; }
+.market-vault-panel > header strong { color: #f2dfad; font: 700 0.7rem $font-display; }
+.market-vault-panel > header span { color: #92b9ca; font-size: 0.6rem; }
+.market-vault-grid { grid-template-rows: repeat(15, 24px); max-width: none; width: 100%; padding: 4px; }
+.market-vault-transfer { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.4rem; }
+.market-vault-transfer button { width: 34px; height: 34px; display: grid; place-items: center; border: 1px solid rgba(223, 187, 102, .52); border-radius: 10px; background: linear-gradient(145deg, #314e5e, #152d40); color: #f2d98f; cursor: pointer; transition: transform 140ms ease, background 140ms ease; }
+.market-vault-transfer button:hover:not(:disabled) { transform: scale(1.06); background: #435565; }
+.market-vault-transfer button:disabled { cursor: not-allowed; opacity: .32; }
+.market-vault-transfer svg { font-size: .8rem; }
+.market-vault-flow { margin: 0.55rem 0 0; color: #b6cbd2; font-size: 0.64rem; line-height: 1.45; text-align: center; }
+@media (max-width: 600px) {
+  .market-modal--publish { width: min(100%, 700px); }
+  .market-vault-grid { grid-template-rows: repeat(15, 20px); max-width: none; padding: 3px; }
+  .market-vault-item > span { font-size: .9rem; }
+  .market-vault-item > strong { font-size: .43rem; }
+  .market-vault-transfer button { width: 29px; height: 29px; }
+}
+.market-mainbar__actions { display: flex; align-items: center; gap: 0.45rem; }
+.market-vault-shortcut { min-height: 39px; display: inline-flex; align-items: center; justify-content: center; gap: 0.45rem; padding: 0.58rem 0.82rem; border: 1px solid rgba(215, 179, 92, .48); border-radius: 7px; background: linear-gradient(145deg, rgba(34, 67, 84, .92), rgba(14, 34, 49, .95)); color: #f1dda3; font: 700 .72rem $font-display; letter-spacing: .045em; text-transform: uppercase; cursor: pointer; }
+.market-vault-shortcut:hover { border-color: #e9cc7d; background: linear-gradient(145deg, #354e5a, #172f40); }
+.market-vault-shortcut img { width: 20px; height: 20px; filter: drop-shadow(0 1px 3px rgba(239, 213, 138, .42)); }
+.market-vault-dialog { position: relative; width: min(1120px, 96vw); max-height: 94vh; overflow-y: auto; padding: 1.35rem; border: 1px solid rgba(220, 190, 126, .45); border-radius: 13px; background: radial-gradient(ellipse at 50% 0, rgba(47, 117, 145, .2), transparent 48%), #0a1928; box-shadow: 0 24px 85px rgba(0,0,0,.58); }
+.market-vault-dialog > h2 { margin: .35rem 2.4rem .35rem 0; color: #f0d99e; font: 700 1.35rem $font-display; }
+.market-vault-dialog__intro { max-width: 780px; margin: 0 0 .9rem; color: #b8cbd4; font-size: .76rem; line-height: 1.5; }
+.market-vault-dialog .market-vault-dual { grid-template-columns: minmax(0, 1fr) 46px minmax(0, 1fr); gap: .75rem; }
+.market-vault-dialog .market-vault-grid { grid-template-rows: repeat(15, 27px); }
+.market-vault-dialog__footer { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-top: .9rem; padding-top: .8rem; border-top: 1px solid rgba(133, 174, 191, .2); }
+.market-vault-dialog__footer > span { color: #a9c1cc; font-size: .7rem; }
+.market-vault-dialog__note { display: block; margin-top: .6rem; color: rgba(210, 218, 211, .5); font-size: .62rem; }
+.market-vault-dialog__footer button:disabled { cursor: not-allowed; opacity: .45; }
+.market-modal--publish { width: min(1120px, 96vw); }
+.market-modal--publish .market-vault-dual { grid-template-columns: minmax(0, 1fr) 42px minmax(0, 1fr); }
+.market-modal--publish .market-vault-grid { grid-template-rows: repeat(15, 22px); }
+@media (max-width: 700px) {
+  .market-mainbar__actions { gap: .3rem; }
+  .market-vault-shortcut { padding: .5rem; font-size: 0; }
+  .market-vault-shortcut img { width: 22px; height: 22px; }
+  .market-vault-dialog { width: min(620px, 96vw); padding: .9rem; }
+  .market-vault-dialog .market-vault-dual, .market-modal--publish .market-vault-dual { grid-template-columns: minmax(0, 1fr) 30px minmax(0, 1fr); gap: .25rem; }
+  .market-vault-dialog .market-vault-grid, .market-modal--publish .market-vault-grid { grid-template-rows: repeat(15, 17px); padding: 2px; }
+  .market-vault-transfer button { width: 26px; height: 26px; }
+  .market-vault-dialog__footer { align-items: stretch; flex-direction: column; }
+  .market-vault-dialog__footer button { width: 100%; }
+}
+.market-vault-grid { grid-template-columns: repeat(8, 25px); grid-template-rows: repeat(15, 25px); width: max-content; max-width: 100%; }
+.market-modal--publish .market-vault-grid { grid-template-columns: repeat(8, 22px); grid-template-rows: repeat(15, 22px); }
+.market-price-basket input[type='number'] { appearance: textfield; }
+.market-price-basket input[type='number']::-webkit-inner-spin-button,
+.market-price-basket input[type='number']::-webkit-outer-spin-button { appearance: none; margin: 0; }
+@media (max-width: 700px) {
+  .market-vault-dialog .market-vault-grid, .market-modal--publish .market-vault-grid { grid-template-columns: repeat(8, 17px); grid-template-rows: repeat(15, 17px); }
+}

@@ -10,6 +10,7 @@ const LINKS = [
   { to: '/news', key: 'news' },
   { to: '/about', key: 'about', submenu: true },
   { to: '/rankings', key: 'rankings' },
+  { to: '/market', key: 'market' },
   { to: '/donate', key: 'donate' },
   { to: '/downloads', key: 'downloads' },
 ];

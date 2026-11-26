@@ -16,7 +16,7 @@ export class ApiError extends Error {
   }
 }
 
-async function request(path, { method = 'GET', body, auth = false } = {}) {
+async function request(path, { method = 'GET', body, auth = false, headers: extraHeaders = {} } = {}) {
   let response;
   const isForm = typeof FormData !== 'undefined' && body instanceof FormData;
   try {
@@ -29,6 +29,7 @@ async function request(path, { method = 'GET', body, auth = false } = {}) {
         ...(auth && localStorage.getItem('mubreda_token')
           ? { Authorization: `Bearer ${localStorage.getItem('mubreda_token')}` }
           : {}),
+        ...extraHeaders,
       },
       body: body ? (isForm ? body : JSON.stringify(body)) : undefined,
     });
@@ -157,6 +158,79 @@ export async function fetchDownloads() {
 
 export async function fetchShopCategories() {
   return request('/api/shop/categories');
+}
+
+export async function fetchMarketStatus() {
+  return request('/api/market/status');
+}
+
+export async function fetchMarketListings(filters = {}) {
+  const params = new URLSearchParams();
+  Object.entries(filters).forEach(([key, value]) => {
+    if (value !== undefined && value !== null && value !== '' && value !== 'all') {
+      params.set(key, String(value));
+    }
+  });
+  const query = params.toString();
+  return request(`/api/market/listings${query ? `?${query}` : ''}`);
+}
+
+function marketMutation(path, body) {
+  const key = globalThis.crypto?.randomUUID?.() || `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+  return request(path, {
+    method: 'POST',
+    body,
+    auth: true,
+    headers: { 'Idempotency-Key': key },
+  });
+}
+
+export async function fetchMarketInventory() {
+  return request('/api/market/inventory', { auth: true });
+}
+
+export async function fetchMyMarket() {
+  return request('/api/market/me', { auth: true });
+}
+
+export async function fetchMarketOffers() {
+  return request('/api/market/offers', { auth: true });
+}
+
+export async function fetchMarketWallet() {
+  return request('/api/market/wallet', { auth: true });
+}
+
+export async function fetchMarketHistory() {
+  return request('/api/market/history', { auth: true });
+}
+
+export async function publishMarketListing(payload) {
+  return marketMutation('/api/market/listings', payload);
+}
+
+export async function cancelMarketListing(listingId) {
+  return request(`/api/market/listings/${encodeURIComponent(listingId)}`, {
+    method: 'DELETE',
+    auth: true,
+    headers: { 'Idempotency-Key': globalThis.crypto?.randomUUID?.() || `${Date.now()}-${Math.random()}` },
+  });
+}
+
+export async function buyMarketListing(listingId) {
+  return marketMutation(`/api/market/listings/${encodeURIComponent(listingId)}/buy`, {});
+}
+
+export async function makeMarketOffer(listingId, payload) {
+  return marketMutation(`/api/market/listings/${encodeURIComponent(listingId)}/offers`, payload);
+}
+
+export async function decideMarketOffer(offerId, decision) {
+  return marketMutation(`/api/market/offers/${encodeURIComponent(offerId)}/decision`, { decision });
+}
+
+export async function withdrawMarketBalance(payload) {
+  return marketMutation('/api/market/wallet/withdraw', payload);
 }
 
 export async function fetchShopItems({ categoryId, q } = {}) {

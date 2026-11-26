@@ -108,6 +108,7 @@ Consistent JSON: `{ success, message, data }` or `{ success:false, code, message
 |------|---------|--------|
 | `ENABLE_WEBSHOP` | true | Catalog UI |
 | `ENABLE_WEBSHOP_DELIVERY` | **false** | Requires verified Item Adapter |
+| `ENABLE_PLAYER_MARKET` | **false** | Requires the GameServer market bridge; web API stays read-only while disconnected |
 | `ENABLE_RESET` / `GRAND_RESET` | **false** | Prefer official SPs when mapped |
 | `ENABLE_CLEAR_PK` / `UNSTUCK` | **false** | Configurable coords/PK values |
 | `ENABLE_VIP` | **false** | Needs real VIP table map |

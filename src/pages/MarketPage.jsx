@@ -44,7 +44,7 @@ const SAMPLE_LISTINGS = [
   { id: 1, name: 'Bone Blade', category: 'weapon', className: 'Dark Knight', level: '+13', options: 'Excellent · Skill · Luck', price: 85000000, currency: 'Zen', seller: 'Ares', age: 'hace 4 min', mark: '13', tone: 'steel', qualities: ['excellent', 'skill', 'luck'] },
   { id: 2, name: 'Great Dragon Armor', category: 'armor', className: 'Dark Knight', level: '+13', options: 'Excellent · Luck · 4 opciones', price: 320, currency: 'WCoinC', seller: 'Kaiser', age: 'hace 12 min', mark: 'GD', tone: 'crimson', qualities: ['excellent', 'luck'] },
   { id: 3, name: 'Wings of Soul', category: 'wings', className: 'Dark Wizard', level: '+11', options: 'Luck · Ignore · 7%', price: 14, currency: 'Jewel', jewelCosts: [{ name: 'Bless', amount: 8 }, { name: 'Soul', amount: 6 }], seller: 'Lunaria', age: 'hace 20 min', mark: 'III', tone: 'azure', qualities: ['socket', 'luck'], offerCurrencies: ['wcoinc', 'jewels'] },
-  { id: 4, name: 'Excellent Ring of Ice', category: 'accessory', className: 'Todos', level: '+0', options: 'Excellent · 2 opciones', price: 12500000, currency: 'Zen', seller: 'Maverick', age: 'hace 31 min', mark: 'R', tone: 'violet', qualities: ['excellent'] },
+  { id: 4, name: 'Excellent Ring of Earth', category: 'accessory', className: 'Todos', level: '+0', options: 'Vida máxima · Reflejo · Zen', price: 12500000, currency: 'Zen', seller: 'Maverick', age: 'hace 31 min', mark: 'R', tone: 'violet', qualities: ['excellent'], baseScore: 25, gearScore: 90, stats: ['Durabilidad: 65/65', 'Resistencia a tierra: 1', 'Nivel mínimo requerido: 0', 'Reducción de habilidad elemental de tierra: +0%', 'Invulnerabilidad a tierra: +0%', 'Recuperación automática de HP: 2%'], itemOptions: ['[Normal] Aumenta la vida máxima 1%', '[Raro] Refleja el daño 3%', '[Raro] Aumenta la caída de Zen 15%'] },
   { id: 5, name: 'Divine Staff of Archangel', category: 'weapon', className: 'Dark Wizard', level: '+13', options: 'Excellent · Skill · Luck', price: 240, currency: 'WCoinC', seller: 'Arcanum', age: 'hace 48 min', mark: '+13', tone: 'gold', qualities: ['excellent', 'skill', 'luck'] },
   { id: 6, name: 'Dark Soul Gloves', category: 'gloves', className: 'Dark Wizard', level: '+12', options: 'Excellent · Luck · 3 opciones', price: 9500000, currency: 'Zen', seller: 'Nox', age: 'hace 1 h', mark: '+12', tone: 'violet', qualities: ['excellent', 'ancient'] },
   { id: 7, name: 'Dinorant', category: 'pet', className: 'Todos', level: '+0', options: 'Skill · Intercambiable', price: 6, currency: 'Jewel', seller: 'Ragnar', age: 'hace 2 h', mark: 'D', tone: 'amber' },
@@ -80,6 +80,50 @@ const CATEGORY_ICONS = {
   pet: '/assets/market-icons/pets.png',
   accessory: '/assets/market-icons/accessories.svg',
 };
+const ITEM_ART = {
+  sword: '/assets/market-icons/blades-swords.svg',
+  bow: '/assets/market-icons/bows-crossbows.svg',
+  staff: '/assets/market-icons/staves-sticks.svg',
+  scepter: '/assets/market-icons/scepters.png',
+  shield: '/assets/market-icons/shields-books.svg',
+  helm: '/assets/market-icons/helms.svg',
+  armor: '/assets/market-icons/armor.svg',
+  pants: '/assets/market-icons/pants.svg',
+  gloves: '/assets/market-icons/gloves.svg',
+  boots: '/assets/market-icons/boots.svg',
+  wings: '/assets/market-icons/wings.svg',
+  jewel: '/assets/market-icons/jewels.svg',
+  pet: '/assets/market-icons/pets.png',
+  accessory: '/assets/market-icons/accessories.svg',
+};
+function itemArtPath(item) {
+  const name = `${item.category || ''} ${item.subcategory || ''} ${item.name || ''}`.toLowerCase();
+  if (name.includes('wing')) return ITEM_ART.wings;
+  if (name.includes('jewel')) return ITEM_ART.jewel;
+  if (name.includes('pet') || name.includes('dinorant') || name.includes('angel')) return ITEM_ART.pet;
+  if (name.includes('glove')) return ITEM_ART.gloves;
+  if (name.includes('boot')) return ITEM_ART.boots;
+  if (name.includes('helm')) return ITEM_ART.helm;
+  if (name.includes('pant')) return ITEM_ART.pants;
+  if (name.includes('shield') || name.includes('book')) return ITEM_ART.shield;
+  if (name.includes('bow') || name.includes('crossbow')) return ITEM_ART.bow;
+  if (name.includes('staff') || name.includes('stick')) return ITEM_ART.staff;
+  if (name.includes('scepter')) return ITEM_ART.scepter;
+  if (name.includes('sword') || name.includes('blade')) return ITEM_ART.sword;
+  if (name.includes('armor')) return ITEM_ART.armor;
+  if (name.includes('jewel')) return ITEM_ART.jewel;
+  return ITEM_ART[item.category] || ITEM_ART.accessory;
+}
+function ItemFacts({ item }) {
+  const stats = Array.isArray(item.stats) ? item.stats : [];
+  const options = Array.isArray(item.itemOptions) ? item.itemOptions : [];
+  if (!stats.length && !options.length && item.baseScore == null && item.gearScore == null) return null;
+  return <div className="market-item-facts">
+    {(item.baseScore != null || item.gearScore != null) && <div className="market-item-facts__scores"><span>Puntaje base <strong>{item.baseScore ?? '—'}</strong></span><span>Puntaje de equipo <strong>{item.gearScore ?? '—'}</strong></span></div>}
+    {stats.map((stat) => <p key={stat}>{stat}</p>)}
+    {options.map((option) => <p className="market-item-facts__option" key={option}>{option}</p>)}
+  </div>;
+}
 const CATEGORY_GROUPS = [
   { id: 'armor', categories: ['helm', 'armor', 'pants', 'gloves', 'boots'] },
   { id: 'weapons', categories: ['bladeSword', 'bowCrossbow', 'staffStick', 'scepter', 'shieldBook'] },
@@ -269,7 +313,7 @@ function VaultGrid({ items, bank, selectedId, onSelect }) {
           const placement = placementAt.get(slot);
           const row = Math.floor(slot / 8);
           const column = slot % 8;
-          return placement ? <button type="button" role="option" aria-selected={selectedId === placement.item.gameItemId} key={placement.item.gameItemId} className={`market-vault-item${selectedId === placement.item.gameItemId ? ' is-selected' : ''}`} style={{ gridColumn: `${column + 1} / span ${placement.width}`, gridRow: `${row + 1} / span ${placement.height}` }} onClick={() => onSelect(placement.item.gameItemId)} title={`${placement.item.name} · ${placement.item.character}`}><span>{placement.item.icon || '✦'}</span><strong>{placement.item.name}</strong><small>{placement.item.character || ''}</small></button> : <span key={`slot-${slot}`} className="market-vault-cell" style={{ gridColumn: column + 1, gridRow: row + 1 }} aria-hidden="true" />;
+          return placement ? <button type="button" role="option" aria-selected={selectedId === placement.item.gameItemId} key={placement.item.gameItemId} className={`market-vault-item${selectedId === placement.item.gameItemId ? ' is-selected' : ''}`} style={{ gridColumn: `${column + 1} / span ${placement.width}`, gridRow: `${row + 1} / span ${placement.height}` }} onClick={() => onSelect(placement.item.gameItemId)} title={`${placement.item.name} · ${placement.item.character}`}><img src={itemArtPath(placement.item)} alt="" loading="lazy" /><strong>{placement.item.name}</strong><small>{placement.item.character || ''}</small></button> : <span key={`slot-${slot}`} className="market-vault-cell" style={{ gridColumn: column + 1, gridRow: row + 1 }} aria-hidden="true" />;
         })}
       </div>
     </div>
@@ -638,7 +682,7 @@ export default function MarketPage() {
     const favorite = favorites.includes(item.id);
     const itemInfo = (
       <button type="button" className="market-listing__identity" onClick={() => setSelected(item)}>
-        <span className={`market-listing__art market-card__art--${item.tone || 'steel'}`}><span>{item.mark || item.level}</span></span>
+        <span className={`market-listing__art market-card__art--${item.tone || 'steel'}`}><img src={itemArtPath(item)} alt="" loading="lazy" /><small>{item.level}</small></span>
         <span className="market-listing__name-wrap"><strong>{item.name}</strong><small>{item.className} · {item.level}</small></span>
       </button>
     );
@@ -756,10 +800,11 @@ export default function MarketPage() {
         <div className="market-modal-backdrop" role="presentation" onMouseDown={(event) => event.target === event.currentTarget && setSelected(null)}>
           <section className="market-modal" role="dialog" aria-modal="true" aria-labelledby="market-modal-title">
             <button type="button" className="market-modal__close" onClick={() => setSelected(null)} aria-label={t('market.close')}><FaTimes /></button>
-            <span className={`market-card__art market-card__art--${selected.tone}`}><span className="market-card__art-ring" /><span className="market-card__art-mark">{selected.mark}</span><span className="market-card__art-caption">{t(`market.category.${selected.category}`)}</span></span>
+            <span className={`market-card__art market-card__art--${selected.tone}`}><span className="market-card__art-ring" /><img className="market-card__art-image" src={itemArtPath(selected)} alt="" /><span className="market-card__art-caption">{t(`market.category.${selected.category}`)}</span></span>
             <p className="market-kicker">{selected.className} · {selected.level}</p>
             <h2 id="market-modal-title">{selected.name}</h2>
             <p className="market-modal__options">{selected.options}</p>
+            <ItemFacts item={selected} />
             <div className="market-modal__meta"><span>{t('market.seller')}: <strong>{selected.seller}</strong></span><span>{t('market.published')}: <strong>{selected.age}</strong></span></div>
             <div className="market-modal__price"><CurrencyIcon currency={selected.currency} />{displayPrice(selected)}</div>
             <div className="market-modal__actions"><button type="button" className="market-primary" onClick={() => { setPurchaseListing(selected); setSelected(null); }}>{t('market.buy')}</button><button type="button" className="market-secondary" onClick={() => openOffer(selected)}>{t('market.makeOffer')}</button></div>
@@ -773,10 +818,11 @@ export default function MarketPage() {
           <section className="market-trade-dialog" role="dialog" aria-modal="true" aria-labelledby="market-buy-title">
             <button type="button" className="market-modal__close" onClick={() => setPurchaseListing(null)} aria-label={t('market.close')}><FaTimes /></button>
             <aside className="market-trade-dialog__item">
-              <span className={`market-card__art market-card__art--${purchaseListing.tone || 'steel'}`}><span className="market-card__art-ring" /><span className="market-card__art-mark">{purchaseListing.mark || purchaseListing.level}</span><span className="market-card__art-caption">{t(`market.category.${purchaseListing.category}`)}</span></span>
+              <span className={`market-card__art market-card__art--${purchaseListing.tone || 'steel'}`}><span className="market-card__art-ring" /><img className="market-card__art-image" src={itemArtPath(purchaseListing)} alt="" /><span className="market-card__art-caption">{t(`market.category.${purchaseListing.category}`)}</span></span>
               <h3>{purchaseListing.name}</h3>
               <strong>{purchaseListing.className} · {purchaseListing.level}</strong>
               <p>{purchaseListing.options}</p>
+              <ItemFacts item={purchaseListing} />
               <small>{t('market.seller')}: {purchaseListing.seller}</small>
             </aside>
             <div className="market-trade-dialog__body">
@@ -798,7 +844,7 @@ export default function MarketPage() {
         <div className="market-modal-backdrop" role="presentation" onMouseDown={(event) => event.target === event.currentTarget && (setPublishOpen(false), setOfferListing(null))}>
           <section className={`market-modal${offerListing ? ' market-modal--offer' : ''}${publishOpen ? ' market-modal--publish' : ''}`} role="dialog" aria-modal="true" aria-labelledby="market-action-title">
             <button type="button" className="market-modal__close" onClick={() => { setPublishOpen(false); setOfferListing(null); }} aria-label={t('market.close')}><FaTimes /></button>
-            {offerListing && <aside className="market-modal__offer-item"><span className={`market-card__art market-card__art--${offerListing.tone || 'steel'}`}><span className="market-card__art-ring" /><span className="market-card__art-mark">{offerListing.mark || offerListing.level}</span><span className="market-card__art-caption">{t(`market.category.${offerListing.category}`)}</span></span><h3>{offerListing.name}</h3><strong>{offerListing.className} · {offerListing.level}</strong><p>{offerListing.options}</p><small>{t('market.seller')}: {offerListing.seller}</small></aside>}
+            {offerListing && <aside className="market-modal__offer-item"><span className={`market-card__art market-card__art--${offerListing.tone || 'steel'}`}><span className="market-card__art-ring" /><img className="market-card__art-image" src={itemArtPath(offerListing)} alt="" /><span className="market-card__art-caption">{t(`market.category.${offerListing.category}`)}</span></span><h3>{offerListing.name}</h3><strong>{offerListing.className} · {offerListing.level}</strong><p>{offerListing.options}</p><ItemFacts item={offerListing} /><small>{t('market.seller')}: {offerListing.seller}</small></aside>}
             <div className={offerListing ? 'market-modal__offer-content' : ''}>
               <p className="market-kicker">{publishOpen ? t('market.kicker') : t('market.makeOffer')}</p>
               <h2 id="market-action-title">{publishOpen ? t('market.publish') : t('market.makeOffer')}</h2>

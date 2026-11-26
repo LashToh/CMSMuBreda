@@ -144,6 +144,8 @@
   &__identity { min-width: 0; display: flex; align-items: center; gap: 0.75rem; padding: 0; border: 0; background: transparent; color: inherit; text-align: left; cursor: pointer; }
   &__art { width: 52px; height: 52px; display: grid; place-items: center; flex: 0 0 auto; overflow: hidden; border-radius: 8px; background: radial-gradient(circle, rgba(67, 178, 99, 0.45), rgba(12, 37, 24, 0.85) 68%); box-shadow: inset 0 0 14px rgba(107, 231, 147, 0.15); }
   &__art span { color: #f5e7bd; font: 700 0.82rem $font-display; text-shadow: 0 0 8px #5fc6a5; }
+  &__art img { width: 72%; height: 72%; object-fit: contain; filter: drop-shadow(0 3px 6px rgba(0, 0, 0, .55)); }
+  &__art small { position: absolute; right: 3px; bottom: 2px; color: #fff0bd; font-size: .48rem; font-weight: 800; text-shadow: 0 1px 4px #000; }
   &__name-wrap { min-width: 0; display: flex; flex-direction: column; gap: 0.25rem; }
   &__name-wrap strong { overflow: hidden; color: #61e8bb; font: 700 0.91rem $font-display; text-overflow: ellipsis; white-space: nowrap; }
   &__name-wrap small { color: rgba(230, 219, 195, 0.57); font-size: 0.66rem; }
@@ -245,6 +247,11 @@
   &__actions > * { flex: 1; }
   &__preview { display: block; margin-top: 0.8rem; color: rgba(222, 214, 194, 0.43); font-size: 0.66rem; line-height: 1.4; }
 }
+.market-item-facts { display: grid; gap: .32rem; margin: .4rem 0 .8rem; padding: .6rem .7rem; border: 1px solid rgba(132, 178, 198, .18); border-radius: 8px; background: rgba(4, 14, 25, .42); color: rgba(226, 226, 214, .73); font-size: .68rem; line-height: 1.42; }
+.market-item-facts p { margin: 0; }
+.market-item-facts__scores { display: flex; justify-content: space-between; gap: .5rem; color: #ecd792; }
+.market-item-facts__scores strong { margin-left: .25rem; color: #fff0bd; }
+.market-item-facts__option { color: #e5bce4; }
 .market-card__art { position: relative; min-height: 130px; display: grid; place-items: center; overflow: hidden; border: 1px solid rgba(144, 193, 203, 0.23); background: radial-gradient(ellipse at 50% 35%, rgba(48, 126, 155, 0.42), rgba(15, 35, 50, 0.7) 65%); }
 .market-card__art--crimson { background: radial-gradient(ellipse at 50% 35%, rgba(145, 61, 89, 0.48), rgba(42, 23, 40, 0.75) 68%); }
 .market-card__art--azure { background: radial-gradient(ellipse at 50% 35%, rgba(40, 125, 169, 0.55), rgba(14, 40, 60, 0.76) 68%); }
@@ -252,6 +259,7 @@
 .market-card__art--gold, .market-card__art--amber { background: radial-gradient(ellipse at 50% 35%, rgba(159, 119, 44, 0.48), rgba(45, 36, 21, 0.77) 68%); }
 .market-card__art-ring { position: absolute; width: 112px; height: 112px; border: 1px solid rgba(239, 217, 157, 0.5); border-radius: 50%; box-shadow: 0 0 25px rgba(83, 192, 221, 0.16), inset 0 0 18px rgba(83, 192, 221, 0.12); }
 .market-card__art-mark { position: relative; z-index: 1; color: #f2e7c9; font: 700 1.8rem $font-display; text-shadow: 0 0 12px rgba(106, 210, 239, 0.7); }
+.market-card__art-image { position: relative; z-index: 1; width: min(58%, 90px); height: min(58%, 90px); object-fit: contain; filter: drop-shadow(0 4px 8px rgba(0, 0, 0, .58)); }
 .market-card__art-caption { position: absolute; bottom: 0.55rem; color: rgba(230, 225, 207, 0.74); font: 700 0.58rem $font-display; letter-spacing: 0.08em; text-transform: uppercase; }
 .market-kicker { margin: 0; color: #80d5ed; font: 700 0.64rem $font-display; letter-spacing: 0.13em; text-transform: uppercase; }
 .market-action-form { display: flex; flex-direction: column; gap: 0.8rem; margin-top: 0.9rem;
@@ -307,6 +315,11 @@
   .market-class-icons { max-width: 210px; }
   .market-option-shortcuts { max-width: 260px; }
 }
+@media (max-width: 900px) and (min-width: 761px) {
+  .market-mainbar { flex-wrap: wrap; gap: .25rem; }
+  .market-tabs { flex: 1 1 100%; width: 100%; }
+  .market-mainbar__actions { width: 100%; justify-content: flex-end; }
+}
 @media (max-width: 760px) {
   .market-modal--offer { grid-template-columns: 1fr; width: min(100%, 520px); max-height: 92vh; }
   .market-modal__offer-item { display: grid; grid-template-columns: 74px 1fr; justify-content: stretch; gap: 0.15rem 0.6rem; padding: 0.75rem 2.6rem 0.75rem 0.75rem; border-right: 0; border-bottom: 1px solid rgba(133, 174, 191, 0.16); text-align: left; }
@@ -330,7 +343,9 @@
   .market-heading h1 { font-size: 1.55rem; }
   .market-heading > p { font-size: 0.75rem; }
   .market-status { margin-left: auto; }
-  .market-mainbar { align-items: flex-end; gap: 0.35rem; }
+  .market-mainbar { align-items: center; flex-wrap: wrap; gap: 0.35rem; }
+  .market-tabs { flex: 1 1 100%; width: 100%; }
+  .market-mainbar__actions { width: 100%; justify-content: flex-end; }
   .market-mainbar > .market-primary { min-height: 34px; padding: 0.45rem 0.6rem; font-size: 0.59rem; }
   .market-tabs button { min-height: 46px; padding: 0.45rem 0.6rem; font-size: 0.64rem; }
   .market-filterbar__top, .market-filterbar__bottom { align-items: flex-start; flex-direction: column; }
@@ -362,6 +377,10 @@
   .market-tabs button span { max-width: 90px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .market-mainbar > .market-primary { font-size: 0; }
   .market-mainbar > .market-primary svg { font-size: 0.9rem; }
+  .market-resultbar__actions { flex-wrap: wrap; justify-content: flex-start; }
+  .market-sort { flex: 1 1 100%; }
+  .market-view-switch { flex: 0 0 72px; }
+  .market-refresh { flex: 0 0 37px; }
   .market-grid { grid-template-columns: 1fr; }
   .market-popover { width: calc(100vw - 1.2rem); }
   .market-wallet-preview { grid-template-columns: 1fr; }
@@ -380,6 +399,7 @@
 .market-vault-cell { min-width: 0; border: 1px solid rgba(104, 145, 159, 0.35); border-radius: 2px; background: linear-gradient(145deg, #284555, #1d3848); }
 .market-vault-item { z-index: 1; display: flex; min-width: 0; flex-direction: column; align-items: center; justify-content: center; overflow: hidden; padding: 2px; border: 1px solid rgba(223, 187, 102, 0.72); border-radius: 4px; background: linear-gradient(145deg, #476677, #233f50); color: #f6e7bc; cursor: pointer; }
 .market-vault-item > span { font-size: 1.2rem; }
+.market-vault-item > img { width: 68%; height: 68%; flex: 0 0 auto; object-fit: contain; filter: drop-shadow(0 2px 4px rgba(0, 0, 0, .55)); }
 .market-vault-item > strong { max-width: 100%; overflow: hidden; color: #e8d49e; font-size: 0.55rem; text-align: center; text-overflow: ellipsis; white-space: nowrap; }
 .market-vault-item > small { color: #b6cbd2; font-size: 0.48rem; }
 .market-vault-item.is-selected { z-index: 2; outline: 2px solid #fff0a5; box-shadow: 0 0 12px rgba(245, 218, 135, .55); }

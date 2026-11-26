@@ -139,6 +139,12 @@
   padding-bottom: $spacing-xl;
 }
 
+@media (max-width: 640px) {
+  .cms-shell__inner { gap: 0.45rem; min-height: 62px; }
+  .cms-shell__actions { gap: 0.35rem; min-width: 0; }
+  .cms-shell__actions .btn { padding: 0.5rem 0.65rem; font-size: 0.62rem; letter-spacing: 0.07em; }
+}
+
 .cms-page {
   &__label {
     font-family: $font-display;

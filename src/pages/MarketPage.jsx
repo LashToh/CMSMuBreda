@@ -211,15 +211,65 @@ function CurrencyBasket({ value, onChange, allowedCurrencies, t }) {
   );
 }
 
-function VaultGrid({ items, bank, selectedId, onSelect }) {
+function calculateVaultPlacements(items) {
+  const columns = 8;
+  const rows = 15;
+  const occupied = Array.from({ length: rows }, () => Array(columns).fill(false));
   const starts = [1, 4, 20, 39, 49];
+  const placements = [];
+  const canPlace = (slot, width, height) => {
+    if (!Number.isInteger(slot) || slot < 0) return false;
+    const row = Math.floor(slot / columns);
+    const column = slot % columns;
+    if (column + width > columns || row + height > rows) return false;
+    for (let y = row; y < row + height; y += 1) {
+      for (let x = column; x < column + width; x += 1) {
+        if (occupied[y][x]) return false;
+      }
+    }
+    return true;
+  };
+
+  items.forEach((item, index) => {
+    const requestedWidth = Number(item.width ?? item.sizeX ?? item.footprint?.width ?? 1);
+    const requestedHeight = Number(item.height ?? item.sizeY ?? item.footprint?.height ?? 1);
+    const width = Math.max(1, Math.min(columns, Number.isFinite(requestedWidth) ? Math.trunc(requestedWidth) : 1));
+    const height = Math.max(1, Math.min(rows, Number.isFinite(requestedHeight) ? Math.trunc(requestedHeight) : 1));
+    const requestedSlot = Number(item.slot ?? starts[index] ?? (index * 7) % (columns * rows));
+    let slot = canPlace(requestedSlot, width, height) ? requestedSlot : -1;
+
+    if (slot < 0) {
+      for (let candidate = 0; candidate < columns * rows; candidate += 1) {
+        if (canPlace(candidate, width, height)) {
+          slot = candidate;
+          break;
+        }
+      }
+    }
+    if (slot < 0) return;
+
+    const row = Math.floor(slot / columns);
+    const column = slot % columns;
+    for (let y = row; y < row + height; y += 1) {
+      for (let x = column; x < column + width; x += 1) occupied[y][x] = true;
+    }
+    placements.push({ item, slot, width, height });
+  });
+  return placements;
+}
+
+function VaultGrid({ items, bank, selectedId, onSelect }) {
+  const placements = calculateVaultPlacements(items);
+  const placementAt = new Map(placements.map((placement) => [placement.slot, placement]));
   return (
     <div className="market-vault-panel">
       <header><strong>{bank === 'game' ? 'Baúl del juego' : 'Baúl web'}</strong><span>{items.length} objetos</span></header>
       <div className="market-vault-grid" role="listbox" aria-label={bank === 'game' ? 'Objetos del juego' : 'Objetos del baúl web'}>
         {Array.from({ length: 120 }, (_, slot) => {
-          const item = items.find((entry, index) => (entry.slot ?? starts[index] ?? (index * 7) % 118) === slot);
-          return item ? <button type="button" role="option" aria-selected={selectedId === item.gameItemId} key={item.gameItemId} className={`market-vault-item${selectedId === item.gameItemId ? ' is-selected' : ''}`} style={{ gridColumn: `${slot % 8 + 1} / span ${Math.min(4, item.width || 1)}`, gridRow: `${Math.floor(slot / 8) + 1} / span ${Math.min(4, item.height || 1)}` }} onClick={() => onSelect(item.gameItemId)} title={`${item.name} · ${item.character}`}><span>{item.icon || '✦'}</span><strong>{item.name}</strong><small>{item.character || ''}</small></button> : <span key={`slot-${slot}`} className="market-vault-cell" style={{ gridColumn: slot % 8 + 1, gridRow: Math.floor(slot / 8) + 1 }} aria-hidden="true" />;
+          const placement = placementAt.get(slot);
+          const row = Math.floor(slot / 8);
+          const column = slot % 8;
+          return placement ? <button type="button" role="option" aria-selected={selectedId === placement.item.gameItemId} key={placement.item.gameItemId} className={`market-vault-item${selectedId === placement.item.gameItemId ? ' is-selected' : ''}`} style={{ gridColumn: `${column + 1} / span ${placement.width}`, gridRow: `${row + 1} / span ${placement.height}` }} onClick={() => onSelect(placement.item.gameItemId)} title={`${placement.item.name} · ${placement.item.character}`}><span>{placement.item.icon || '✦'}</span><strong>{placement.item.name}</strong><small>{placement.item.character || ''}</small></button> : <span key={`slot-${slot}`} className="market-vault-cell" style={{ gridColumn: column + 1, gridRow: row + 1 }} aria-hidden="true" />;
         })}
       </div>
     </div>

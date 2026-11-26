@@ -489,7 +489,8 @@ export default function MarketPage() {
       setPublishPriceParts({ ...EMPTY_PRICE_PARTS });
       setAcceptOffers(true);
       setPublishOfferCurrencies(['zen', 'wcoinc', 'jewels']);
-      setPublishOpen(true);
+      setPublishOpen(false);
+      setVaultOpen(true);
       return;
     }
     if (!requireMarketAccount()) return;
@@ -502,7 +503,8 @@ export default function MarketPage() {
       setPublishPriceParts({ ...EMPTY_PRICE_PARTS });
       setAcceptOffers(true);
       setPublishOfferCurrencies(['zen', 'wcoinc', 'jewels']);
-      setPublishOpen(true);
+      setPublishOpen(false);
+      setVaultOpen(true);
     } catch (error) {
       setNotice(error.message || t('market.connectionError'));
     }

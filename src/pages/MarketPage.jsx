@@ -41,25 +41,26 @@ import {
 import './MarketPage.scss';
 
 const SAMPLE_LISTINGS = [
-  { id: 1, name: 'Bone Blade', category: 'weapon', className: 'Dark Knight', level: '+13', options: 'Excellent · Skill · Luck', price: 85000000, currency: 'Zen', seller: 'Ares', age: 'hace 4 min', mark: '13', tone: 'steel', qualities: ['excellent', 'skill', 'luck'] },
-  { id: 2, name: 'Great Dragon Armor', category: 'armor', className: 'Dark Knight', level: '+13', options: 'Excellent · Luck · 4 opciones', price: 320, currency: 'WCoinC', seller: 'Kaiser', age: 'hace 12 min', mark: 'GD', tone: 'crimson', qualities: ['excellent', 'luck'] },
-  { id: 3, name: 'Wings of Soul', category: 'wings', className: 'Dark Wizard', level: '+11', options: 'Luck · Ignore · 7%', price: 14, currency: 'Jewel', jewelCosts: [{ name: 'Bless', amount: 8 }, { name: 'Soul', amount: 6 }], seller: 'Lunaria', age: 'hace 20 min', mark: 'III', tone: 'azure', qualities: ['socket', 'luck'], offerCurrencies: ['wcoinc', 'jewels'] },
+  { id: 1, itemType: '0-22', name: 'Bone Blade', category: 'weapon', className: 'Dark Knight', level: '+13', options: 'Excellent · Skill · Luck', price: 85000000, currency: 'Zen', seller: 'Ares', age: 'hace 4 min', mark: '13', tone: 'steel', qualities: ['excellent', 'skill', 'luck'] },
+  { id: 2, itemType: '8-21', name: 'Great Dragon Armor', category: 'armor', className: 'Dark Knight', level: '+13', options: 'Excellent · Luck · 4 opciones', price: 320, currency: 'WCoinC', seller: 'Kaiser', age: 'hace 12 min', mark: 'GD', tone: 'crimson', qualities: ['excellent', 'luck'] },
+  { id: 3, itemType: '12-4', name: 'Wings of Soul', category: 'wings', className: 'Dark Wizard', level: '+11', options: 'Luck · Ignore · 7%', price: 14, currency: 'Jewel', jewelCosts: [{ name: 'Bless', amount: 8 }, { name: 'Soul', amount: 6 }], seller: 'Lunaria', age: 'hace 20 min', mark: 'III', tone: 'azure', qualities: ['socket', 'luck'], offerCurrencies: ['wcoinc', 'jewels'] },
   { id: 4, name: 'Excellent Ring of Earth', category: 'accessory', className: 'Todos', level: '+0', options: 'Vida máxima · Reflejo · Zen', price: 12500000, currency: 'Zen', seller: 'Maverick', age: 'hace 31 min', mark: 'R', tone: 'violet', qualities: ['excellent'], baseScore: 25, gearScore: 90, stats: ['Durabilidad: 65/65', 'Resistencia a tierra: 1', 'Nivel mínimo requerido: 0', 'Reducción de habilidad elemental de tierra: +0%', 'Invulnerabilidad a tierra: +0%', 'Recuperación automática de HP: 2%'], itemOptions: ['[Normal] Aumenta la vida máxima 1%', '[Raro] Refleja el daño 3%', '[Raro] Aumenta la caída de Zen 15%'] },
-  { id: 5, name: 'Divine Staff of Archangel', category: 'weapon', className: 'Dark Wizard', level: '+13', options: 'Excellent · Skill · Luck', price: 240, currency: 'WCoinC', seller: 'Arcanum', age: 'hace 48 min', mark: '+13', tone: 'gold', qualities: ['excellent', 'skill', 'luck'] },
-  { id: 6, name: 'Dark Soul Gloves', category: 'gloves', className: 'Dark Wizard', level: '+12', options: 'Excellent · Luck · 3 opciones', price: 9500000, currency: 'Zen', seller: 'Nox', age: 'hace 1 h', mark: '+12', tone: 'violet', qualities: ['excellent', 'ancient'] },
+  { id: 5, itemType: '5-10', name: 'Divine Staff of Archangel', category: 'weapon', className: 'Dark Wizard', level: '+13', options: 'Excellent · Skill · Luck', price: 240, currency: 'WCoinC', seller: 'Arcanum', age: 'hace 48 min', mark: '+13', tone: 'gold', qualities: ['excellent', 'skill', 'luck'] },
+  { id: 6, itemType: '10-22', name: 'Dark Soul Gloves', category: 'gloves', className: 'Dark Wizard', level: '+12', options: 'Excellent · Luck · 3 opciones', price: 9500000, currency: 'Zen', seller: 'Nox', age: 'hace 1 h', mark: '+12', tone: 'violet', qualities: ['excellent', 'ancient'] },
   { id: 7, name: 'Dinorant', category: 'pet', className: 'Todos', level: '+0', options: 'Skill · Intercambiable', price: 6, currency: 'Jewel', seller: 'Ragnar', age: 'hace 2 h', mark: 'D', tone: 'amber' },
-  { id: 8, name: 'Guardian Angel', category: 'pet', className: 'Todos', level: '+0', options: 'Pet · 255 de vida', price: 4200000, currency: 'Zen', seller: 'Atenea', age: 'hace 2 h', mark: 'GA', tone: 'azure' },
+  { id: 8, itemType: '13-0', name: 'Guardian Angel', category: 'pet', className: 'Todos', level: '+0', options: 'Pet · 255 de vida', price: 4200000, currency: 'Zen', seller: 'Atenea', age: 'hace 2 h', mark: 'GA', tone: 'azure' },
   { id: 9, name: 'Dark Phoenix Shield', category: 'armor', className: 'Dark Knight', level: '+13', options: 'Excellent · Luck · 4 opciones', price: 175, currency: 'WCoinC', seller: 'Kronos', age: 'hace 3 h', mark: '+13', tone: 'crimson', qualities: ['excellent'] },
-  { id: 10, name: 'Jewel of Chaos', category: 'jewel', className: 'Todos', level: 'x30', options: 'Paquete de joyas', price: 3, currency: 'WCoinC', seller: 'Maga', age: 'hace 3 h', mark: '30', tone: 'azure' },
+  { id: 10, itemType: '12-15', name: 'Jewel of Chaos', category: 'jewel', className: 'Todos', level: 'x30', options: 'Paquete de joyas', price: 3, currency: 'WCoinC', seller: 'Maga', age: 'hace 3 h', mark: '30', tone: 'azure' },
   { id: 11, name: 'Scale Shield', category: 'armor', className: 'Dark Knight', level: '+ luck', options: 'Excellent · Reflect · 4%', price: 7800000, currency: 'Zen', seller: 'Berserk', age: 'hace 4 h', mark: 'S', tone: 'steel', qualities: ['excellent'] },
-  { id: 12, name: 'Wings of Heaven', category: 'wings', className: 'Fairy Elf', level: '+13', options: 'Luck · Ignore · 7%', price: 185, currency: 'WCoinC', seller: 'Sylph', age: 'hace 5 h', mark: 'III', tone: 'azure', qualities: ['socket'] },
+  { id: 12, itemType: '12-1', name: 'Wings of Heaven', category: 'wings', className: 'Fairy Elf', level: '+13', options: 'Luck · Ignore · 7%', price: 185, currency: 'WCoinC', seller: 'Sylph', age: 'hace 5 h', mark: 'III', tone: 'azure', qualities: ['socket'] },
 ];
 
+// Sample-vault footprints and itemType values are taken from the Season 6 client item tables.
 const SAMPLE_VAULT_INVENTORY = [
-  { gameItemId: 'preview-market-item-1', name: 'Bone Blade +13', character: 'Dark Knight', source: 'game', slot: 1, width: 2, height: 4, icon: '⚔️' },
-  { gameItemId: 'preview-market-item-2', name: 'Great Dragon Helm +9', character: 'Dark Knight', source: 'game', slot: 4, width: 2, height: 2, icon: '🪖' },
-  { gameItemId: 'preview-market-item-3', name: 'Wings of Soul +11', character: 'Dark Wizard', source: 'game', slot: 20, width: 4, height: 4, icon: '🪽' },
-  { gameItemId: 'preview-market-item-4', name: 'Ring of Earth', character: 'Fairy Elf', source: 'site', slot: 39, width: 1, height: 1, icon: '💍' },
+  { gameItemId: 'preview-market-item-1', itemType: '0-22', name: 'Bone Blade +13', character: 'Dark Knight', source: 'game', slot: 1, width: 1, height: 4, icon: '⚔️' },
+  { gameItemId: 'preview-market-item-2', itemType: '7-21', name: 'Great Dragon Helm +9', character: 'Dark Knight', source: 'game', slot: 4, width: 2, height: 2, icon: '🪖' },
+  { gameItemId: 'preview-market-item-3', itemType: '12-4', name: 'Wings of Soul +11', character: 'Dark Wizard', source: 'game', slot: 20, width: 5, height: 3, icon: '🪽' },
+  { gameItemId: 'preview-market-item-4', itemType: '13-22', name: 'Ring of Earth', character: 'Fairy Elf', source: 'site', slot: 39, width: 1, height: 1, icon: '💍' },
   { gameItemId: 'preview-market-item-5', name: 'Crystal Staff +12', character: 'Dark Wizard', source: 'game', slot: 49, width: 2, height: 4, icon: '🪄' },
 ];
 
